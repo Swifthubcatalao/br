@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8">
+  <meta name="description" content="Swift Hub Catalão - Serviços">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Swift Hub Catalão - Serviços</title>
+  <!-- Font Awesome para o ícone do WhatsApp -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.0/css/all.min.css">
+  <style>
+    /* Reset e configuração global */
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+    body {
+      font-family: Arial, sans-serif;
+      background: #fff;
+      line-height: 1.6;
+      color: #333;
+    }
+    .container {
+      max-width: 1200px;
+      margin: auto;
+      padding: 20px;
+    }
+    header {
+      background: linear-gradient(45deg, #3C3B6E, #1C1C5B);
+      color: #fff;
+      text-align: center;
+      padding: 30px 0;
+      position: relative;
+    }
+    header h1 {
+      font-size: 2.8em;
+      margin-bottom: 10px;
+    }
+    header p {
+      font-size: 1.3em;
+    }
+    #logoutButton {
+      position: absolute;
+      right: 20px;
+      top: 20px;
+      background-color: #B22234;
+      color: #fff;
+      border: none;
+      padding: 10px 15px;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+    nav {
+      background: #f8f8f8;
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    }
+    nav ul {
+      display: flex;
+      justify-content: center;
+      list-style: none;
+      padding: 10px;
+    }
+    nav ul li {
+      margin: 0 20px;
+    }
+    nav ul li a {
+      text-decoration: none;
+      font-weight: bold;
+      color: #3C3B6E;
+      font-size: 1.1em;
+      transition: color 0.2s;
+    }
+    nav ul li a:hover {
+      color: #B22234;
+    }
+    section#servico {
+      padding: 40px 0;
+      text-align: center;
+    }
+    section#servico h2 {
+      font-size: 2em;
+      margin-bottom: 20px;
+      color: #3C3B6E;
+    }
+    .cards {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 20px;
+    }
+    .card {
+      background: #fff;
+      border-radius: 8px;
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+      width: 250px;
+      padding: 20px;
+      transition: transform 0.2s, box-shadow 0.2s;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    .card:hover {
+      transform: scale(1.03);
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+    }
+    .card img {
+      width: 100%;
+      height: auto;
+      border-radius: 5px;
+      margin-bottom: 15px;
+    }
+    .card h3 {
+      font-size: 1.5em;
+      margin-bottom: 10px;
+      color: #3C3B6E;
+    }
+    .card p {
+      font-size: 0.9em;
+      margin-bottom: 15px;
+      text-align: left;
+      color: #555;
+    }
+    .card a {
+      display: inline-block;
+      background: #B22234;
+      color: #fff;
+      padding: 10px 15px;
+      text-decoration: none;
+      border-radius: 5px;
+      transition: background 0.2s;
+      align-self: stretch;
+      text-align: center;
+      font-weight: bold;
+    }
+    .card a:hover {
+      background: #a01d2d;
+    }
+    footer {
+      background: #B22234;
+      color: #fff;
+      text-align: center;
+      padding: 20px 0;
+      margin-top: 40px;
+    }
+    /* Botão flutuante do WhatsApp */
+    .whatsapp-float {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      background-color: #25D366;
+      color: #fff;
+      border-radius: 50%;
+      width: 60px;
+      height: 60px;
+      text-align: center;
+      line-height: 60px;
+      font-size: 30px;
+      z-index: 1000;
+      box-shadow: 2px 2px 3px rgba(0,0,0,0.3);
+    }
+    @media (max-width: 768px) {
+      .card {
+        width: 90%;
+      }
+      nav ul {
+        flex-direction: column;
+      }
+      nav ul li {
+        margin: 10px 0;
+      }
+    }
+  </style>
+</head>
+<body>
+  <script>
+    // Redireciona para login se o usuário não estiver logado
+    if(localStorage.getItem("loggedIn") !== "true") {
+      window.location.href = "login.html";
+    }
+  </script>
+  <header>
+    <div class="container">
+      <h1>Swift Hub Catalão</h1>
+      <p>Conectando você aos melhores profissionais</p>
+      <button id="logoutButton">Sair</button>
+    </div>
+  </header>
+  <nav>
+    <div class="container">
+      <ul>
+        <li><a href="index.html">Início</a></li>
+        <li><a href="servicos.html">Serviços</a></li>
+      </ul>
+    </div>
+  </nav>
+  <section id="servico">
+    <div class="container">
+      <h2>Serviços Disponíveis</h2>
+      <div class="cards">
+        <!-- 1. Limpeza de Estofados -->
+        <div class="card">
+          <img src="https://raw.githubusercontent.com/Swifthubcatalao/br/main/imagens/limpeza-de-estofados.jpg" alt="Limpeza de Estofados">
+          <h3>Limpeza de Estofados</h3>
+          <p>Remova manchas, odores e sujeira de sofás, poltronas e móveis, restaurando sua aparência e higiene.</p>
+          <a href="https://wa.me/64981226078?text=Oi,%20preciso%20de%20limpeza%20de%20estofados" target="_blank">Agendar</a>
+        </div>
+        <!-- 2. Encanador -->
+        <div class="card">
+          <img src="https://raw.githubusercontent.com/Swifthubcatalao/br/main/imagens/encanador.jpg" alt="Encanador">
+          <h3>Encanador</h3>
+          <p>Resolva problemas hidráulicos com reparos e manutenções realizados por profissionais capacitados.</p>
+          <a href="https://wa.me/64981226078?text=Oi,%20preciso%20de%20um%20encanador" target="_blank">Agendar</a>
+        </div>
+        <!-- 3. Detetização -->
+        <div class="card">
+          <img src="https://raw.githubusercontent.com/Swifthubcatalao/br/main/imagens/detetizacao.jpg" alt="Detetização">
+          <h3>Detetização</h3>
+          <p>Elimine pragas e garanta ambientes mais seguros e limpos com serviços especializados.</p>
+          <a href="https://wa.me/64981226078?text=Oi,%20preciso%20de%20detetizacao" target="_blank">Agendar</a>
+        </div>
+        <!-- 4. Jardineiro -->
+        <div class="card">
+          <img src="https://raw.githubusercontent.com/Swifthubcatalao/br/main/imagens/jardineiro.jpg" alt="Jardineiro">
+          <h3>Jardineiro</h3>
+          <p>Cuide do seu jardim com serviços de poda, manutenção e paisagismo para mantê-lo sempre bonito.</p>
+          <a href="https://wa.me/64981226078?text=Oi,%20preciso%20de%20um%20jardineiro" target="_blank">Agendar</a>
+        </div>
+        <!-- 5. Marceneiro -->
+        <div class="card">
+          <img src="https://raw.githubusercontent.com/Swifthubcatalao/br/main/imagens/marceneiro.jpg" alt="Marceneiro">
+          <h3>Marceneiro</h3>
+          <p>Móveis sob medida e reparos em madeira com acabamento perfeito para transformar seus espaços.</p>
+          <a href="https://wa.me/64981226078?text=Oi,%20preciso%20de%20um%20marceneiro" target="_blank">Agendar</a>
+        </div>
+        <!-- 6. Eletricista -->
+        <div class="card">
+          <img src="https://raw.githubusercontent.com/Swifthubcatalao/br/main/imagens/eletricista.jpg" alt="Eletricista">
+          <h3>Eletricista</h3>
+          <p>Instalações, manutenções e reparos elétricos para garantir a segurança e o funcionamento do seu imóvel.</p>
+          <a href="https://wa.me/64981226078?text=Oi,%20preciso%20de%20um%20eletricista" target="_blank">Agendar</a>
+        </div>
+        <!-- 7. Pintor -->
+        <div class="card">
+          <img src="https://raw.githubusercontent.com/Swifthubcatalao/br/main/imagens/pintor.jpg" alt="Pintor">
+          <h3>Pintor</h3>
+          <p>Pintura residencial ou comercial com acabamento de alta qualidade para renovar qualquer ambiente.</p>
+          <a href="https://wa.me/64981226078?text=Oi,%20preciso%20de%20um%20pintor" target="_blank">Agendar</a>
+        </div>
+        <!-- 8. Montagem de Móveis -->
+        <div class="card">
+          <img src="https://raw.githubusercontent.com/Swifthubcatalao/br/main/imagens/montagem-de-moveis.jpg" alt="Montagem de Móveis">
+          <h3>Montagem de Móveis</h3>
+          <p>Profissionais especializados para montar seus móveis com rapidez, agilidade e precisão.</p>
+          <a href="https://wa.me/64981226078?text=Oi,%20preciso%20de%20montagem%20de%20moveis" target="_blank">Agendar</a>
+        </div>
+        <!-- 9. Limpeza de Caixa d'Água -->
+        <div class="card">
+          <img src="https://raw.githubusercontent.com/Swifthubcatalao/br/main/imagens/limpeza-caixa-agua.jpg" alt="Limpeza de Caixa d'Água">
+          <h3>Limpeza de Caixa d'Água</h3>
+          <p>Higienize sua caixa d'água e garanta água pura e segura para consumo.</p>
+          <a href="https://wa.me/64981226078?text=Oi,%20preciso%20de%20limpeza%20de%20caixa%20da%20agua" target="_blank">Agendar</a>
+        </div>
+        <!-- 10. Vigilância Temporária -->
+        <div class="card">
+          <img src="https://raw.githubusercontent.com/Swifthubcatalao/br/main/imagens/vigilancia-temporaria.jpg" alt="Vigilância Temporária">
+          <h3>Vigilância Temporária</h3>
+          <p>Serviço de monitoramento para períodos curtos, garantindo a segurança do seu evento ou imóvel.</p>
+          <a href="https://wa.me/64981226078?text=Oi,%20preciso%20de%20vigilancia%20temporaria" target="_blank">Agendar</a>
+        </div>
+        <!-- 11. Instalação de Câmeras -->
+        <div class="card">
+          <img src="https://raw.githubusercontent.com/Swifthubcatalao/br/main/imagens/instalacao-de-cameras.jpg" alt="Instalação de Câmeras">
+          <h3>Instalação de Câmeras</h3>
+          <p>Implemente sistemas modernos de vigilância para monitorar e proteger seu imóvel.</p>
+          <a href="https://wa.me/64981226078?text=Oi,%20preciso%20de%20instalacao%20de%20cameras" target="_blank">Agendar</a>
+        </div>
+        <!-- 12. Frete de Mudanças -->
+        <div class="card">
+          <img src="https://raw.githubusercontent.com/Swifthubcatalao/br/main/imagens/frete-mudancas.jpg" alt="Frete de Mudanças">
+          <h3>Frete de Mudanças</h3>
+          <p>Equipe especializada para mudanças, garantindo o transporte organizado e seguro dos seus bens.</p>
+          <a href="https://wa.me/64981226078?text=Oi,%20preciso%20de%20frete%20de%20mudancas" target="_blank">Agendar</a>
+        </div>
+        <!-- 13. Serralheria -->
+        <div class="card">
+          <img src="https://raw.githubusercontent.com/Swifthubcatalao/br/main/imagens/serralheria.jpg" alt="Serralheria">
+          <h3>Serralheria</h3>
+          <p>Serviços em metal com reparos e confecções personalizadas para atender suas necessidades.</p>
+          <a href="https://wa.me/64981226078?text=Oi,%20preciso%20de%20serralheria" target="_blank">Agendar</a>
+        </div>
+      </div>
+    </div>
+  </section>
+  <footer>
+    <div class="container">
+      <p>&copy; 2025 Swift Hub Catalão. Todos os direitos reservados.</p>
+    </div>
+  </footer>
+  <!-- Botão flutuante do WhatsApp -->
+  <a href="https://wa.me/64981226078" class="whatsapp-float" target="_blank">
+    <i class="fab fa-whatsapp"></i>
+  </a>
+  <script>
+    // Logout: Redireciona para a página de login e redefine o login via localStorage.
+    document.getElementById("logoutButton").addEventListener("click", function(){
+      localStorage.setItem("loggedIn", "false");
+      window.location.href = "login.html";
+    });
+  </script>
+</body>
+</html>
