@@ -5,15 +5,15 @@
   <meta name="description" content="Swift Hub Catalão - Perfil do Usuário">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Swift Hub Catalão - Meu Perfil</title>
-
+  
   <!-- Ícones do Font Awesome -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.0/css/all.min.css">
   <!-- Google reCAPTCHA API -->
   <script src="https://www.google.com/recaptcha/api.js" async defer></script>
-
+  
   <!-- Firebase Modular SDK e Firestore -->
   <script type="module">
-    // Importações dos módulos Firebase
+    // Importações do Firebase
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.5.0/firebase-app.js";
     import {
       getAuth,
@@ -41,18 +41,16 @@
 
     const app = initializeApp(firebaseConfig);
     const auth = getAuth(app);
+    // Se estiver testando localmente, use a linha abaixo para desativar a verificação do reCAPTCHA (NÃO use em produção)
+    auth.settings && (auth.settings.appVerificationDisabledForTesting = true);
     const db = getFirestore(app);
 
-    // Para testes locais, se necessário, pode desabilitar a verificação de aplicativo (não use em produção)
-    // auth.settings.appVerificationDisabledForTesting = true;
-
-    let confirmationResult = null; // Resultado da verificação SMS
-    let recaptchaVerifier = null;   // Objeto reCAPTCHA
+    let confirmationResult = null;  // Resultado da verificação SMS
+    let recaptchaVerifier = null;    // Objeto reCAPTCHA
 
     /* --- Inactivity Logout Logic --- */
     const INACTIVITY_TIMEOUT = 30 * 60 * 1000; // 30 minutos
     let logoutTimer = null;
-
     function resetTimer() {
       if (logoutTimer) clearTimeout(logoutTimer);
       logoutTimer = setTimeout(() => {
@@ -65,7 +63,6 @@
         });
       }, INACTIVITY_TIMEOUT);
     }
-
     function setupInactivityListeners() {
       document.addEventListener("mousemove", resetTimer);
       document.addEventListener("keydown", resetTimer);
@@ -73,7 +70,6 @@
       document.addEventListener("scroll", resetTimer);
       resetTimer();
     }
-
     function removeInactivityListeners() {
       if (logoutTimer) clearTimeout(logoutTimer);
       document.removeEventListener("mousemove", resetTimer);
@@ -83,11 +79,29 @@
     }
     /* --- End Inactivity Logout Logic --- */
 
-    onAuthStateChanged(auth, user => {
+    // Função para salvar ou atualizar automaticamente os dados do perfil (email, nome, telefone e endereço)
+    async function saveUserProfile(user) {
+      const userDocRef = doc(db, "users", user.uid);
+      try {
+        await setDoc(userDocRef, {
+          email: user.email || "",
+          name: user.displayName || "",
+          phone: user.phoneNumber || "",
+          address: "" // Pode ser atualizado depois
+        }, { merge: true });
+        console.log("Perfil salvo/atualizado no Firestore!");
+      } catch (e) {
+        console.error("Erro ao salvar perfil:", e);
+      }
+    }
+
+    // Chama as funções após a autenticação
+    onAuthStateChanged(auth, async (user) => {
       const logoutBtn = document.getElementById("logoutButton");
       if (user) {
         console.log("Usuário logado:", user.uid);
         if (logoutBtn) logoutBtn.style.display = "block";
+        await saveUserProfile(user);
         displayUserProfile(user);
         setupInactivityListeners();
         initializeRecaptcha(user);
@@ -99,7 +113,7 @@
       }
     });
 
-    // Preenche os dados do perfil do usuário
+    // Preenche o formulário com os dados do perfil armazenado no Firestore
     async function displayUserProfile(user) {
       const emailElement = document.getElementById("userEmail");
       if (emailElement) {
@@ -107,7 +121,6 @@
       } else {
         console.error("Campo de email (userEmail) não encontrado.");
       }
-
       const nameInput = document.getElementById("userName");
       const addressInput = document.getElementById("userAddress");
       const phoneInput = document.getElementById("userPhone");
@@ -117,20 +130,21 @@
       const phoneStatusMessage = document.getElementById("phoneStatusMessage");
 
       if (user.phoneNumber) {
-        if(phoneInput) {
+        if (phoneInput) {
           phoneInput.value = user.phoneNumber;
           phoneInput.disabled = true;
         }
         const sendBtn = document.getElementById("sendCodeButton");
-        if(sendBtn) { sendBtn.style.display = "none"; }
+        if (sendBtn) sendBtn.style.display = "none";
         if (phoneStatus) {
           phoneStatus.innerText = "Telefone verificado: " + user.phoneNumber;
           phoneStatus.style.color = "green";
         }
         if (sendCodeSection) sendCodeSection.style.display = "none";
         if (verifyCodeSection) verifyCodeSection.style.display = "none";
-        const recaptchaEl = document.getElementById("recaptcha-container");
-        if (recaptchaEl) recaptchaEl.style.display = "none";
+        if (document.getElementById("recaptcha-container")) {
+          document.getElementById("recaptcha-container").style.display = "none";
+        }
       } else {
         if (phoneStatus) {
           phoneStatus.innerText = "Telefone não verificado.";
@@ -138,32 +152,32 @@
         }
         if (sendCodeSection) sendCodeSection.style.display = "block";
         if (verifyCodeSection) verifyCodeSection.style.display = "none";
-        const recaptchaEl = document.getElementById("recaptcha-container");
-        if (recaptchaEl) recaptchaEl.style.display = "block";
+        if (document.getElementById("recaptcha-container")) {
+          document.getElementById("recaptcha-container").style.display = "block";
+        }
       }
 
-      // Carrega dados adicionais do Firestore, se disponíveis
       try {
         const userDocRef = doc(db, "users", user.uid);
         const userDocSnap = await getDoc(userDocRef);
         if (userDocSnap.exists()) {
           const userData = userDocSnap.data();
-          if(nameInput) nameInput.value = userData.name || "";
-          if(addressInput) addressInput.value = userData.address || "";
-          if(userData.phoneNumber && !user.phoneNumber) {
-            if(phoneInput) {
-              phoneInput.value = userData.phoneNumber;
+          if (nameInput) nameInput.value = userData.name || "";
+          if (addressInput) addressInput.value = userData.address || "";
+          if (userData.phone && !user.phoneNumber) {
+            if (phoneInput) {
+              phoneInput.value = userData.phone;
               phoneInput.disabled = true;
             }
             const sendBtn = document.getElementById("sendCodeButton");
-            if(sendBtn) { sendBtn.style.display = "none"; }
-            if(phoneStatus) {
-              phoneStatus.innerText = "Telefone (via dados salvos): " + userData.phoneNumber;
+            if (sendBtn) sendBtn.style.display = "none";
+            if (phoneStatus) {
+              phoneStatus.innerText = "Telefone (via dados salvos): " + userData.phone;
               phoneStatus.style.color = "blue";
             }
-            if(sendCodeSection) sendCodeSection.style.display = "none";
-            if(verifyCodeSection) verifyCodeSection.style.display = "none";
-            if(document.getElementById("recaptcha-container")) {
+            if (sendCodeSection) sendCodeSection.style.display = "none";
+            if (verifyCodeSection) verifyCodeSection.style.display = "none";
+            if (document.getElementById("recaptcha-container")) {
               document.getElementById("recaptcha-container").style.display = "none";
             }
           }
@@ -175,11 +189,11 @@
       }
     }
 
-    // Inicializa o reCAPTCHA
+    // Inicializa o reCAPTCHA para verificações via SMS
     function initializeRecaptcha(user) {
       const recaptchaEl = document.getElementById("recaptcha-container");
       if (!user || user.phoneNumber) {
-        if(recaptchaEl) recaptchaEl.style.display = "none";
+        if (recaptchaEl) recaptchaEl.style.display = "none";
         return;
       }
       if (!recaptchaVerifier) {
@@ -188,12 +202,12 @@
           'callback': (response) => {
             console.log("reCAPTCHA resolvido!");
             const sendBtn = document.getElementById("sendCodeButton");
-            if(sendBtn) sendBtn.disabled = false;
+            if (sendBtn) sendBtn.disabled = false;
           },
           'expired-callback': () => {
             console.log("reCAPTCHA expirado. Resolva novamente.");
             const sendBtn = document.getElementById("sendCodeButton");
-            if(sendBtn) sendBtn.disabled = true;
+            if (sendBtn) sendBtn.disabled = true;
             recaptchaVerifier.render().then(widgetId => grecaptcha.reset(widgetId));
           }
         }, auth);
@@ -201,19 +215,19 @@
         recaptchaVerifier.render().then(widgetId => {
           console.log("reCAPTCHA renderizado. Widget ID:", widgetId);
           const sendBtn = document.getElementById("sendCodeButton");
-          if(sendBtn) sendBtn.disabled = true;
+          if (sendBtn) sendBtn.disabled = true;
         });
       } else {
         recaptchaVerifier.render().then(widgetId => {
-          if(recaptchaEl) recaptchaEl.style.display = "block";
+          if (recaptchaEl) recaptchaEl.style.display = "block";
           grecaptcha.reset(widgetId);
           const sendBtn = document.getElementById("sendCodeButton");
-          if(sendBtn) sendBtn.disabled = true;
+          if (sendBtn) sendBtn.disabled = true;
         });
       }
     }
 
-    // Envia o código SMS (com adição automática de "+55" se necessário)
+    // Envia o código SMS (adiciona "+55" se necessário)
     async function handleSendCode(event) {
       event.preventDefault();
       const phoneInput = document.getElementById("userPhone");
@@ -254,7 +268,7 @@
       }
     }
 
-    // Verifica o código SMS digitado pelo usuário
+    // Verifica o código SMS digitado
     async function handleVerifyCode(event) {
       event.preventDefault();
       const verificationCodeInput = document.getElementById("verificationCode");
@@ -286,6 +300,7 @@
           "Telefone verificado: " + user.phoneNumber;
         document.getElementById("phoneVerificationStatus").style.color = "green";
         document.getElementById("recaptcha-container").style.display = "none";
+
         const userDocRef = doc(db, "users", user.uid);
         await setDoc(userDocRef, { phoneNumber: user.phoneNumber }, { merge: true });
         console.log("Número de telefone salvo no Firestore.");
@@ -297,7 +312,7 @@
       }
     }
 
-    // Salva os dados pessoais (nome e endereço)
+    // Salva os dados pessoais do perfil (nome e endereço)
     async function handleSaveProfile(event) {
       event.preventDefault();
       const user = auth.currentUser;
