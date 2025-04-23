@@ -29,16 +29,14 @@
     onAuthStateChanged(auth, user => {
       if (!user) {
         window.location.href = "login.html";
-      } else {
-        // Se necessário, você pode exibir elementos de logout.
-        // document.getElementById("logoutButton").style.display = "block";
       }
+      // Se necessário, exiba o botão de logout:
+      // else { document.getElementById("logoutButton").style.display = "block"; }
     });
     
     document.addEventListener("DOMContentLoaded", function () {
-      // Se houver botão de logout, ative-o
       const logoutBtn = document.getElementById("logoutButton");
-      if(logoutBtn){
+      if (logoutBtn) {
         logoutBtn.addEventListener("click", () => {
           signOut(auth).then(() => window.location.href = "login.html");
         });
@@ -47,8 +45,22 @@
     
     // Função para alternar o popup do menu
     function toggleMenu() {
-      document.getElementById("menuPopup").classList.toggle("menu-open");
+      const menuPopup = document.getElementById("menuPopup");
+      if (menuPopup) {
+        menuPopup.classList.toggle("menu-open");
+      }
     }
+    
+    document.addEventListener("DOMContentLoaded", function(){
+      const menuIcon = document.querySelector(".menu-icon");
+      if (menuIcon) {
+         menuIcon.addEventListener("click", toggleMenu);
+      }
+      const closeBtn = document.querySelector(".close-menu");
+      if (closeBtn) {
+         closeBtn.addEventListener("click", toggleMenu);
+      }
+    });
   </script>
   
   <style>
@@ -87,22 +99,29 @@
       padding: 15px;
       display: flex;
       align-items: center;
-      justify-content: space-between;
+      justify-content: center;
+      position: relative;
       border-bottom: 1px solid #ddd;
     }
-    /* Ícone de menu à esquerda */
+    
+    /* Ícone de menu no canto esquerdo superior */
     .menu-icon {
       font-size: 28px;
       color: var(--color-primary);
       cursor: pointer;
+      position: absolute;
+      left: 15px;
+      top: 50%;
+      transform: translateY(-50%);
     }
+    
     /* Logo centralizada */
     .logo {
       max-width: 120px;
       height: auto;
       display: block;
-      margin: 0 auto;
     }
+    
     /* Popup Lateral do Menu */
     .menu-popup {
       position: fixed;
@@ -111,7 +130,7 @@
       width: 250px;
       height: 100vh;
       background: var(--color-primary);
-      box-shadow: 2px 0px 5px rgba(0,0,0,0.3);
+      box-shadow: 2px 0 5px rgba(0,0,0,0.3);
       transform: translateX(-100%);
       transition: transform 0.3s ease-in-out;
       display: flex;
@@ -119,6 +138,7 @@
       padding: 20px;
       z-index: 1000;
     }
+    
     .menu-popup a {
       color: var(--color-light);
       font-size: 1.2em;
@@ -127,15 +147,19 @@
       display: block;
       transition: background 0.2s;
     }
+    
     .menu-popup a:hover {
-      background: rgba(255, 255, 255, 0.2);
+      background: rgba(255,255,255,0.2);
     }
+    
     .close-menu {
       font-size: 26px;
       color: var(--color-light);
       cursor: pointer;
+      margin-bottom: 20px;
       align-self: flex-end;
     }
+    
     .menu-open {
       transform: translateX(0);
     }
@@ -198,7 +222,6 @@
       color: #555;
     }
     
-    /* Botão "Agendar" alinhado ao fundo do card */
     .card a {
       display: inline-block;
       background: var(--color-secondary);
@@ -266,15 +289,14 @@
   <!-- Cabeçalho com ícone de menu e logo centralizada -->
   <header>
     <div class="container">
-      <i class="fas fa-bars menu-icon" onclick="toggleMenu()"></i>
+      <i class="fas fa-bars menu-icon"></i>
       <img src="https://raw.githubusercontent.com/Swifthubcatalao/br/main/imagens/logo.png" alt="Logo Swift Hub Catalão" class="logo">
-      <!-- Se precisar do botão logout, ele pode ser inserido aqui, mas neste exemplo ele não será exibido -->
     </div>
   </header>
   
-  <!-- Popup do Menu (exclusivo) -->
+  <!-- Popup do Menu -->
   <div id="menuPopup" class="menu-popup">
-    <span class="close-menu" onclick="toggleMenu()">&times;</span>
+    <span class="close-menu">&times;</span>
     <a href="index.html">Início</a>
     <a href="servicos.html">Serviços</a>
     <a href="login.html">Login</a>
