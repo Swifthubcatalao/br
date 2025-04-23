@@ -10,160 +10,95 @@
   <!-- Font Awesome -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.0/css/all.min.css">
 
-  <!-- Firebase Modular SDK -->
+  <!-- Firebase SDK -->
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.5.0/firebase-app.js";
-    import { getAuth, signInWithEmailAndPassword, sendPasswordResetEmail, createUserWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.5.0/firebase-auth.js";
+    import { getAuth, signInWithEmailAndPassword, sendPasswordResetEmail, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.5.0/firebase-auth.js";
 
     const firebaseConfig = {
-      apiKey: "SUA_API_KEY",
-      authDomain: "SEU_DOMINIO.firebaseapp.com",
-      projectId: "SEU_PROJECT_ID",
-      storageBucket: "SEU_STORAGE_BUCKET",
-      messagingSenderId: "SEU_ID",
-      appId: "SEU_APP_ID"
+      apiKey: "AIzaSyDGBKxvfcY-PA_vC7SA8G0f-TjqjK3OD3o",
+      authDomain: "swifthubcatalao.firebaseapp.com",
+      projectId: "swifthubcatalao",
+      storageBucket: "swifthubcatalao.firebasestorage.app",
+      messagingSenderId: "756803145076",
+      appId: "1:756803145076:web:097f4d3d5b28cc6ca1f021"
     };
 
     const app = initializeApp(firebaseConfig);
     const auth = getAuth(app);
 
     onAuthStateChanged(auth, user => {
-      if (user && !window.location.pathname.includes("perfil.html")) {
-        window.location.replace("perfil.html");
-      }
+      if (user) window.location.replace("perfil.html");
     });
 
-    document.getElementById("loginForm").addEventListener("submit", function(e) {
+    document.getElementById("loginForm").addEventListener("submit", (e) => {
       e.preventDefault();
       const email = document.getElementById("loginEmail").value;
       const password = document.getElementById("loginPassword").value;
 
       signInWithEmailAndPassword(auth, email, password)
-        .then(userCredential => {
-          const user = userCredential.user;
-
-          if (!user.emailVerified) {
-            alert("Seu e-mail não foi verificado. Por favor, verifique seu e-mail antes de fazer login.");
-            signOut(auth);
-            return;
-          }
-
-          window.location.replace("perfil.html");
-        })
-        .catch(error => {
-          alert("Erro ao fazer login: " + error.message);
-        });
+        .then(() => window.location.replace("perfil.html"))
+        .catch(error => alert("Erro ao fazer login: " + error.message));
     });
 
-    document.getElementById("forgotPassword").addEventListener("click", function(e) {
-      e.preventDefault();
+    document.getElementById("forgotPassword").addEventListener("click", () => {
       const email = document.getElementById("loginEmail").value;
-      if (!email) {
-        alert("Digite seu e-mail para redefinir a senha.");
-        return;
-      }
+      if (!email) return alert("Digite seu e-mail para redefinir a senha.");
+
       sendPasswordResetEmail(auth, email)
         .then(() => alert("E-mail de recuperação enviado!"))
         .catch(error => alert("Erro ao enviar e-mail: " + error.message));
     });
-
   </script>
 
-  <!-- Estilos CSS -->
+  <!-- Estilos -->
   <style>
-    * { box-sizing: border-box; margin: 0; padding: 0; font-family: Arial, sans-serif; }
+    :root {
+      --color-primary: #3C3B6E;
+      --color-secondary: #B22234;
+      --color-light: #ffffff;
+    }
     body {
-      background: linear-gradient(135deg, #3C3B6E, #1C1C5B);
-      color: #fff;
+      background: linear-gradient(135deg, var(--color-primary), var(--color-secondary));
+      color: var(--color-light);
       display: flex;
       justify-content: center;
       align-items: center;
       height: 100vh;
     }
     .container {
-      background: rgba(255, 255, 255, 0.1);
+      background: rgba(255, 255, 255, 0.15);
       padding: 30px;
       border-radius: 15px;
-      box-shadow: 0px 5px 15px rgba(0, 0, 0, 0.2);
-      width: 100%;
+      backdrop-filter: blur(10px);
       max-width: 400px;
       text-align: center;
-      backdrop-filter: blur(10px);
     }
-    h2 {
-      margin-bottom: 15px;
-    }
-    .form-container {
-      margin-bottom: 20px;
-    }
-    form {
-      display: flex;
-      flex-direction: column;
-      text-align: left;
-    }
-    form label {
-      margin-bottom: 5px;
-      font-weight: bold;
-      color: #fff;
-    }
-    form input {
-      padding: 10px;
-      margin-bottom: 10px;
+    button {
+      background: var(--color-secondary);
+      color: var(--color-light);
       border: none;
-      border-radius: 5px;
-      font-size: 14px;
-      background: rgba(255, 255, 255, 0.2);
-      color: #fff;
-    }
-    form input::placeholder {
-      color: #ddd;
-    }
-    form input:focus {
-      outline: none;
-      background: rgba(255, 255, 255, 0.4);
-    }
-    form button {
       padding: 12px;
-      background: #B22234;
-      color: #fff;
-      border: none;
       border-radius: 5px;
       cursor: pointer;
-      transition: background 0.3s, transform 0.1s;
       font-weight: bold;
+      transition: transform 0.1s;
     }
-    form button:hover {
-      background: #8A1E27;
-      transform: scale(1.05);
-    }
-    .forgot-link {
-      margin-top: 10px;
-    }
-    .forgot-link a {
-      color: #FFD700;
-      text-decoration: none;
-      transition: color 0.3s;
-    }
-    .forgot-link a:hover {
-      color: #FFA500;
-    }
+    button:hover { transform: scale(1.05); }
   </style>
 </head>
 <body>
 
   <div class="container">
-    <!-- Formulário de Login -->
-    <div class="form-container" id="loginFormContainer">
-      <h2>Login</h2>
-      <form id="loginForm">
-        <label for="loginEmail">Email:</label>
-        <input type="email" id="loginEmail" required placeholder="Digite seu email">
-        <label for="loginPassword">Senha:</label>
-        <input type="password" id="loginPassword" required placeholder="Digite sua senha">
-        <button type="submit">Entrar</button>
-      </form>
-      <p class="forgot-link"><a id="forgotPassword" href="#">Esqueci minha senha</a></p>
-    </div>
+    <h2>Login</h2>
+    <form id="loginForm">
+      <label for="loginEmail">Email:</label>
+      <input type="email" id="loginEmail" required placeholder="Digite seu email">
+      <label for="loginPassword">Senha:</label>
+      <input type="password" id="loginPassword" required placeholder="Digite sua senha">
+      <button type="submit">Entrar</button>
+    </form>
+    <p><a id="forgotPassword" href="#">Esqueci minha senha</a></p>
   </div>
 
 </body>
