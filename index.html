@@ -7,7 +7,7 @@
   <title>Swift Hub Catalão - Início</title>
   <!-- Font Awesome para ícones -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.0/css/all.min.css">
-  <!-- Firebase SDK -->
+  <!-- Firebase SDK (versão 9.6.8) -->
   <script src="https://www.gstatic.com/firebasejs/9.6.8/firebase-app.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.6.8/firebase-auth.js"></script>
   <style>
@@ -18,6 +18,7 @@
     header { background: linear-gradient(45deg, #3C3B6E, #1C1C5B); color: #fff; text-align: center; padding: 30px 0; position: relative; }
     header h1 { font-size: 2.8em; margin-bottom: 10px; }
     header p { font-size: 1.3em; }
+    /* Botão de logout */
     #logoutButton {
       position: absolute;
       right: 20px;
@@ -28,6 +29,7 @@
       padding: 10px 15px;
       border-radius: 5px;
       cursor: pointer;
+      display: none; /* Inicialmente escondido */
     }
     nav {
       background: #f8f8f8;
@@ -90,35 +92,7 @@
 </head>
 <body>
 
-  <!-- Configuração do Firebase e verificação de login -->
-  <script>
-    const firebaseConfig = {
-      apiKey: "AIzaSyDGBKxvfcY-PA_vC7SA8G0f-TjqjK3OD3o",
-      authDomain: "swifthubcatalao.firebaseapp.com",
-      projectId: "swifthubcatalao",
-      storageBucket: "swifthubcatalao.firebasestorage.app",
-      messagingSenderId: "756803145076",
-      appId: "1:756803145076:web:4593bd78a26a2270a1f021"
-    };
-
-    firebase.initializeApp(firebaseConfig);
-    const auth = firebase.auth();
-
-    // Verifica se o usuário está logado antes de permitir o acesso
-    auth.onAuthStateChanged((user) => {
-      if (!user && window.location.pathname !== "/login.html") {
-        window.location.href = "login.html";
-      }
-    });
-
-    // Logout
-    document.getElementById("logoutButton").addEventListener("click", function() {
-      auth.signOut().then(() => {
-        window.location.href = "login.html";
-      }).catch(error => alert("Erro ao sair: " + error.message));
-    });
-  </script>
-
+  <!-- Cabeçalho com Logout -->
   <header>
     <div class="container">
       <h1>Swift Hub Catalão</h1>
@@ -127,16 +101,19 @@
     </div>
   </header>
   
+  <!-- Menu de navegação -->
   <nav>
     <div class="container">
       <ul>
         <li><a href="index.html">Início</a></li>
         <li><a href="servicos.html">Serviços</a></li>
-        <li><a href="login.html">Login</a></li>
+        <!-- Item de menu de login que será atualizado -->
+        <li><a href="login.html" id="loginMenuItem">Login</a></li>
       </ul>
     </div>
   </nav>
   
+  <!-- Conteúdo principal -->
   <section id="inicio">
     <div class="container">
       <h2>Bem-vindo à Swift Hub Catalão</h2>
@@ -159,6 +136,61 @@
   <a href="https://wa.me/64981226078" class="whatsapp-float" target="_blank">
     <i class="fab fa-whatsapp"></i>
   </a>
+  
+  <!-- Script para controle do menu e logout -->
+  <script>
+    document.addEventListener("DOMContentLoaded", function() {
+      // Configuração do Firebase
+      const firebaseConfig = {
+        apiKey: "AIzaSyDGBKxvfcY-PA_vC7SA8G0f-TjqjK3OD3o",
+        authDomain: "swifthubcatalao.firebaseapp.com",
+        projectId: "swifthubcatalao",
+        storageBucket: "swifthubcatalao.firebasestorage.app",
+        messagingSenderId: "756803145076",
+        appId: "1:756803145076:web:4593bd78a26a2270a1f021"
+      };
+      
+      // Inicializa o Firebase (se ainda não estiver inicializado)
+      if (!firebase.apps.length) {
+        firebase.initializeApp(firebaseConfig);
+      }
+      const auth = firebase.auth();
 
+      // Verifica o estado de autenticação e atualiza o menu
+      auth.onAuthStateChanged(function(user) {
+        if (!user) {
+          // Se o usuário não está logado, redireciona para login (exceto na página login)
+          if (window.location.pathname.indexOf("login.html") === -1) {
+            window.location.href = "login.html";
+          }
+        } else {
+          // Usuário logado: atualiza o item de menu "Login" para "Logado"
+          const loginMenuItem = document.getElementById("loginMenuItem");
+          if (loginMenuItem) {
+            loginMenuItem.textContent = "Logado";
+            loginMenuItem.removeAttribute("href");
+            loginMenuItem.style.pointerEvents = "none"; // Desabilita cliques
+          }
+          // Exibe o botão de logout
+          const logoutButton = document.getElementById("logoutButton");
+          if (logoutButton) {
+            logoutButton.style.display = "block";
+          }
+        }
+      });
+
+      // Evento para logout
+      const logoutButton = document.getElementById("logoutButton");
+      if (logoutButton) {
+        logoutButton.addEventListener("click", function() {
+          auth.signOut().then(function() {
+            window.location.href = "login.html";
+          }).catch(function(error) {
+            alert("Erro ao sair: " + error.message);
+          });
+        });
+      }
+    });
+  </script>
 </body>
 </html>
