@@ -22,7 +22,7 @@
       signOut
     } from "https://www.gstatic.com/firebasejs/10.5.0/firebase-auth.js";
 
-    // Configure seu Firebase (substitua pelos seus dados reais)
+    // Configure seu Firebase (substitua pelos seus dados)
     const firebaseConfig = {
       apiKey: "AIzaSyDGBKxvfcY-PA_vC7SA8G0f-TjqjK3OD3o",
       authDomain: "swifthubcatalao.firebaseapp.com",
@@ -35,14 +35,14 @@
     const app = initializeApp(firebaseConfig);
     const auth = getAuth(app);
 
-    // Verifica se o usuário já estiver autenticado e com email verificado para redirecionar
+    // Se o usuário já estiver autenticado e com email verificado, direciona para servicos.html.
     onAuthStateChanged(auth, user => {
       if (user && user.emailVerified) {
         window.location.replace("servicos.html");
       }
     });
 
-    // Função para iniciar a contagem regressiva no botão de reenvio
+    // Inicia a contagem regressiva para o botão de reenvio
     function startCountdown(seconds) {
       const btn = document.getElementById("resendButton");
       btn.disabled = true;
@@ -59,7 +59,7 @@
       }, 1000);
     }
 
-    // Função para tratar o login com user.reload() para atualizar o status do usuário
+    // Função para tratar o login com atualização do status do usuário
     function handleLogin(e) {
       e.preventDefault();
       const email = document.getElementById("loginEmail").value;
@@ -68,10 +68,10 @@
       signInWithEmailAndPassword(auth, email, password)
         .then((userCredential) => {
           const user = userCredential.user;
-          // Recarrega os dados do usuário para garantir que o status emailVerified esteja atualizado
+          // Atualiza os dados do usuário para obter o status atualizado
           user.reload().then(() => {
             if (!user.emailVerified) {
-              // Se o email não estiver verificado (primeiro login), envia o email de verificação
+              // Envia email de verificação se não estiver confirmado
               sendEmailVerification(user)
                 .then(() => {
                   alert("Seu email não foi verificado. Um email de verificação foi enviado. Confira sua caixa de entrada. Se não receber, utilize o botão de reenvio.");
@@ -86,7 +86,6 @@
               signOut(auth);
               return;
             }
-            // Email já verificado: redireciona para "servicos.html"
             window.location.replace("servicos.html");
           });
         })
@@ -104,7 +103,7 @@
           const user = userCredential.user;
           sendEmailVerification(user)
             .then(() => {
-              alert("Conta criada com sucesso! Um email de verificação foi enviado. Por favor, confirme seu email para fazer login.");
+              alert("Conta criada com sucesso! Um email de verificação foi enviado. Confirme seu email para fazer login.");
               document.getElementById("registerMessage").innerText = "Conta criada com sucesso! Verifique seu email para confirmar e fazer login.";
             })
             .catch((error) => alert("Erro ao enviar email de verificação: " + error.message));
@@ -124,7 +123,7 @@
         .catch(error => alert("Erro ao enviar email: " + error.message));
     }
 
-    // Função para reenviar email de verificação com exibição de "Enviado" por 1 segundo seguida da contagem
+    // Função para reenviar email de verificação com exibição de "Enviado" por 1 segundo e contagem regressiva
     function handleResendVerification() {
       const email = document.getElementById("loginEmail").value;
       const password = document.getElementById("loginPassword").value;
@@ -149,12 +148,41 @@
         .catch(error => alert("Erro ao reenviar email: " + error.message));
     }
 
-    // Registra os eventos após o carregamento do DOM.
+    // Função de validação da senha em tempo real para o cadastro
+    function validatePassword() {
+      var password = document.getElementById("registerPassword").value;
+      var reqLength = document.getElementById("req-length");
+      var reqLower = document.getElementById("req-lower");
+      var reqUpper = document.getElementById("req-upper");
+      var reqNumber = document.getElementById("req-number");
+      var reqSymbol = document.getElementById("req-symbol");
+
+      var lengthCondition = password.length >= 8;
+      var lowerCondition = /[a-z]/.test(password);
+      var upperCondition = /[A-Z]/.test(password);
+      var numberCondition = /\d/.test(password);
+      var symbolCondition = /[\W_]/.test(password);
+
+      reqLength.style.color = lengthCondition ? "green" : "red";
+      reqLower.style.color = lowerCondition ? "green" : "red";
+      reqUpper.style.color = upperCondition ? "green" : "red";
+      reqNumber.style.color = numberCondition ? "green" : "red";
+      reqSymbol.style.color = symbolCondition ? "green" : "red";
+
+      // Habilita o botão somente se todas as condições forem satisfeitas.
+      const submitButton = document.querySelector("#registerForm button[type='submit']");
+      submitButton.disabled = !(lengthCondition && lowerCondition && upperCondition && numberCondition && symbolCondition);
+    }
+
     document.addEventListener("DOMContentLoaded", function () {
       document.getElementById("loginForm").addEventListener("submit", handleLogin);
       document.getElementById("registerForm").addEventListener("submit", handleRegister);
       document.getElementById("forgotPassword").addEventListener("click", handleForgotPassword);
       document.getElementById("resendButton").addEventListener("click", handleResendVerification);
+
+      // Adiciona validação em tempo real para a senha de cadastro
+      const registerPasswordInput = document.getElementById("registerPassword");
+      registerPasswordInput.addEventListener("input", validatePassword);
     });
   </script>
 
@@ -180,7 +208,7 @@
       align-items: center;
       min-height: 100vh;
     }
-    /* Cabeçalho da empresa (nome acima do container de login) */
+    /* Cabeçalho da Empresa */
     .company-header {
       text-align: center;
       margin-bottom: 20px;
@@ -189,7 +217,7 @@
       font-size: 2.5em;
       color: var(--color-primary);
     }
-    /* Container do login */
+    /* Container do Login */
     .container {
       background: #ffffff;
       border: 1px solid #ddd;
@@ -236,6 +264,10 @@
     form button:hover {
       transform: scale(1.05);
     }
+    /* Botão de cadastro inicia desabilitado */
+    form button[type="submit"] {
+      cursor: pointer;
+    }
     .toggle {
       margin-top: 15px;
       cursor: pointer;
@@ -266,6 +298,17 @@
       font-size: 1.2em;
       margin-top: 10px;
     }
+    /* Lista de requisitos para a senha */
+    #passwordRequirements {
+      list-style: none;
+      padding-left: 0;
+      margin-bottom: 10px;
+      text-align: left;
+      font-size: 14px;
+    }
+    #passwordRequirements li {
+      margin: 3px 0;
+    }
     /* Indicador de status: bolinha verde */
     .status-indicator {
       display: inline-block;
@@ -280,6 +323,7 @@
   </style>
 
   <script>
+    // Alterna entre os formulários de login e cadastro
     function toggleForm() {
       const loginContainer = document.getElementById("loginFormContainer");
       const registerContainer = document.getElementById("registerFormContainer");
@@ -314,15 +358,29 @@
         <label for="registerEmail">Email:</label>
         <input type="email" id="registerEmail" required placeholder="Digite seu email">
         <label for="registerPassword">Senha:</label>
-        <input type="password" id="registerPassword" required placeholder="Crie uma senha">
-        <button type="submit">Cadastrar</button>
+        <!-- Campo de senha com validação em tempo real -->
+        <input 
+          type="password" 
+          id="registerPassword" 
+          required 
+          placeholder="Crie uma senha">
+        <!-- Lista de requisitos para a senha -->
+        <ul id="passwordRequirements">
+          <li id="req-length" style="color: red;">Mínimo 8 caracteres</li>
+          <li id="req-lower" style="color: red;">Pelo menos uma letra minúscula</li>
+          <li id="req-upper" style="color: red;">Pelo menos uma letra maiúscula</li>
+          <li id="req-number" style="color: red;">Pelo menos um número</li>
+          <li id="req-symbol" style="color: red;">Pelo menos um símbolo</li>
+        </ul>
+        <!-- Botão para cadastrar inicia desabilitado -->
+        <button type="submit" disabled>Cadastrar</button>
       </form>
       <p id="registerMessage" style="color: var(--color-primary); font-weight: bold;"></p>
       <p class="toggle" onclick="toggleForm()">Já tenho uma conta</p>
     </div>
     <!-- Botão para reenviar email de verificação -->
     <button id="resendButton">Reenviar email de verificação</button>
-    <!-- Mensagem informando que o usuário já está logado (opcional) -->
+    <!-- Mensagem informando que o usuário já está logado -->
     <p id="loggedMessage">Logado!</p>
   </div>
 </body>
