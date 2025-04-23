@@ -179,6 +179,11 @@
       background: rgba(255,255,255,0.2);
     }
     
+    /* Adicionamos "Meu Perfil" com classe 'profile' */
+    .menu-popup a.profile {
+      font-weight: bold;
+    }
+    
     .close-menu {
       font-size: 26px;
       color: var(--color-light);
@@ -313,7 +318,6 @@
   </style>
 </head>
 <body>
-
   <!-- Cabeçalho com ícone de menu, logo centralizada e botão de logout -->
   <header>
     <div class="container">
@@ -323,10 +327,11 @@
     </div>
   </header>
   
-  <!-- Popup do Menu -->
+  <!-- Popup do Menu com a nova opção "Meu Perfil" -->
   <div id="menuPopup" class="menu-popup">
     <span class="close-menu">&times;</span>
     <a href="index.html">Início</a>
+    <a href="perfil.html" class="profile">Meu Perfil</a>
     <a href="login.html">Login</a>
   </div>
   
