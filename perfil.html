@@ -2,32 +2,74 @@
 <html lang="pt-br">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Meu Perfil - Swift Hub Catalão</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
   <!-- Font Awesome para ícones -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.0/css/all.min.css">
   
-  <!-- Firebase SDK -->
-  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
-  
+  <!-- Firebase Modular SDK -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.8/firebase-app.js";
+    import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/9.6.8/firebase-auth.js";
+    import { getFirestore, doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/9.6.8/firebase-firestore.js";
+
+    const firebaseConfig = {
+      apiKey: "SUA_API_KEY",
+      authDomain: "SEU_DOMINIO.firebaseapp.com",
+      projectId: "SEU_PROJECT_ID",
+      storageBucket: "SEU_STORAGE_BUCKET",
+      messagingSenderId: "SEU_ID",
+      appId: "SEU_APP_ID"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
+
+    onAuthStateChanged(auth, user => {
+      if (!user && !window.location.pathname.includes("login.html")) {
+        window.location.replace("login.html");
+      }
+
+      if (user) {
+        document.getElementById("profileName").innerText = user.displayName || "Nome do Usuário";
+        document.getElementById("email").value = user.email || "";
+
+        getDoc(doc(db, "users", user.uid)).then(docSnap => {
+          if (docSnap.exists()) {
+            document.getElementById("phone").value = docSnap.data().phone || "";
+            document.getElementById("address").value = docSnap.data().address || "";
+          }
+        });
+      }
+    });
+
+    document.getElementById("logoutButton").addEventListener("click", function() {
+      signOut(auth).then(() => {
+        window.location.replace("login.html");
+      }).catch(error => {
+        alert("Erro ao sair: " + error.message);
+      });
+    });
+
+    document.getElementById("profileForm").addEventListener("submit", function(e) {
+      e.preventDefault();
+      const user = auth.currentUser;
+      setDoc(doc(db, "users", user.uid), {
+        phone: document.getElementById("phone").value,
+        address: document.getElementById("address").value
+      }, { merge: true }).then(() => {
+        alert("Perfil atualizado com sucesso!");
+      }).catch(error => {
+        alert("Erro ao atualizar perfil: " + error.message);
+      });
+    });
+  </script>
+
   <style>
-    /* Reset e configurações globais */
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-      font-family: Arial, sans-serif;
-    }
-    body {
-      background: #f4f4f4;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      min-height: 100vh;
-    }
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: Arial, sans-serif; }
+    body { background: #f4f4f4; display: flex; justify-content: center; align-items: center; min-height: 100vh; }
     .profile-container {
       background: #fff;
       padding: 20px;
@@ -45,17 +87,8 @@
       border: 3px solid #B22234;
       margin-bottom: 10px;
     }
-    .profile-header h2 {
-      font-size: 22px;
-      color: #333;
-    }
-    .profile-form label {
-      font-weight: 600;
-      font-size: 14px;
-      display: block;
-      margin: 10px 0 5px;
-      color: #555;
-    }
+    .profile-header h2 { font-size: 22px; color: #333; }
+    .profile-form label { font-weight: 600; font-size: 14px; display: block; margin: 10px 0 5px; color: #555; }
     .profile-form input {
       width: 100%;
       padding: 10px;
@@ -64,35 +97,11 @@
       border-radius: 5px;
       font-size: 14px;
     }
-    .btn {
-      display: block;
-      width: 100%;
-      padding: 12px;
-      border: none;
-      border-radius: 5px;
-      font-size: 16px;
-      cursor: pointer;
-      transition: 0.3s;
-      font-weight: bold;
-      margin-top: 10px;
-    }
-    .btn-primary {
-      background: #B22234;
-      color: #fff;
-    }
-    .btn-primary:hover {
-      background: #8A1E27;
-    }
-    .btn-secondary {
-      background: #555;
-      color: #fff;
-    }
-    .btn-secondary:hover {
-      background: #333;
-    }
-    #codeVerificationDiv {
-      margin-top: 10px;
-    }
+    .btn { display: block; width: 100%; padding: 12px; border: none; border-radius: 5px; font-size: 16px; cursor: pointer; transition: 0.3s; font-weight: bold; margin-top: 10px; }
+    .btn-primary { background: #B22234; color: #fff; }
+    .btn-primary:hover { background: #8A1E27; }
+    .btn-secondary { background: #555; color: #fff; }
+    .btn-secondary:hover { background: #333; }
   </style>
 </head>
 <body>
@@ -109,13 +118,6 @@
 
       <label for="phone"><i class="fas fa-phone"></i> Telefone:</label>
       <input type="text" id="phone" placeholder="(XX) XXXXX-XXXX">
-      <button type="button" class="btn btn-secondary" id="sendCode">Enviar Código SMS</button>
-
-      <div id="codeVerificationDiv" style="display: none;">
-        <label for="verificationCode"><i class="fas fa-key"></i> Código SMS:</label>
-        <input type="text" id="verificationCode" placeholder="Digite o código">
-        <button type="button" class="btn btn-secondary" id="verifyCode">Verificar Código</button>
-      </div>
 
       <label for="address"><i class="fas fa-map-marker-alt"></i> Endereço:</label>
       <input type="text" id="address" placeholder="Seu endereço">
@@ -123,81 +125,8 @@
       <button type="submit" class="btn btn-primary">Atualizar Perfil</button>
     </form>
 
-    <button class="btn btn-secondary" id="resetPassword">Redefinir Senha</button>
+    <button class="btn btn-secondary" id="logoutButton">Sair</button>
   </div>
 
-  <script>
-    // Substitua os placeholders abaixo pelos dados reais do seu projeto Firebase.
-    const firebaseConfig = {
-      apiKey: "SUA_API_KEY",
-      authDomain: "SEU_DOMINIO.firebaseapp.com",
-      projectId: "SEU_PROJECT_ID",
-      storageBucket: "SEU_STORAGE_BUCKET",
-      messagingSenderId: "SEU_ID",
-      appId: "SEU_APP_ID"
-    };
-
-    firebase.initializeApp(firebaseConfig);
-    const auth = firebase.auth();
-    const db = firebase.firestore();
-
-    let confirmationResult;
-    const recaptchaVerifier = new firebase.auth.RecaptchaVerifier('sendCode', { size: 'invisible' });
-
-    // Corrigindo loop infinito no redirecionamento
-    auth.onAuthStateChanged(user => {
-      if (!user && !window.location.pathname.includes("login.html")) {
-        window.location.replace("login.html");
-      }
-
-      if (user) {
-        // Preenche os dados do perfil
-        document.getElementById("profileName").innerText = user.displayName || "Nome do Usuário";
-        document.getElementById("email").value = user.email || "";
-
-        db.collection("users").doc(user.uid).get().then(doc => {
-          if (doc.exists) {
-            document.getElementById("phone").value = doc.data().phone || "";
-            document.getElementById("address").value = doc.data().address || "";
-          }
-        });
-      }
-    });
-
-    document.getElementById("sendCode").addEventListener("click", function() {
-      const phoneNumber = document.getElementById("phone").value;
-      if (!phoneNumber) {
-        alert("Insira um telefone válido.");
-        return;
-      }
-
-      auth.currentUser.linkWithPhoneNumber(phoneNumber, recaptchaVerifier)
-        .then(result => {
-          confirmationResult = result;
-          alert("Código SMS enviado!");
-          document.getElementById("codeVerificationDiv").style.display = "block";
-        })
-        .catch(error => alert("Erro ao enviar código: " + error.message));
-    });
-
-    document.getElementById("verifyCode").addEventListener("click", function() {
-      const code = document.getElementById("verificationCode").value;
-      confirmationResult.confirm(code)
-        .then(() => {
-          alert("Telefone verificado!");
-          db.collection("users").doc(auth.currentUser.uid).set(
-            { phone: document.getElementById("phone").value },
-            { merge: true }
-          );
-        })
-        .catch(error => alert("Erro ao verificar código: " + error.message));
-    });
-
-    document.getElementById("resetPassword").addEventListener("click", function() {
-      auth.sendPasswordResetEmail(auth.currentUser.email)
-        .then(() => alert("E-mail de redefinição enviado!"))
-        .catch(error => alert("Erro: " + error.message));
-    });
-  </script>
 </body>
 </html>
