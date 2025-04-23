@@ -22,6 +22,7 @@
       signOut
     } from "https://www.gstatic.com/firebasejs/10.5.0/firebase-auth.js";
 
+    // Configure seu Firebase aqui.
     const firebaseConfig = {
       apiKey: "AIzaSyDGBKxvfcY-PA_vC7SA8G0f-TjqjK3OD3o",
       authDomain: "swifthubcatalao.firebaseapp.com",
@@ -34,14 +35,36 @@
     const app = initializeApp(firebaseConfig);
     const auth = getAuth(app);
 
-    // Se o usuário já estiver autenticado e com email verificado, redireciona para servicos.html.
+    // Atualiza o menu de navegação conforme o status de autenticação.
     onAuthStateChanged(auth, user => {
-      if (user && user.emailVerified) {
-        window.location.replace("servicos.html");
+      const menuPerfil = document.getElementById("menuPerfil");
+      const loginMenuItem = document.getElementById("loginMenuItem");
+      const logoutButton = document.getElementById("logoutButton");
+      if (user) {
+        menuPerfil.style.display = "inline";
+        // Exibe "Logado" com um indicador verde
+        loginMenuItem.innerHTML = "Logado <span class='status-indicator'></span>";
+        loginMenuItem.removeAttribute("href");
+        loginMenuItem.style.pointerEvents = "none";
+        logoutButton.style.display = "block";
+      } else {
+        menuPerfil.style.display = "none";
+        loginMenuItem.textContent = "Login";
+        loginMenuItem.setAttribute("href", "login.html");
+        logoutButton.style.display = "none";
       }
     });
 
-    // Função para iniciar a contagem regressiva no botão de reenvio
+    // Evento de logout
+    document.getElementById("logoutButton").addEventListener("click", function() {
+      signOut(auth).then(() => {
+        window.location.href = "login.html";
+      }).catch(error => {
+        alert("Erro ao sair: " + error.message);
+      });
+    });
+
+    // Inicia a contagem regressiva no botão de reenvio
     function startCountdown(seconds) {
       const btn = document.getElementById("resendButton");
       btn.disabled = true;
@@ -68,15 +91,20 @@
         .then((userCredential) => {
           const user = userCredential.user;
           if (!user.emailVerified) {
-            // Se o email NÃO estiver verificado, envia o email de verificação.
+            // Se o email não estiver verificado, envia o email de verificação.
             sendEmailVerification(user)
               .then(() => {
-                alert("Seu email não foi verificado. Um email de verificação foi enviado. Confirme seu email para fazer login. Se não receber, utilize o botão de reenvio.");
-                document.getElementById("resendButton").style.display = "inline-block";
-                startCountdown(15);
+                alert("Seu email não foi verificado. Um email de verificação foi enviado. Confira sua caixa de entrada. Se não receber, utilize o botão de reenvio.");
+                const btn = document.getElementById("resendButton");
+                // Exibe o botão e mostra "Enviado" por 1 segundo
+                btn.style.display = "inline-block";
+                btn.innerText = "Enviado";
+                setTimeout(() => {
+                  startCountdown(15);
+                }, 1000);
               })
               .catch((error) => alert("Erro ao enviar email de verificação: " + error.message));
-            // Desloga o usuário para evitar acesso sem verificação.
+            // Desloga o usuário para evitar acesso sem confirmação.
             signOut(auth);
             return;
           }
@@ -115,7 +143,7 @@
         .catch(error => alert("Erro ao enviar email: " + error.message));
     }
 
-    // Função para reenviar email de verificação com botão desabilitado e contagem regressiva.
+    // Função para reenviar email de verificação com contagem e mensagem "Enviado" por 1 segundo.
     function handleResendVerification() {
       const email = document.getElementById("loginEmail").value;
       const password = document.getElementById("loginPassword").value;
@@ -126,8 +154,11 @@
           if (!user.emailVerified) {
             sendEmailVerification(user)
               .then(() => {
-                alert("Email de verificação reenviado. Aguarde 15 segundos para reenviar novamente.");
-                startCountdown(15);
+                const btn = document.getElementById("resendButton");
+                btn.innerText = "Enviado";
+                setTimeout(() => {
+                  startCountdown(15);
+                }, 1000);
               })
               .catch(error => alert("Erro ao reenviar email: " + error.message));
           } else {
@@ -137,6 +168,7 @@
         .catch(error => alert("Erro ao reenviar email: " + error.message));
     }
 
+    // Registra os eventos quando o DOM estiver pronto.
     document.addEventListener("DOMContentLoaded", function () {
       document.getElementById("loginForm").addEventListener("submit", handleLogin);
       document.getElementById("registerForm").addEventListener("submit", handleRegister);
@@ -147,16 +179,16 @@
 
   <style>
     :root {
-      --color-primary: #0033A0;  /* Azul */
-      --color-secondary: #C8102E; /* Vermelho */
+      --color-primary: #0033A0;   /* Azul */
+      --color-secondary: #C8102E;  /* Vermelho */
       --color-light: #ffffff;      /* Branco */
       --color-dark: #222;
     }
-    * { 
-      box-sizing: border-box; 
-      margin: 0; 
-      padding: 0; 
-      font-family: Arial, sans-serif; 
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: Arial, sans-serif;
     }
     body {
       background: linear-gradient(135deg, var(--color-primary), var(--color-secondary));
@@ -175,18 +207,18 @@
       text-align: center;
       backdrop-filter: blur(10px);
     }
-    h2 { 
-      margin-bottom: 15px; 
+    h2 {
+      margin-bottom: 15px;
     }
-    form { 
-      display: flex; 
-      flex-direction: column; 
-      text-align: left; 
+    form {
+      display: flex;
+      flex-direction: column;
+      text-align: left;
     }
-    form label { 
-      margin-bottom: 5px; 
-      font-weight: bold; 
-      color: var(--color-light); 
+    form label {
+      margin-bottom: 5px;
+      font-weight: bold;
+      color: var(--color-light);
     }
     form input {
       padding: 10px;
@@ -207,22 +239,22 @@
       transition: transform 0.1s;
       font-weight: bold;
     }
-    form button:hover { 
-      transform: scale(1.05); 
+    form button:hover {
+      transform: scale(1.05);
     }
-    .toggle { 
-      margin-top: 15px; 
-      cursor: pointer; 
-      font-weight: bold; 
-      color: #FFD700; 
+    .toggle {
+      margin-top: 15px;
+      cursor: pointer;
+      font-weight: bold;
+      color: #FFD700;
     }
-    .toggle:hover { 
-      color: #FFA500; 
+    .toggle:hover {
+      color: #FFA500;
     }
-    #forgotPassword { 
-      color: var(--color-light); 
-      text-decoration: underline; 
-      cursor: pointer; 
+    #forgotPassword {
+      color: var(--color-light);
+      text-decoration: underline;
+      cursor: pointer;
     }
     #resendButton {
       margin-top: 10px;
@@ -239,6 +271,17 @@
       display: none;
       font-size: 1.2em;
       margin-top: 10px;
+    }
+    /* Estilo para o indicador de status (bolinha verde) */
+    .status-indicator {
+      display: inline-block;
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: #00FF00;
+      box-shadow: 0 0 6px 2px rgba(0, 255, 0, 0.6);
+      margin-left: 5px;
+      vertical-align: middle;
     }
   </style>
 
@@ -278,7 +321,7 @@
       </form>
       <p class="toggle" onclick="toggleForm()">Já tenho uma conta</p>
     </div>
-    <!-- Botão para reenviar email de verificação, aparece quando necessário -->
+    <!-- Botão para reenviar email de verificação (exibido quando necessário) -->
     <button id="resendButton">Reenviar email de verificação</button>
     <!-- Mensagem informando que o usuário já está logado -->
     <p id="loggedMessage">Logado!</p>
