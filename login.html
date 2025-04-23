@@ -2,26 +2,26 @@
 <html lang="pt-br">
 <head>
   <meta charset="UTF-8">
-  <meta name="description" content="Swift Hub Catalão - Login e Cadastro">
+  <meta name="description" content="Swift Hub Catalão - Login, Cadastro e Serviços">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Swift Hub Catalão - Login e Cadastro</title>
-
+  <title>Swift Hub Catalão - Index</title>
+  
   <!-- Ícones do Font Awesome -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.0/css/all.min.css">
-
+  
   <!-- Firebase Modular SDK -->
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.5.0/firebase-app.js";
-    import {
-      getAuth,
-      signInWithEmailAndPassword,
-      createUserWithEmailAndPassword,
-      sendEmailVerification,
-      sendPasswordResetEmail,
-      onAuthStateChanged,
-      signOut
+    import { 
+      getAuth, 
+      signInWithEmailAndPassword, 
+      createUserWithEmailAndPassword, 
+      sendEmailVerification, 
+      sendPasswordResetEmail, 
+      onAuthStateChanged, 
+      signOut 
     } from "https://www.gstatic.com/firebasejs/10.5.0/firebase-auth.js";
-
+    
     // Configure seu Firebase (substitua pelos seus dados)
     const firebaseConfig = {
       apiKey: "AIzaSyDGBKxvfcY-PA_vC7SA8G0f-TjqjK3OD3o",
@@ -31,87 +31,68 @@
       messagingSenderId: "756803145076",
       appId: "1:756803145076:web:097f4d3d5b28cc6ca1f021"
     };
-
     const app = initializeApp(firebaseConfig);
     const auth = getAuth(app);
-
-    // Se o usuário já estiver autenticado e com email verificado, direciona para servicos.html.
+    
+    // Quando o status de autenticação mudar, exibe ou oculta os formulários/serviços
     onAuthStateChanged(auth, user => {
       if (user && user.emailVerified) {
-        window.location.replace("servicos.html");
+        // Usuário autenticado: oculta login e cadastro; mostra os serviços e botão de logout.
+        document.getElementById("loginFormContainer").style.display = "none";
+        document.getElementById("registerFormContainer").style.display = "none";
+        document.getElementById("servicosContainer").style.display = "block";
+        document.getElementById("logoutButton").style.display = "block";
+      } else {
+        // Usuário não autenticado: exibe os formulários; oculta serviços e logout.
+        document.getElementById("servicosContainer").style.display = "none";
+        document.getElementById("logoutButton").style.display = "none";
       }
     });
-
-    // Inicia a contagem regressiva para o botão de reenvio
-    function startCountdown(seconds) {
-      const btn = document.getElementById("resendButton");
-      btn.disabled = true;
-      let count = seconds;
-      btn.innerText = `Reenviar em ${count}s`;
-      const interval = setInterval(() => {
-        count--;
-        btn.innerText = `Reenviar em ${count}s`;
-        if (count <= 0) {
-          clearInterval(interval);
-          btn.disabled = false;
-          btn.innerText = "Reenviar email de verificação";
-        }
-      }, 1000);
-    }
-
-    // Função para tratar o login com atualização do status do usuário
+    
     function handleLogin(e) {
       e.preventDefault();
       const email = document.getElementById("loginEmail").value;
       const password = document.getElementById("loginPassword").value;
-
       signInWithEmailAndPassword(auth, email, password)
-        .then((userCredential) => {
+        .then(userCredential => {
           const user = userCredential.user;
-          // Atualiza os dados do usuário para obter o status atualizado
+          // Atualiza os dados do usuário
           user.reload().then(() => {
             if (!user.emailVerified) {
-              // Envia email de verificação se não estiver confirmado
               sendEmailVerification(user)
                 .then(() => {
-                  alert("Seu email não foi verificado. Um email de verificação foi enviado. Confira sua caixa de entrada. Se não receber, utilize o botão de reenvio.");
+                  alert("Seu email não foi verificado. Um email de verificação foi enviado. Confira sua caixa de entrada.");
                   const btn = document.getElementById("resendButton");
                   btn.style.display = "inline-block";
                   btn.innerText = "Enviado";
-                  setTimeout(() => {
-                    startCountdown(15);
-                  }, 1000);
+                  setTimeout(() => { startCountdown(15); }, 1000);
                 })
-                .catch((error) => alert("Erro ao enviar email de verificação: " + error.message));
+                .catch(error => alert("Erro ao enviar email de verificação: " + error.message));
               signOut(auth);
               return;
             }
-            window.location.replace("servicos.html");
           });
         })
         .catch(error => alert("Erro ao fazer login: " + error.message));
     }
-
-    // Função para tratar o cadastro e envio do email de verificação
+    
     function handleRegister(e) {
       e.preventDefault();
       const email = document.getElementById("registerEmail").value;
       const password = document.getElementById("registerPassword").value;
-
       createUserWithEmailAndPassword(auth, email, password)
-        .then((userCredential) => {
+        .then(userCredential => {
           const user = userCredential.user;
           sendEmailVerification(user)
             .then(() => {
               alert("Conta criada com sucesso! Um email de verificação foi enviado. Confirme seu email para fazer login.");
               document.getElementById("registerMessage").innerText = "Conta criada com sucesso! Verifique seu email para confirmar e fazer login.";
             })
-            .catch((error) => alert("Erro ao enviar email de verificação: " + error.message));
+            .catch(error => alert("Erro ao enviar email de verificação: " + error.message));
         })
         .catch(error => alert("Erro ao criar conta: " + error.message));
     }
-
-    // Função para recuperar senha
+    
     function handleForgotPassword() {
       const email = document.getElementById("loginEmail").value;
       if (!email) {
@@ -122,12 +103,10 @@
         .then(() => alert("Email de recuperação enviado!"))
         .catch(error => alert("Erro ao enviar email: " + error.message));
     }
-
-    // Função para reenviar email de verificação com exibição de "Enviado" por 1 segundo e contagem regressiva
+    
     function handleResendVerification() {
       const email = document.getElementById("loginEmail").value;
       const password = document.getElementById("loginPassword").value;
-
       signInWithEmailAndPassword(auth, email, password)
         .then(userCredential => {
           const user = userCredential.user;
@@ -136,9 +115,7 @@
               .then(() => {
                 const btn = document.getElementById("resendButton");
                 btn.innerText = "Enviado";
-                setTimeout(() => {
-                  startCountdown(15);
-                }, 1000);
+                setTimeout(() => { startCountdown(15); }, 1000);
               })
               .catch(error => alert("Erro ao reenviar email: " + error.message));
           } else {
@@ -147,8 +124,23 @@
         })
         .catch(error => alert("Erro ao reenviar email: " + error.message));
     }
-
-    // Função de validação da senha em tempo real para o cadastro
+    
+    function startCountdown(seconds) {
+      const btn = document.getElementById("resendButton");
+      btn.disabled = true;
+      let count = seconds;
+      btn.innerText = `Reenviar em ${count}s`;
+      const interval = setInterval(() => {
+         count--;
+         btn.innerText = `Reenviar em ${count}s`;
+         if (count <= 0) {
+             clearInterval(interval);
+             btn.disabled = false;
+             btn.innerText = "Reenviar email de verificação";
+         }
+      }, 1000);
+    }
+    
     function validatePassword() {
       var password = document.getElementById("registerPassword").value;
       var reqLength = document.getElementById("req-length");
@@ -156,101 +148,131 @@
       var reqUpper = document.getElementById("req-upper");
       var reqNumber = document.getElementById("req-number");
       var reqSymbol = document.getElementById("req-symbol");
-
       var lengthCondition = password.length >= 8;
       var lowerCondition = /[a-z]/.test(password);
       var upperCondition = /[A-Z]/.test(password);
-      var numberCondition = /\d/.test(password);
+      var numberCondition = /[0-9]/.test(password);
       var symbolCondition = /[\W_]/.test(password);
-
+    
       reqLength.style.color = lengthCondition ? "green" : "red";
       reqLower.style.color = lowerCondition ? "green" : "red";
       reqUpper.style.color = upperCondition ? "green" : "red";
       reqNumber.style.color = numberCondition ? "green" : "red";
       reqSymbol.style.color = symbolCondition ? "green" : "red";
-
-      // Habilita o botão somente se todas as condições forem satisfeitas.
+    
       const submitButton = document.querySelector("#registerForm button[type='submit']");
       submitButton.disabled = !(lengthCondition && lowerCondition && upperCondition && numberCondition && symbolCondition);
     }
-
-    document.addEventListener("DOMContentLoaded", function () {
+    
+    function toggleForm() {
+      const loginContainer = document.getElementById("loginFormContainer");
+      const registerContainer = document.getElementById("registerFormContainer");
+      if (loginContainer.style.display === "none") {
+        loginContainer.style.display = "block";
+        registerContainer.style.display = "none";
+      } else {
+        loginContainer.style.display = "none";
+        registerContainer.style.display = "block";
+      }
+    }
+    
+    // Função para logout
+    function handleLogout() {
+      signOut(auth).then(() => {
+        document.getElementById("loginFormContainer").style.display = "block";
+        document.getElementById("servicosContainer").style.display = "none";
+        document.getElementById("logoutButton").style.display = "none";
+      });
+    }
+    
+    // Popup do Menu
+    function toggleMenu() {
+      const menuPopup = document.getElementById("menuPopup");
+      if (menuPopup) {
+        menuPopup.classList.toggle("menu-open");
+      }
+    }
+    
+    document.addEventListener("DOMContentLoaded", function(){
+      const menuIcon = document.querySelector(".menu-icon");
+      if (menuIcon) {
+         menuIcon.addEventListener("click", toggleMenu);
+      }
+      const closeBtn = document.querySelector(".close-menu");
+      if (closeBtn) {
+         closeBtn.addEventListener("click", toggleMenu);
+      }
       document.getElementById("loginForm").addEventListener("submit", handleLogin);
       document.getElementById("registerForm").addEventListener("submit", handleRegister);
       document.getElementById("forgotPassword").addEventListener("click", handleForgotPassword);
       document.getElementById("resendButton").addEventListener("click", handleResendVerification);
-
-      // Adiciona validação em tempo real para a senha de cadastro
+      
       const registerPasswordInput = document.getElementById("registerPassword");
       registerPasswordInput.addEventListener("input", validatePassword);
     });
   </script>
-
+  
+  <!-- Estilos Gerais da Página -->
   <style>
     :root {
-      --color-primary: #0033A0;   /* Azul */
-      --color-secondary: #C8102E;  /* Vermelho */
-      --color-light: #ffffff;      /* Branco */
+      --color-primary: #0033A0; /* Azul */
+      --color-secondary: #C8102E; /* Vermelho */
+      --color-light: #ffffff;     /* Branco */
       --color-dark: #222;
     }
-    /* Reset */
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-      font-family: Arial, sans-serif;
-    }
+    
     body {
-      background: #ffffff; /* Fundo branco */
-      color: var(--color-primary); /* Texto azul */
+      background: var(--color-light);
+      color: var(--color-primary);
       display: flex;
-      justify-content: center;
+      flex-direction: column;
       align-items: center;
       min-height: 100vh;
+      margin: 0;
     }
-    /* Cabeçalho da Empresa */
-    .company-header {
-      text-align: center;
-      margin-bottom: 20px;
-    }
-    .company-header h1 {
-      font-size: 2.5em;
-      color: var(--color-primary);
-    }
-    /* Container do Login */
+    
+    /* Cabeçalho superior com menu (já definido acima) */
+    
+    /* Containers para login e cadastro */
     .container {
-      background: #ffffff;
-      border: 1px solid #ddd;
-      padding: 30px;
-      border-radius: 10px;
-      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-      max-width: 400px;
+      margin: 20px 0;
       width: 100%;
+      max-width: 400px;
+      background: var(--color-light);
+      padding: 30px;
+      border: 1px solid #ddd;
+      border-radius: 10px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
       text-align: center;
     }
+    
     h2 {
       margin-bottom: 15px;
       color: var(--color-primary);
     }
+    
     form {
       display: flex;
       flex-direction: column;
       text-align: left;
     }
+    
     form label {
       margin-bottom: 5px;
       font-weight: bold;
       color: var(--color-primary);
     }
+    
     form input {
       padding: 10px;
       margin-bottom: 10px;
       border: 1px solid var(--color-primary);
       border-radius: 5px;
       font-size: 14px;
-      background: #ffffff;
+      background: var(--color-light);
       color: var(--color-primary);
     }
+    
     form button {
       padding: 12px;
       background: var(--color-secondary);
@@ -261,27 +283,32 @@
       transition: transform 0.1s;
       font-weight: bold;
     }
+    
     form button:hover {
       transform: scale(1.05);
     }
-    /* Botão de cadastro inicia desabilitado */
+    
     form button[type="submit"] {
       cursor: pointer;
     }
+    
     .toggle {
       margin-top: 15px;
       cursor: pointer;
       font-weight: bold;
       color: var(--color-primary);
     }
+    
     .toggle:hover {
       color: var(--color-secondary);
     }
+    
     #forgotPassword {
       color: var(--color-primary);
       text-decoration: underline;
       cursor: pointer;
     }
+    
     #resendButton {
       margin-top: 10px;
       padding: 8px;
@@ -293,11 +320,13 @@
       color: var(--color-light);
       display: none;
     }
+    
     #loggedMessage {
       display: none;
       font-size: 1.2em;
       margin-top: 10px;
     }
+    
     /* Lista de requisitos para a senha */
     #passwordRequirements {
       list-style: none;
@@ -306,82 +335,161 @@
       text-align: left;
       font-size: 14px;
     }
+    
     #passwordRequirements li {
       margin: 3px 0;
     }
-    /* Indicador de status: bolinha verde */
+    
     .status-indicator {
       display: inline-block;
       width: 10px;
       height: 10px;
       border-radius: 50%;
       background: #00FF00;
-      box-shadow: 0 0 6px 2px rgba(0, 255, 0, 0.6);
+      box-shadow: 0 0 6px 2px rgba(0,255,0,0.6);
       margin-left: 5px;
       vertical-align: middle;
     }
-  </style>
-
-  <script>
-    // Alterna entre os formulários de login e cadastro
-    function toggleForm() {
-      const loginContainer = document.getElementById("loginFormContainer");
-      const registerContainer = document.getElementById("registerFormContainer");
-      loginContainer.style.display = loginContainer.style.display === "none" ? "block" : "none";
-      registerContainer.style.display = registerContainer.style.display === "none" ? "block" : "none";
+    
+    /* Popup do menu (já definido acima) */
+    
+    /* Seção de Serviços */
+    #servicosContainer {
+      display: none;
+      width: 100%;
+      max-width: 1200px;
+      margin: 20px auto;
+      text-align: center;
     }
-  </script>
+    
+    .service-card {
+      background: #fff;
+      padding: 15px;
+      border: 1px solid #ddd;
+      margin-bottom: 20px;
+      border-radius: 8px;
+    }
+    
+    /* Footer */
+    footer {
+      width: 100%;
+      background: var(--color-secondary);
+      color: var(--color-light);
+      text-align: center;
+      padding: 20px 0;
+      margin-top: 40px;
+    }
+    
+    footer p {
+      font-size: 0.9em;
+    }
+    
+    .whatsapp-float {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      background: #25D366;
+      color: var(--color-light);
+      border-radius: 50%;
+      width: 60px;
+      height: 60px;
+      text-align: center;
+      line-height: 60px;
+      font-size: 30px;
+      z-index: 1000;
+      box-shadow: 2px 2px 3px rgba(0,0,0,0.3);
+    }
+    
+    @media (max-width: 768px) {
+      .menu-icon {
+        font-size: 24px;
+      }
+      .logo {
+        max-width: 100px;
+      }
+      .container {
+        max-width: 90%;
+      }
+    }
+  </style>
 </head>
 <body>
   <!-- Cabeçalho da Empresa -->
   <div class="company-header">
     <h1>Swift Hub Catalão</h1>
   </div>
-  <div class="container">
-    <!-- Formulário de Login -->
-    <div id="loginFormContainer">
-      <h2>Login</h2>
-      <form id="loginForm">
-        <label for="loginEmail">Email:</label>
-        <input type="email" id="loginEmail" required placeholder="Digite seu email">
-        <label for="loginPassword">Senha:</label>
-        <input type="password" id="loginPassword" required placeholder="Digite sua senha">
-        <button type="submit">Entrar</button>
-      </form>
-      <p class="toggle" onclick="toggleForm()">Criar uma conta</p>
-      <p><a id="forgotPassword" href="#">Esqueci minha senha</a></p>
+  
+  <!-- Cabeçalho com Menu, Logo e Logout -->
+  <header>
+    <div class="container">
+      <i class="fas fa-bars menu-icon"></i>
+      <img src="https://raw.githubusercontent.com/Swifthubcatalao/br/main/imagens/logo.png" alt="Logo Swift Hub Catalão" class="logo">
+      <button id="logoutButton" onclick="handleLogout()">Sair</button>
     </div>
-    <!-- Formulário de Cadastro -->
-    <div id="registerFormContainer" style="display: none;">
-      <h2>Criar Conta</h2>
-      <form id="registerForm">
-        <label for="registerEmail">Email:</label>
-        <input type="email" id="registerEmail" required placeholder="Digite seu email">
-        <label for="registerPassword">Senha:</label>
-        <!-- Campo de senha com validação em tempo real -->
-        <input 
-          type="password" 
-          id="registerPassword" 
-          required 
-          placeholder="Crie uma senha">
-        <!-- Lista de requisitos para a senha -->
-        <ul id="passwordRequirements">
-          <li id="req-length" style="color: red;">Mínimo 8 caracteres</li>
-          <li id="req-lower" style="color: red;">Pelo menos uma letra minúscula</li>
-          <li id="req-upper" style="color: red;">Pelo menos uma letra maiúscula</li>
-          <li id="req-number" style="color: red;">Pelo menos um número</li>
-          <li id="req-symbol" style="color: red;">Pelo menos um símbolo</li>
-        </ul>
-        <!-- Botão para cadastrar inicia desabilitado -->
-        <button type="submit" disabled>Cadastrar</button>
-      </form>
-      <p id="registerMessage" style="color: var(--color-primary); font-weight: bold;"></p>
-      <p class="toggle" onclick="toggleForm()">Já tenho uma conta</p>
-    </div>
-    <!-- Botão para reenviar email de verificação -->
-    <button id="resendButton">Reenviar email de verificação</button>
-    <!-- Mensagem informando que o usuário já está logado -->
-    <p id="loggedMessage">Logado!</p>
+  </header>
+  
+  <!-- Popup do Menu -->
+  <div id="menuPopup" class="menu-popup">
+    <span class="close-menu">&times;</span>
+    <a href="index.html">Início</a>
+    <a href="login.html">Login</a>
   </div>
+  
+  <!-- Formulário de Login -->
+  <div id="loginFormContainer" class="container">
+    <h2>Login</h2>
+    <form id="loginForm">
+      <label for="loginEmail">Email :</label>
+      <input type="email" id="loginEmail" required placeholder="Digite seu email">
+      <label for="loginPassword">Senha :</label>
+      <input type="password" id="loginPassword" required placeholder="Digite sua senha">
+      <button type="submit">Entrar</button>
+    </form>
+    <p class="toggle" onclick="toggleForm()">Criar uma conta</p>
+    <p><a id="forgotPassword" href="#">Esqueci minha senha</a></p>
+  </div>
+  
+  <!-- Formulário de Cadastro -->
+  <div id="registerFormContainer" class="container" style="display: none;">
+    <h2>Criar Conta</h2>
+    <form id="registerForm">
+      <label for="registerEmail">Email :</label>
+      <input type="email" id="registerEmail" required placeholder="Digite seu email">
+      <label for="registerPassword">Senha :</label>
+      <input type="password" id="registerPassword" required placeholder="Crie uma senha">
+      <ul id="passwordRequirements">
+        <li id="req-length" style="color: red;">Mínimo 8 caracteres</li>
+        <li id="req-lower" style="color: red;">Pelo menos uma letra minúscula</li>
+        <li id="req-upper" style="color: red;">Pelo menos uma letra maiúscula</li>
+        <li id="req-number" style="color: red;">Pelo menos um número</li>
+        <li id="req-symbol" style="color: red;">Pelo menos um símbolo</li>
+      </ul>
+      <button type="submit" disabled>Cadastrar</button>
+    </form>
+    <p id="registerMessage" style="color: var(--color-primary); font-weight: bold;"></p>
+    <p class="toggle" onclick="toggleForm()">Já tenho uma conta</p>
+  </div>
+  
+  <!-- Botão para reenviar email de verificação -->
+  <button id="resendButton">Reenviar email de verificação</button>
+  
+  <!-- Mensagem informando que o usuário já está logado -->
+  <p id="loggedMessage">Logado!</p>
+  
+  <!-- Seção de Serviços (exibe após o login bem-sucedido) -->
+  <div id="servicosContainer">
+    <h2>Serviços Disponíveis</h2>
+    <div class="service-card">
+      <h3>Limpeza de Estofados</h3>
+      <a href="#">Agendar</a>
+    </div>
+    <!-- Adicione outros cards de serviços conforme necessário -->
+  </div>
+  
+  <!-- Botão flutuante do WhatsApp -->
+  <a href="https://wa.me/64981226078" class="whatsapp-float" target="_blank">
+    <i class="fab fa-whatsapp"></i>
+  </a>
+  
 </body>
 </html>
