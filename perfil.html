@@ -15,37 +15,37 @@
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.5.0/firebase-app.js";
     import {
-        getAuth,
-        onAuthStateChanged,
-        signOut,
-        signInWithPhoneNumber,
-        RecaptchaVerifier
+      getAuth,
+      onAuthStateChanged,
+      signOut,
+      signInWithPhoneNumber,
+      RecaptchaVerifier
     } from "https://www.gstatic.com/firebasejs/10.5.0/firebase-auth.js";
     import {
-        getFirestore,
-        doc,
-        getDoc,
-        setDoc
+      getFirestore,
+      doc,
+      getDoc,
+      setDoc
     } from "https://www.gstatic.com/firebasejs/10.5.0/firebase-firestore.js";
 
-    // Configure seu Firebase (substitua pelos seus dados)
+    // Configuração do Firebase – substitua pelos seus dados
     const firebaseConfig = {
-        apiKey: "AIzaSyDGBKxvfcY-PA_vC7SA8G0f-TjqjK3OD3o",
-        authDomain: "swifthubcatalao.firebaseapp.com",
-        projectId: "swifthubcatalao",
-        storageBucket: "swifthubcatalao.firebasestorage.app",
-        messagingSenderId: "756803145076",
-        appId: "1:756803145076:web:097f4d3d5b28cc6ca1f021"
+      apiKey: "AIzaSyDGBKxvfcY-PA_vC7SA8G0f-TjqjK3OD3o",
+      authDomain: "swifthubcatalao.firebaseapp.com",
+      projectId: "swifthubcatalao",
+      storageBucket: "swifthubcatalao.firebasestorage.app",
+      messagingSenderId: "756803145076",
+      appId: "1:756803145076:web:097f4d3d5b28cc6ca1f021"
     };
 
     const app = initializeApp(firebaseConfig);
     const auth = getAuth(app);
     const db = getFirestore(app);
 
-    let confirmationResult = null; // Para armazenar o resultado da verificação SMS
-    let recaptchaVerifier = null;   // Para armazenar o objeto reCAPTCHA
+    let confirmationResult = null; // Armazena o resultado de verificação SMS
+    let recaptchaVerifier = null;   // Armazena o objeto reCAPTCHA
 
-    // --- Inactivity Logout Logic ---
+    /* --- Inactivity Logout Logic --- */
     const INACTIVITY_TIMEOUT = 30 * 60 * 1000; // 30 minutos
     let logoutTimer = null;
     function resetTimer() {
@@ -68,13 +68,13 @@
       resetTimer();
     }
     function removeInactivityListeners() {
-      if(logoutTimer) clearTimeout(logoutTimer);
+      if (logoutTimer) clearTimeout(logoutTimer);
       document.removeEventListener("mousemove", resetTimer);
       document.removeEventListener("keydown", resetTimer);
       document.removeEventListener("click", resetTimer);
       document.removeEventListener("scroll", resetTimer);
     }
-    // --- End Inactivity Logout Logic ---
+    /* --- End Inactivity Logout Logic --- */
 
     onAuthStateChanged(auth, user => {
       const logoutBtn = document.getElementById("logoutButton");
@@ -92,9 +92,8 @@
       }
     });
 
-    // Carrega os dados do perfil do usuário
+    // Carrega e preenche os dados do perfil do usuário
     async function displayUserProfile(user) {
-      // Preenche automaticamente o campo de email
       const emailElement = document.getElementById("userEmail");
       emailElement.value = user.email || "Email não disponível";
 
@@ -144,7 +143,7 @@
       }
     }
 
-    // Inicializa o reCAPTCHA
+    // Inicializa o reCAPTCHA para verificação por SMS
     function initializeRecaptcha(user) {
       if (!user || user.phoneNumber) {
         document.getElementById("recaptcha-container").style.display = "none";
@@ -177,7 +176,7 @@
       }
     }
 
-    // Envio do código SMS (adiciona +55 automaticamente se o usuário não incluir)
+    // Envio do código SMS: adiciona "+55" automaticamente se o usuário não incluir
     async function handleSendCode(event) {
       event.preventDefault();
       const phoneInput = document.getElementById("userPhone");
@@ -219,7 +218,7 @@
       }
     }
 
-    // Verifica o código SMS digitado pelo usuário
+    // Verifica o código SMS digitado
     async function handleVerifyCode(event) {
       event.preventDefault();
       const verificationCodeInput = document.getElementById("verificationCode");
@@ -251,7 +250,7 @@
           "Telefone verificado: " + user.phoneNumber;
         document.getElementById("phoneVerificationStatus").style.color = "green";
         document.getElementById("recaptcha-container").style.display = "none";
-
+        
         const userDocRef = doc(db, "users", user.uid);
         await setDoc(userDocRef, { phoneNumber: user.phoneNumber }, { merge: true });
         console.log("Número de telefone salvo no Firestore.");
@@ -263,7 +262,7 @@
       }
     }
 
-    // Salva os dados pessoais do usuário
+    // Salva os dados pessoais do perfil
     async function handleSaveProfile(event) {
       event.preventDefault();
       const user = auth.currentUser;
@@ -271,7 +270,6 @@
         alert("Você precisa estar logado para salvar o perfil.");
         return;
       }
-
       const name = document.getElementById("userName").value.trim();
       const address = document.getElementById("userAddress").value.trim();
       const saveButton = document.getElementById("saveProfileButton");
@@ -323,25 +321,21 @@
       } else {
         console.error("Ícone do menu não encontrado.");
       }
-
       const closeBtn = document.querySelector(".close-menu");
       if (closeBtn) {
         closeBtn.addEventListener("click", toggleMenu);
       } else {
         console.error("Botão de fechar o menu não encontrado.");
       }
-
       const logoutBtn = document.getElementById("logoutButton");
       if (logoutBtn) {
         logoutBtn.addEventListener("click", handleLogout);
       } else {
         console.error("Botão de logout não encontrado.");
       }
-
       document.getElementById("profileForm").addEventListener("submit", handleSaveProfile);
       document.getElementById("sendCodeForm").addEventListener("submit", handleSendCode);
       document.getElementById("verifyCodeForm").addEventListener("submit", handleVerifyCode);
-
       document.getElementById("verifyCodeSection").style.display = "none";
       document.getElementById("phoneStatusMessage").innerText = "";
       document.getElementById("saveStatusMessage").innerText = "";
@@ -375,7 +369,6 @@
       border-radius: 8px;
       box-shadow: 0 2px 10px rgba(0,0,0,0.1);
     }
-    
     /* =============================
        Cabeçalho Único (Menu, Logo e Logout)
        ============================= */
@@ -424,7 +417,6 @@
     #logoutButton:hover {
       background-color: #a01d2d;
     }
-    
     /* =============================
        Popup do Menu
        ============================= */
@@ -467,11 +459,9 @@
     .menu-open {
       transform: translateX(0);
     }
-    
     /* =============================
        Profile Content Styling
        ============================= */
-    /* Título "Meu Perfil" no topo do container */
     .container h2 {
       text-align: center;
       margin-bottom: 20px;
@@ -537,7 +527,6 @@
       margin-top: 10px;
       font-weight: bold;
     }
-    
     /* =============================
        Footer
        ============================= */
@@ -675,7 +664,7 @@
   </a>
 
   <script type="module">
-    // Os event listeners e inicializações já estão configurados acima.
+    // Os event listeners e inicializações já estão configurados acima (no bloco de script do head).
   </script>
 </body>
 </html>
