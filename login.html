@@ -4,16 +4,15 @@
   <meta charset="UTF-8">
   <meta name="description" content="Swift Hub Catalão - Login">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="robots" content="noindex">
-  <title>Swift Hub Catalão - Login</title>
+  <title>Swift Hub Catalão - Login e Cadastro</title>
 
-  <!-- Font Awesome -->
+  <!-- Ícones do Font Awesome -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.0/css/all.min.css">
 
-  <!-- Firebase SDK -->
+  <!-- Firebase Modular SDK -->
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.5.0/firebase-app.js";
-    import { getAuth, signInWithEmailAndPassword, sendPasswordResetEmail, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.5.0/firebase-auth.js";
+    import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, sendPasswordResetEmail, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.5.0/firebase-auth.js";
 
     const firebaseConfig = {
       apiKey: "AIzaSyDGBKxvfcY-PA_vC7SA8G0f-TjqjK3OD3o",
@@ -41,6 +40,16 @@
         .catch(error => alert("Erro ao fazer login: " + error.message));
     });
 
+    document.getElementById("registerForm").addEventListener("submit", (e) => {
+      e.preventDefault();
+      const email = document.getElementById("registerEmail").value;
+      const password = document.getElementById("registerPassword").value;
+
+      createUserWithEmailAndPassword(auth, email, password)
+        .then(() => alert("Conta criada com sucesso! Faça login."))
+        .catch(error => alert("Erro ao criar conta: " + error.message));
+    });
+
     document.getElementById("forgotPassword").addEventListener("click", () => {
       const email = document.getElementById("loginEmail").value;
       if (!email) return alert("Digite seu e-mail para redefinir a senha.");
@@ -51,13 +60,16 @@
     });
   </script>
 
-  <!-- Estilos -->
+  <!-- Estilos CSS -->
   <style>
     :root {
       --color-primary: #3C3B6E;
       --color-secondary: #B22234;
       --color-light: #ffffff;
+      --color-dark: #222;
     }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: Arial, sans-serif; }
     body {
       background: linear-gradient(135deg, var(--color-primary), var(--color-secondary));
       color: var(--color-light);
@@ -66,39 +78,105 @@
       align-items: center;
       height: 100vh;
     }
+
     .container {
-      background: rgba(255, 255, 255, 0.15);
+      background: rgba(255, 255, 255, 0.2);
       padding: 30px;
       border-radius: 15px;
-      backdrop-filter: blur(10px);
+      box-shadow: 0px 5px 15px rgba(0, 0, 0, 0.3);
       max-width: 400px;
       text-align: center;
+      backdrop-filter: blur(10px);
     }
-    button {
+
+    h2 { margin-bottom: 15px; }
+
+    form {
+      display: flex;
+      flex-direction: column;
+      text-align: left;
+    }
+
+    form label {
+      margin-bottom: 5px;
+      font-weight: bold;
+      color: var(--color-light);
+    }
+
+    form input {
+      padding: 10px;
+      margin-bottom: 10px;
+      border: none;
+      border-radius: 5px;
+      font-size: 14px;
+      background: rgba(255, 255, 255, 0.3);
+      color: var(--color-light);
+    }
+
+    form button {
+      padding: 12px;
       background: var(--color-secondary);
       color: var(--color-light);
       border: none;
-      padding: 12px;
       border-radius: 5px;
       cursor: pointer;
-      font-weight: bold;
       transition: transform 0.1s;
+      font-weight: bold;
     }
-    button:hover { transform: scale(1.05); }
+
+    form button:hover { transform: scale(1.05); }
+
+    .toggle {
+      margin-top: 15px;
+      cursor: pointer;
+      font-weight: bold;
+      color: #FFD700;
+    }
+
+    .toggle:hover { color: #FFA500; }
   </style>
+
+  <script>
+    function toggleForm() {
+      const loginContainer = document.getElementById("loginFormContainer");
+      const registerContainer = document.getElementById("registerFormContainer");
+      loginContainer.style.display = loginContainer.style.display === "none" ? "block" : "none";
+      registerContainer.style.display = registerContainer.style.display === "none" ? "block" : "none";
+    }
+  </script>
+
 </head>
 <body>
 
   <div class="container">
-    <h2>Login</h2>
-    <form id="loginForm">
-      <label for="loginEmail">Email:</label>
-      <input type="email" id="loginEmail" required placeholder="Digite seu email">
-      <label for="loginPassword">Senha:</label>
-      <input type="password" id="loginPassword" required placeholder="Digite sua senha">
-      <button type="submit">Entrar</button>
-    </form>
-    <p><a id="forgotPassword" href="#">Esqueci minha senha</a></p>
+
+    <!-- Formulário de Login -->
+    <div id="loginFormContainer">
+      <h2>Login</h2>
+      <form id="loginForm">
+        <label for="loginEmail">Email:</label>
+        <input type="email" id="loginEmail" required placeholder="Digite seu email">
+        <label for="loginPassword">Senha:</label>
+        <input type="password" id="loginPassword" required placeholder="Digite sua senha">
+        <button type="submit">Entrar</button>
+      </form>
+      <p class="toggle" onclick="toggleForm()">Criar uma conta</p>
+      <p><a id="forgotPassword" href="#">Esqueci minha senha</a></p>
+    </div>
+
+    <!-- Formulário de Cadastro -->
+    <div id="registerFormContainer" style="display: none;">
+      <h2>Criar Conta</h2>
+      <form id="registerForm">
+        <label for="registerEmail">Email:</label>
+        <input type="email" id="registerEmail" required placeholder="Digite seu email">
+        <label for="registerPassword">Senha:</label>
+        <input type="password" id="registerPassword" required placeholder="Crie uma senha">
+        <button type="submit">Cadastrar</button>
+      </form>
+      <p class="toggle" onclick="toggleForm()">Já tenho uma conta</p>
+    </div>
+
   </div>
 
 </body>
