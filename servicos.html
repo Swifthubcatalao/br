@@ -7,9 +7,11 @@
   <title>Swift Hub Catalão - Serviços</title>
   <!-- Font Awesome para ícones -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.0/css/all.min.css">
-  <!-- Firebase SDK -->
-  <script src="https://www.gstatic.com/firebasejs/9.6.8/firebase-app.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.6.8/firebase-auth.js"></script>
+
+  <!-- Firebase Compat SDK (para manter a sintaxe clássica) -->
+  <script src="https://www.gstatic.com/firebasejs/9.6.8/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.6.8/firebase-auth-compat.js"></script>
+
   <style>
     /* Reset e configuração global */
     * {
@@ -94,7 +96,7 @@
     .card {
       background: #fff;
       border-radius: 8px;
-      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
       width: 250px;
       padding: 20px;
       transition: transform 0.2s, box-shadow 0.2s;
@@ -104,7 +106,7 @@
     }
     .card:hover {
       transform: scale(1.03);
-      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+      box-shadow: 0 4px 10px rgba(0,0,0,0.2);
     }
     .card img {
       width: 100%;
@@ -314,17 +316,17 @@
         appId: "1:756803145076:web:4593bd78a26a2270a1f021"
       };
 
-      // Inicializa o Firebase se ainda não estiver iniciado
-      if (!firebase.apps.length) { 
+      // Inicializa o Firebase (usando compat)
+      if (!firebase.apps.length) {
         firebase.initializeApp(firebaseConfig);
       }
       
       const auth = firebase.auth();
 
-      // Verifica se o usuário está logado antes de permitir o acesso
+      // Verifica se o usuário está autenticado. Se não estiver, redireciona para login.html.
       auth.onAuthStateChanged((user) => {
-        if (!user && window.location.pathname !== "/login.html") {
-          window.location.href = "login.html";
+        if (!user && !window.location.href.includes("login.html")) {
+          window.location.href = "./login.html";
         }
       });
 
@@ -333,7 +335,7 @@
       if (logoutButton) {
         logoutButton.addEventListener("click", function() {
           auth.signOut().then(() => {
-            window.location.href = "login.html";
+            window.location.href = "./login.html";
           }).catch((error) => {
             alert("Erro ao sair: " + error.message);
           });
@@ -342,4 +344,4 @@
     });
   </script>
 </body>
-</html>
+  </html>
