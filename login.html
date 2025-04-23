@@ -35,7 +35,7 @@
     const app = initializeApp(firebaseConfig);
     const auth = getAuth(app);
 
-    // Verifica o estado de autenticação (se o usuário já estiver logado e com email verificado, redireciona para servicos.html)
+    // Atualiza o menu de navegação conforme o status de autenticação.
     onAuthStateChanged(auth, user => {
       const menuPerfil = document.getElementById("menuPerfil");
       const loginMenuItem = document.getElementById("loginMenuItem");
@@ -90,10 +90,10 @@
       signInWithEmailAndPassword(auth, email, password)
         .then((userCredential) => {
           const user = userCredential.user;
-          // Força recarregar os dados do usuário para obter o status atualizado de verificação
+          // Atualiza os dados do usuário para obter status atualizado
           user.reload().then(() => {
             if (!user.emailVerified) {
-              // Se o email não estiver verificado (ou seja, é o primeiro login), envia email de verificação
+              // Se o email não estiver verificado, envia email de verificação e orienta o usuário.
               sendEmailVerification(user)
                 .then(() => {
                   alert("Seu email não foi verificado. Um email de verificação foi enviado. Confira sua caixa de entrada. Se não receber, utilize o botão de reenvio.");
@@ -105,11 +105,10 @@
                   }, 1000);
                 })
                 .catch((error) => alert("Erro ao enviar email de verificação: " + error.message));
-              // Desloga o usuário para evitar acesso sem verificação
               signOut(auth);
               return;
             }
-            // Se o email já estiver verificado, redireciona para a página de serviços.
+            // Email verificado? Redireciona para a página de serviços.
             window.location.replace("servicos.html");
           });
         })
@@ -127,14 +126,16 @@
           const user = userCredential.user;
           sendEmailVerification(user)
             .then(() => {
+              // Exibe mensagem tanto com alert quanto inline
               alert("Conta criada com sucesso! Um email de verificação foi enviado. Por favor, confirme seu email para fazer login.");
+              document.getElementById("registerMessage").innerText = "Conta criada com sucesso! Verifique seu email para confirmar e fazer login.";
             })
             .catch((error) => alert("Erro ao enviar email de verificação: " + error.message));
         })
         .catch(error => alert("Erro ao criar conta: " + error.message));
     }
 
-    // Função para recuperar senha
+    // Função para recuperar senha.
     function handleForgotPassword() {
       const email = document.getElementById("loginEmail").value;
       if (!email) {
@@ -146,7 +147,7 @@
         .catch(error => alert("Erro ao enviar email: " + error.message));
     }
 
-    // Função para reenviar email de verificação com exibição de "Enviado" por 1 segundo e contagem regressiva
+    // Função para reenviar email de verificação com "Enviado" e contagem regressiva
     function handleResendVerification() {
       const email = document.getElementById("loginEmail").value;
       const password = document.getElementById("loginPassword").value;
@@ -171,7 +172,7 @@
         .catch(error => alert("Erro ao reenviar email: " + error.message));
     }
 
-    // Registra os eventos após o carregamento do DOM.
+    // Registra os eventos após o carregamento do DOM
     document.addEventListener("DOMContentLoaded", function () {
       document.getElementById("loginForm").addEventListener("submit", handleLogin);
       document.getElementById("registerForm").addEventListener("submit", handleRegister);
@@ -202,7 +203,7 @@
       align-items: center;
       min-height: 100vh;
     }
-    /* Cabeçalho da empresa acima do container de login */
+    /* Cabeçalho da empresa acima do login */
     .company-header {
       text-align: center;
       margin-bottom: 20px;
@@ -288,7 +289,7 @@
       font-size: 1.2em;
       margin-top: 10px;
     }
-    /* Indicador de status: bolinha verde com efeito florescente */
+    /* Indicador de status: bolinha verde */
     .status-indicator {
       display: inline-block;
       width: 10px;
@@ -340,11 +341,12 @@
         <input type="password" id="registerPassword" required placeholder="Crie uma senha">
         <button type="submit">Cadastrar</button>
       </form>
+      <p id="registerMessage" style="color: var(--color-primary); font-weight: bold;"></p>
       <p class="toggle" onclick="toggleForm()">Já tenho uma conta</p>
     </div>
     <!-- Botão para reenviar email de verificação -->
     <button id="resendButton">Reenviar email de verificação</button>
-    <!-- Mensagem de usuário logado (opcional) -->
+    <!-- Mensagem informando que o usuário já está logado -->
     <p id="loggedMessage">Logado!</p>
   </div>
 </body>
