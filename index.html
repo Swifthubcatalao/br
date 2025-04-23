@@ -7,9 +7,11 @@
   <title>Swift Hub Catalão - Início</title>
   <!-- Font Awesome para ícones -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.0/css/all.min.css">
-  <!-- Firebase SDK (versão 9.6.8) -->
-  <script src="https://www.gstatic.com/firebasejs/9.6.8/firebase-app.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.6.8/firebase-auth.js"></script>
+  
+  <!-- Firebase versão 8 compatível -->
+  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
+
   <style>
     /* Reset e configuração global */
     * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -92,7 +94,6 @@
 </head>
 <body>
 
-  <!-- Cabeçalho com Logout -->
   <header>
     <div class="container">
       <h1>Swift Hub Catalão</h1>
@@ -101,19 +102,16 @@
     </div>
   </header>
   
-  <!-- Menu de navegação -->
   <nav>
     <div class="container">
       <ul>
         <li><a href="index.html">Início</a></li>
         <li><a href="servicos.html">Serviços</a></li>
-        <!-- Item de menu de login que será atualizado -->
         <li><a href="login.html" id="loginMenuItem">Login</a></li>
       </ul>
     </div>
   </nav>
   
-  <!-- Conteúdo principal -->
   <section id="inicio">
     <div class="container">
       <h2>Bem-vindo à Swift Hub Catalão</h2>
@@ -132,12 +130,10 @@
     </div>
   </footer>
   
-  <!-- Botão flutuante do WhatsApp -->
   <a href="https://wa.me/64981226078" class="whatsapp-float" target="_blank">
     <i class="fab fa-whatsapp"></i>
   </a>
   
-  <!-- Script para controle do menu e logout -->
   <script>
     document.addEventListener("DOMContentLoaded", function() {
       // Configuração do Firebase
@@ -149,8 +145,8 @@
         messagingSenderId: "756803145076",
         appId: "1:756803145076:web:4593bd78a26a2270a1f021"
       };
-      
-      // Inicializa o Firebase (se ainda não estiver inicializado)
+
+      // Inicializa o Firebase se ainda não estiver inicializado
       if (!firebase.apps.length) {
         firebase.initializeApp(firebaseConfig);
       }
@@ -159,7 +155,7 @@
       // Verifica o estado de autenticação e atualiza o menu
       auth.onAuthStateChanged(function(user) {
         if (!user) {
-          // Se o usuário não está logado, redireciona para login (exceto na página login)
+          // Se o usuário não estiver logado, redireciona para login (exceto na página login)
           if (window.location.pathname.indexOf("login.html") === -1) {
             window.location.href = "login.html";
           }
@@ -169,7 +165,7 @@
           if (loginMenuItem) {
             loginMenuItem.textContent = "Logado";
             loginMenuItem.removeAttribute("href");
-            loginMenuItem.style.pointerEvents = "none"; // Desabilita cliques
+            loginMenuItem.style.pointerEvents = "none";
           }
           // Exibe o botão de logout
           const logoutButton = document.getElementById("logoutButton");
@@ -179,17 +175,14 @@
         }
       });
 
-      // Evento para logout
-      const logoutButton = document.getElementById("logoutButton");
-      if (logoutButton) {
-        logoutButton.addEventListener("click", function() {
-          auth.signOut().then(function() {
-            window.location.href = "login.html";
-          }).catch(function(error) {
-            alert("Erro ao sair: " + error.message);
-          });
+      // Lógica para logout
+      document.getElementById("logoutButton").addEventListener("click", function() {
+        auth.signOut().then(function() {
+          window.location.href = "login.html";
+        }).catch(function(error) {
+          alert("Erro ao sair: " + error.message);
         });
-      }
+      });
     });
   </script>
 </body>
