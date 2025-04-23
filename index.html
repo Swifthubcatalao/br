@@ -7,16 +7,17 @@
   <title>Swift Hub Catalão - Início</title>
 
   <!-- Ícones do Font Awesome -->
-  <link rel="preload" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.0/css/all.min.css" as="style" onload="this.rel='stylesheet'">
+  <link rel="preload" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.0/css/all.min.css" 
+        as="style" onload="this.rel='stylesheet'">
   <noscript>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.0/css/all.min.css">
   </noscript>
 
   <style>
     :root {
-      --color-primary: #0033A0;   /* Azul */
-      --color-secondary: #C8102E;   /* Vermelho */
-      --color-light: #ffffff;       /* Branco */
+      --color-primary: #0033A0;    /* Azul */
+      --color-secondary: #C8102E;    /* Vermelho */
+      --color-light: #ffffff;        /* Branco */
       --color-dark: #333;
     }
 
@@ -39,8 +40,9 @@
     }
 
     /* =============================
-       Cabeçalho Atualizado
+       Cabeçalho com Popup de Menu
        ============================= */
+
     header {
       background: var(--color-light);
       padding: 15px;
@@ -49,15 +51,12 @@
       justify-content: space-between;
       border-bottom: 1px solid #ddd;
     }
-
     /* Ícone de menu à esquerda */
     .menu-icon {
       font-size: 28px;
       color: var(--color-primary);
       cursor: pointer;
-      margin-left: 15px;
     }
-
     /* Logo centralizada */
     .logo {
       max-width: 120px;
@@ -65,7 +64,6 @@
       display: block;
       margin: 0 auto;
     }
-
     /* Popup Lateral do Menu */
     .menu-popup {
       position: fixed;
@@ -104,36 +102,48 @@
     }
 
     /* =============================
-       Blog Container (Layout original)
+       Blog Container - Posts (Formato Lista PC)
        ============================= */
     main.blog-container {
       max-width: 800px;
       margin: 40px auto;
       padding: 20px;
     }
+
+    /* Cada post será exibido como um item de uma lista: imagem à esquerda e texto à direita */
     article.post {
+      display: flex;
+      align-items: flex-start;
+      gap: 20px;
       border-bottom: 1px solid #ddd;
       padding-bottom: 20px;
       margin-bottom: 20px;
     }
     article.post:last-child {
       border: none;
+      margin-bottom: 0;
     }
+    /* Tamanho fixo para as imagens dos posts (PC) */
     article.post img {
+      max-width: 200px;
       width: 100%;
       height: auto;
       border-radius: 10px;
-      margin-bottom: 15px;
     }
-    article.post h2 {
+    /* Bloco com título e texto */
+    .post-info {
+      flex: 1;
+    }
+    .post-info h2 {
       font-size: 1.8em;
       margin-bottom: 10px;
       color: var(--color-primary);
     }
-    article.post p {
+    .post-info p {
       font-size: 1em;
       text-align: justify;
     }
+
     /* Botão Consultar Serviços */
     .consultar-button-container {
       text-align: center;
@@ -169,6 +179,7 @@
     footer p {
       font-size: 0.9em;
     }
+
     /* Botão flutuante do WhatsApp */
     .whatsapp-float {
       position: fixed;
@@ -185,14 +196,21 @@
       z-index: 1000;
       box-shadow: 2px 2px 3px rgba(0,0,0,0.3);
     }
-    /* Responsividade */
+
+    /* =============================
+       Responsividade: Em telas menores, empilha os elementos
+       ============================= */
     @media (max-width: 768px) {
+      /* Os posts empilham verticalmente */
+      article.post {
+        flex-direction: column;
+      }
+      article.post img {
+        max-width: 100%;
+      }
+      /* Ajuste do tamanho do ícone de menu e logo */
       .menu-icon { font-size: 24px; }
       header .logo { max-width: 100px; }
-      nav ul li { margin: 0 10px; font-size: 0.9em; }
-      article.post h2 { font-size: 1.6em; }
-      article.post p { font-size: 0.95em; }
-      .consultar-button { padding: 12px 25px; font-size: 1em; }
     }
   </style>
 
@@ -204,10 +222,11 @@
 </head>
 <body>
 
-  <!-- Cabeçalho Atualizado: Ícone de menu à esquerda e logo centralizada -->
+  <!-- Cabeçalho com Ícone de Menu à esquerda e logo centralizada -->
   <header>
     <i class="fas fa-bars menu-icon" onclick="toggleMenu()"></i>
-    <img src="https://raw.githubusercontent.com/Swifthubcatalao/br/main/imagens/logo.png" alt="Logo Swift Hub Catalão" class="logo">
+    <img src="https://raw.githubusercontent.com/Swifthubcatalao/br/main/imagens/logo.png" 
+         alt="Logo Swift Hub Catalão" class="logo">
   </header>
 
   <!-- Popup Lateral do Menu -->
@@ -218,31 +237,40 @@
     <a href="login.html">Login</a>
   </div>
 
-  <!-- Restante do Layout: Blog Container, Posts, Botão e Footer -->
+  <!-- Blog Container com Posts (Formato Lista para PC) -->
   <main class="blog-container">
     <!-- Post 1 -->
     <article class="post">
-      <img src="https://raw.githubusercontent.com/Swifthubcatalao/br/main/imagens/post1.jpg" alt="Transformação na Contratação">
-      <h2>A Transformação na Contratação de Serviços</h2>
-      <p>
-        Vivemos em uma era de mudanças onde a digitalização simplifica a contratação de serviços. Nossa plataforma alia tecnologia e praticidade para conectar pessoas a profissionais especializados. Soluções modernas tornam processos complexos em experiências ágeis e seguras, transformando desafios em resultados eficientes.
-      </p>
+      <img src="https://raw.githubusercontent.com/Swifthubcatalao/br/main/imagens/post1.jpg" 
+           alt="Transformação na Contratação">
+      <div class="post-info">
+        <h2>A Transformação na Contratação de Serviços</h2>
+        <p>
+          Vivemos em uma era de mudanças onde a digitalização simplifica a contratação de serviços. Nossa plataforma alia tecnologia e praticidade para conectar pessoas a profissionais especializados. Soluções modernas tornam processos complexos em experiências ágeis e seguras, transformando desafios em resultados eficientes.
+        </p>
+      </div>
     </article>
     <!-- Post 2 -->
     <article class="post">
-      <img src="https://raw.githubusercontent.com/Swifthubcatalao/br/main/imagens/post2.jpg" alt="Inovação na Gestão">
-      <h2>A Importância da Inovação na Gestão</h2>
-      <p>
-        Inovar na forma de gerir e contratar serviços é essencial para eliminar burocracias e reduzir custos. Adotar ferramentas digitais otimizadas facilita a administração e aprimora a transparência no fluxo de processos. Nossa abordagem transforma a experiência de contratações, agregando valor com soluções simples e eficazes.
-      </p>
+      <img src="https://raw.githubusercontent.com/Swifthubcatalao/br/main/imagens/post2.jpg" 
+           alt="Inovação na Gestão">
+      <div class="post-info">
+        <h2>A Importância da Inovação na Gestão</h2>
+        <p>
+          Inovar na forma de gerir e contratar serviços é essencial para eliminar burocracias e reduzir custos. Adotar ferramentas digitais otimizadas facilita a administração e aprimora a transparência no fluxo de processos. Nossa abordagem transforma a experiência de contratações, agregando valor com soluções simples e eficazes.
+        </p>
+      </div>
     </article>
     <!-- Post 3 -->
     <article class="post">
-      <img src="https://raw.githubusercontent.com/Swifthubcatalao/br/main/imagens/post3.jpg" alt="Conectando Soluções com Eficiência">
-      <h2>Conectando Soluções com Eficiência</h2>
-      <p>
-        Nossa plataforma foi desenvolvida para proporcionar uma experiência intuitiva e eficiente. Ao conectar clientes a profissionais de qualidade, garantimos que cada atendimento seja realizado com rapidez e segurança. A facilidade na contratação de serviços eleva o nível de eficiência, transformando a forma de resolver desafios cotidianos.
-      </p>
+      <img src="https://raw.githubusercontent.com/Swifthubcatalao/br/main/imagens/post3.jpg" 
+           alt="Conectando Soluções com Eficiência">
+      <div class="post-info">
+        <h2>Conectando Soluções com Eficiência</h2>
+        <p>
+          Nossa plataforma foi desenvolvida para proporcionar uma experiência intuitiva e eficiente. Ao conectar clientes a profissionais de qualidade, garantimos que cada atendimento seja realizado com rapidez e segurança. A facilidade na contratação de serviços eleva o nível de eficiência, transformando a forma de resolver desafios cotidianos.
+        </p>
+      </div>
     </article>
     <!-- Botão Consultar Serviços -->
     <div class="consultar-button-container">
