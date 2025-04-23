@@ -2,7 +2,7 @@
 <html lang="pt-br">
 <head>
   <meta charset="UTF-8">
-  <meta name="description" content="Swift Hub Catalão - Login">
+  <meta name="description" content="Swift Hub Catalão - Login e Cadastro">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Swift Hub Catalão - Login e Cadastro</title>
 
@@ -12,7 +12,15 @@
   <!-- Firebase Modular SDK -->
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.5.0/firebase-app.js";
-    import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, sendPasswordResetEmail, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.5.0/firebase-auth.js";
+    import {
+      getAuth,
+      signInWithEmailAndPassword,
+      createUserWithEmailAndPassword,
+      sendEmailVerification,
+      sendPasswordResetEmail,
+      onAuthStateChanged,
+      signOut
+    } from "https://www.gstatic.com/firebasejs/10.5.0/firebase-auth.js";
 
     const firebaseConfig = {
       apiKey: "AIzaSyDGBKxvfcY-PA_vC7SA8G0f-TjqjK3OD3o",
@@ -26,50 +34,130 @@
     const app = initializeApp(firebaseConfig);
     const auth = getAuth(app);
 
+    // Se o usuário já estiver autenticado e com email verificado, redireciona para servicos.html.
     onAuthStateChanged(auth, user => {
-      if (user) window.location.replace("perfil.html");
+      if (user && user.emailVerified) {
+        window.location.replace("servicos.html");
+      }
     });
 
-    document.getElementById("loginForm").addEventListener("submit", (e) => {
+    // Função para iniciar a contagem regressiva no botão de reenvio
+    function startCountdown(seconds) {
+      const btn = document.getElementById("resendButton");
+      btn.disabled = true;
+      let count = seconds;
+      btn.innerText = `Reenviar em ${count}s`;
+      const interval = setInterval(() => {
+        count--;
+        btn.innerText = `Reenviar em ${count}s`;
+        if (count <= 0) {
+          clearInterval(interval);
+          btn.disabled = false;
+          btn.innerText = "Reenviar email de verificação";
+        }
+      }, 1000);
+    }
+
+    // Função para tratar o login
+    function handleLogin(e) {
       e.preventDefault();
       const email = document.getElementById("loginEmail").value;
       const password = document.getElementById("loginPassword").value;
 
       signInWithEmailAndPassword(auth, email, password)
-        .then(() => window.location.replace("perfil.html"))
+        .then((userCredential) => {
+          const user = userCredential.user;
+          if (!user.emailVerified) {
+            // Se o email NÃO estiver verificado, envia o email de verificação.
+            sendEmailVerification(user)
+              .then(() => {
+                alert("Seu email não foi verificado. Um email de verificação foi enviado. Confirme seu email para fazer login. Se não receber, utilize o botão de reenvio.");
+                document.getElementById("resendButton").style.display = "inline-block";
+                startCountdown(15);
+              })
+              .catch((error) => alert("Erro ao enviar email de verificação: " + error.message));
+            // Desloga o usuário para evitar acesso sem verificação.
+            signOut(auth);
+            return;
+          }
+          window.location.replace("servicos.html");
+        })
         .catch(error => alert("Erro ao fazer login: " + error.message));
-    });
+    }
 
-    document.getElementById("registerForm").addEventListener("submit", (e) => {
+    // Função para tratar o cadastro e enviar email de verificação.
+    function handleRegister(e) {
       e.preventDefault();
       const email = document.getElementById("registerEmail").value;
       const password = document.getElementById("registerPassword").value;
 
       createUserWithEmailAndPassword(auth, email, password)
-        .then(() => alert("Conta criada com sucesso! Faça login."))
+        .then((userCredential) => {
+          const user = userCredential.user;
+          sendEmailVerification(user)
+            .then(() => {
+              alert("Conta criada com sucesso! Um email de verificação foi enviado. Confirme seu email para fazer login.");
+            })
+            .catch((error) => alert("Erro ao enviar email de verificação: " + error.message));
+        })
         .catch(error => alert("Erro ao criar conta: " + error.message));
-    });
+    }
 
-    document.getElementById("forgotPassword").addEventListener("click", () => {
+    // Função para recuperar senha.
+    function handleForgotPassword() {
       const email = document.getElementById("loginEmail").value;
-      if (!email) return alert("Digite seu e-mail para redefinir a senha.");
-
+      if (!email) {
+        alert("Digite seu email para redefinir a senha.");
+        return;
+      }
       sendPasswordResetEmail(auth, email)
-        .then(() => alert("E-mail de recuperação enviado!"))
-        .catch(error => alert("Erro ao enviar e-mail: " + error.message));
+        .then(() => alert("Email de recuperação enviado!"))
+        .catch(error => alert("Erro ao enviar email: " + error.message));
+    }
+
+    // Função para reenviar email de verificação com botão desabilitado e contagem regressiva.
+    function handleResendVerification() {
+      const email = document.getElementById("loginEmail").value;
+      const password = document.getElementById("loginPassword").value;
+
+      signInWithEmailAndPassword(auth, email, password)
+        .then(userCredential => {
+          const user = userCredential.user;
+          if (!user.emailVerified) {
+            sendEmailVerification(user)
+              .then(() => {
+                alert("Email de verificação reenviado. Aguarde 15 segundos para reenviar novamente.");
+                startCountdown(15);
+              })
+              .catch(error => alert("Erro ao reenviar email: " + error.message));
+          } else {
+            alert("Seu email já está verificado. Por favor, faça login.");
+          }
+        })
+        .catch(error => alert("Erro ao reenviar email: " + error.message));
+    }
+
+    document.addEventListener("DOMContentLoaded", function () {
+      document.getElementById("loginForm").addEventListener("submit", handleLogin);
+      document.getElementById("registerForm").addEventListener("submit", handleRegister);
+      document.getElementById("forgotPassword").addEventListener("click", handleForgotPassword);
+      document.getElementById("resendButton").addEventListener("click", handleResendVerification);
     });
   </script>
 
-  <!-- Estilos CSS -->
   <style>
     :root {
-      --color-primary: #3C3B6E;
-      --color-secondary: #B22234;
-      --color-light: #ffffff;
+      --color-primary: #0033A0;  /* Azul */
+      --color-secondary: #C8102E; /* Vermelho */
+      --color-light: #ffffff;      /* Branco */
       --color-dark: #222;
     }
-
-    * { box-sizing: border-box; margin: 0; padding: 0; font-family: Arial, sans-serif; }
+    * { 
+      box-sizing: border-box; 
+      margin: 0; 
+      padding: 0; 
+      font-family: Arial, sans-serif; 
+    }
     body {
       background: linear-gradient(135deg, var(--color-primary), var(--color-secondary));
       color: var(--color-light);
@@ -78,7 +166,6 @@
       align-items: center;
       height: 100vh;
     }
-
     .container {
       background: rgba(255, 255, 255, 0.2);
       padding: 30px;
@@ -88,21 +175,19 @@
       text-align: center;
       backdrop-filter: blur(10px);
     }
-
-    h2 { margin-bottom: 15px; }
-
-    form {
-      display: flex;
-      flex-direction: column;
-      text-align: left;
+    h2 { 
+      margin-bottom: 15px; 
     }
-
-    form label {
-      margin-bottom: 5px;
-      font-weight: bold;
-      color: var(--color-light);
+    form { 
+      display: flex; 
+      flex-direction: column; 
+      text-align: left; 
     }
-
+    form label { 
+      margin-bottom: 5px; 
+      font-weight: bold; 
+      color: var(--color-light); 
+    }
     form input {
       padding: 10px;
       margin-bottom: 10px;
@@ -112,7 +197,6 @@
       background: rgba(255, 255, 255, 0.3);
       color: var(--color-light);
     }
-
     form button {
       padding: 12px;
       background: var(--color-secondary);
@@ -123,17 +207,39 @@
       transition: transform 0.1s;
       font-weight: bold;
     }
-
-    form button:hover { transform: scale(1.05); }
-
-    .toggle {
-      margin-top: 15px;
-      cursor: pointer;
-      font-weight: bold;
-      color: #FFD700;
+    form button:hover { 
+      transform: scale(1.05); 
     }
-
-    .toggle:hover { color: #FFA500; }
+    .toggle { 
+      margin-top: 15px; 
+      cursor: pointer; 
+      font-weight: bold; 
+      color: #FFD700; 
+    }
+    .toggle:hover { 
+      color: #FFA500; 
+    }
+    #forgotPassword { 
+      color: var(--color-light); 
+      text-decoration: underline; 
+      cursor: pointer; 
+    }
+    #resendButton {
+      margin-top: 10px;
+      padding: 8px;
+      background: var(--color-secondary);
+      border: none;
+      border-radius: 5px;
+      font-weight: bold;
+      cursor: pointer;
+      color: var(--color-light);
+      display: none;
+    }
+    #loggedMessage {
+      display: none;
+      font-size: 1.2em;
+      margin-top: 10px;
+    }
   </style>
 
   <script>
@@ -144,12 +250,9 @@
       registerContainer.style.display = registerContainer.style.display === "none" ? "block" : "none";
     }
   </script>
-
 </head>
 <body>
-
   <div class="container">
-
     <!-- Formulário de Login -->
     <div id="loginFormContainer">
       <h2>Login</h2>
@@ -163,7 +266,6 @@
       <p class="toggle" onclick="toggleForm()">Criar uma conta</p>
       <p><a id="forgotPassword" href="#">Esqueci minha senha</a></p>
     </div>
-
     <!-- Formulário de Cadastro -->
     <div id="registerFormContainer" style="display: none;">
       <h2>Criar Conta</h2>
@@ -176,8 +278,10 @@
       </form>
       <p class="toggle" onclick="toggleForm()">Já tenho uma conta</p>
     </div>
-
+    <!-- Botão para reenviar email de verificação, aparece quando necessário -->
+    <button id="resendButton">Reenviar email de verificação</button>
+    <!-- Mensagem informando que o usuário já está logado -->
+    <p id="loggedMessage">Logado!</p>
   </div>
-
 </body>
 </html>
