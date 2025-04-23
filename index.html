@@ -5,10 +5,11 @@
   <meta name="description" content="Swift Hub Catalão - Início">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Swift Hub Catalão - Início</title>
-  
-  <!-- Font Awesome para ícones -->
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.0/css/all.min.css">
-  
+
+  <!-- Ícones do Font Awesome carregados de forma otimizada -->
+  <link rel="preload" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.0/css/all.min.css" as="style" onload="this.rel='stylesheet'">
+  <noscript><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.0/css/all.min.css"></noscript>
+
   <!-- Firebase Modular SDK -->
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.8/firebase-app.js";
@@ -26,25 +27,23 @@
     const app = initializeApp(firebaseConfig);
     const auth = getAuth(app);
 
-    // Verifica autenticação e ajusta o menu
     onAuthStateChanged(auth, user => {
       const menuPerfil = document.getElementById("menuPerfil");
       const loginMenuItem = document.getElementById("loginMenuItem");
       const logoutButton = document.getElementById("logoutButton");
 
       if (user) {
-        menuPerfil.style.display = "inline"; // Exibir "Meu Perfil"
+        menuPerfil.style.display = "inline";
         loginMenuItem.textContent = "Logado";
         loginMenuItem.removeAttribute("href");
         loginMenuItem.style.pointerEvents = "none";
-        logoutButton.style.display = "block"; // Exibir botão de logout
+        logoutButton.style.display = "block";
       } else {
         menuPerfil.style.display = "none";
         logoutButton.style.display = "none";
       }
     });
 
-    // Lógica de logout
     document.getElementById("logoutButton").addEventListener("click", function() {
       signOut(auth).then(() => {
         window.location.href = "login.html";
@@ -55,71 +54,95 @@
   </script>
 
   <style>
+    :root {
+      --color-primary: #3C3B6E;
+      --color-secondary: #B22234;
+      --color-light: #ffffff;
+      --color-dark: #333;
+    }
+
     * { box-sizing: border-box; margin: 0; padding: 0; }
-    body { font-family: Arial, sans-serif; background: #fff; line-height: 1.6; color: #333; }
+    body { font-family: Arial, sans-serif; background: var(--color-light); line-height: 1.6; color: var(--color-dark); }
+
     .container { max-width: 1200px; margin: auto; padding: 20px; }
-    header { background: linear-gradient(45deg, #3C3B6E, #1C1C5B); color: #fff; text-align: center; padding: 30px 0; position: relative; }
-    header h1 { font-size: 2.8em; margin-bottom: 10px; }
-    header p { font-size: 1.3em; }
+
+    header {
+      background: linear-gradient(45deg, var(--color-primary), #1C1C5B);
+      color: var(--color-light);
+      text-align: center;
+      padding: 30px 0;
+      position: relative;
+    }
+
     #logoutButton {
       position: absolute;
       right: 20px;
       top: 20px;
-      background-color: #B22234;
-      color: #fff;
+      background: var(--color-secondary);
+      color: var(--color-light);
       border: none;
       padding: 10px 15px;
       border-radius: 5px;
       cursor: pointer;
       display: none;
     }
+
     nav {
-      background: #f8f8f8;
+      background: var(--color-light);
       box-shadow: 0 2px 5px rgba(0,0,0,0.1);
     }
+
     nav ul {
       display: flex;
       justify-content: center;
       list-style: none;
       padding: 10px;
     }
+
     nav ul li { margin: 0 20px; }
+
     nav ul li a {
       text-decoration: none;
       font-weight: bold;
-      color: #3C3B6E;
+      color: var(--color-primary);
       font-size: 1.1em;
       transition: color 0.2s;
     }
-    nav ul li a:hover { color: #B22234; }
+
+    nav ul li a:hover { color: var(--color-secondary); }
+
     section#inicio {
       padding: 40px 0;
       text-align: center;
       background: #e9ecef;
     }
+
     section#inicio h2 {
       font-size: 2em;
       margin-bottom: 20px;
-      color: #3C3B6E;
+      color: var(--color-primary);
     }
+
     section#inicio p {
       font-size: 1.1em;
       margin: 15px auto;
       max-width: 800px;
     }
+
     footer {
-      background: #B22234;
-      color: #fff;
+      background: var(--color-secondary);
+      color: var(--color-light);
       text-align: center;
       padding: 20px 0;
       margin-top: 40px;
     }
+
     .whatsapp-float {
       position: fixed;
       bottom: 20px;
       right: 20px;
       background: #25D366;
-      color: #fff;
+      color: var(--color-light);
       border-radius: 50%;
       width: 60px;
       height: 60px;
@@ -157,9 +180,6 @@
       <h2>Bem-vindo à Swift Hub Catalão</h2>
       <p>
         Somos a ponte que conecta você aos melhores profissionais para serviços domésticos e comerciais. Nosso compromisso é oferecer rapidez, segurança e excelência em cada atendimento.
-      </p>
-      <p>
-        Por que nos contratar? Selecionamos parceiros criteriosamente para garantir um serviço de alta qualidade e atendimento personalizado, agregando confiança e eficiência a cada projeto.
       </p>
     </div>
   </section>
