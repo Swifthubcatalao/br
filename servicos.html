@@ -7,29 +7,17 @@
   <title>Swift Hub Catalão - Serviços</title>
   <!-- Font Awesome para ícones -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.0/css/all.min.css">
-
-  <!-- Firebase Compat SDK (para manter a sintaxe clássica) -->
+  
+  <!-- Firebase Compat SDK (mantendo a sintaxe clássica) -->
   <script src="https://www.gstatic.com/firebasejs/9.6.8/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.6.8/firebase-auth-compat.js"></script>
-
+  
   <style>
     /* Reset e configuração global */
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-    }
-    body {
-      font-family: Arial, sans-serif;
-      background: #fff;
-      line-height: 1.6;
-      color: #333;
-    }
-    .container {
-      max-width: 1200px;
-      margin: auto;
-      padding: 20px;
-    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: Arial, sans-serif; background: #fff; line-height: 1.6; color: #333; }
+    .container { max-width: 1200px; margin: auto; padding: 20px; }
+    
     header {
       background: linear-gradient(45deg, #3C3B6E, #1C1C5B);
       color: #fff;
@@ -37,13 +25,9 @@
       padding: 30px 0;
       position: relative;
     }
-    header h1 {
-      font-size: 2.8em;
-      margin-bottom: 10px;
-    }
-    header p {
-      font-size: 1.3em;
-    }
+    header h1 { font-size: 2.8em; margin-bottom: 10px; }
+    header p { font-size: 1.3em; }
+    /* Botão de logout */
     #logoutButton {
       position: absolute;
       right: 20px;
@@ -55,6 +39,7 @@
       border-radius: 5px;
       cursor: pointer;
     }
+    
     nav {
       background: #f8f8f8;
       box-shadow: 0 2px 5px rgba(0,0,0,0.1);
@@ -65,9 +50,7 @@
       list-style: none;
       padding: 10px;
     }
-    nav ul li {
-      margin: 0 20px;
-    }
+    nav ul li { margin: 0 20px; }
     nav ul li a {
       text-decoration: none;
       font-weight: bold;
@@ -75,9 +58,8 @@
       font-size: 1.1em;
       transition: color 0.2s;
     }
-    nav ul li a:hover {
-      color: #B22234;
-    }
+    nav ul li a:hover { color: #B22234; }
+    
     section#servico {
       padding: 40px 0;
       text-align: center;
@@ -137,9 +119,8 @@
       text-align: center;
       font-weight: bold;
     }
-    .card a:hover {
-      background: #a01d2d;
-    }
+    .card a:hover { background: #a01d2d; }
+    
     footer {
       background: #B22234;
       color: #fff;
@@ -147,6 +128,7 @@
       padding: 20px 0;
       margin-top: 40px;
     }
+    
     /* Botão flutuante do WhatsApp */
     .whatsapp-float {
       position: fixed;
@@ -163,16 +145,11 @@
       z-index: 1000;
       box-shadow: 2px 2px 3px rgba(0,0,0,0.3);
     }
+    
     @media (max-width: 768px) {
-      nav ul {
-        flex-direction: column;
-      }
-      nav ul li {
-        margin: 10px 0;
-      }
-      .card {
-        width: 90%;
-      }
+      nav ul { flex-direction: column; }
+      nav ul li { margin: 10px 0; }
+      .card { width: 90%; }
     }
   </style>
 </head>
@@ -190,6 +167,8 @@
       <ul>
         <li><a href="index.html">Início</a></li>
         <li><a href="servicos.html">Serviços</a></li>
+        <!-- Menu Perfil adicionado (oculto por padrão) -->
+        <li><a href="perfil.html" id="menuPerfil" style="display: none;">Meu Perfil</a></li>
       </ul>
     </div>
   </nav>
@@ -215,9 +194,9 @@
         <!-- 3. Detetização -->
         <div class="card">
           <img src="https://raw.githubusercontent.com/Swifthubcatalao/br/main/imagens/detetizacao.jpg" alt="Detetização">
-          <h3>Detetização</h3>
+          <h3>Dedetização</h3>
           <p>Elimine pragas e garanta ambientes mais seguros e limpos com serviços especializados.</p>
-          <a href="https://wa.me/64981226078?text=Oi,%20preciso%20de%20detetizacao" target="_blank">Agendar</a>
+          <a href="https://wa.me/64981226078?text=Oi,%20preciso%20de%20dedetizacao" target="_blank">Agendar</a>
         </div>
         <!-- 4. Jardineiro -->
         <div class="card">
@@ -316,17 +295,22 @@
         appId: "1:756803145076:web:4593bd78a26a2270a1f021"
       };
 
-      // Inicializa o Firebase (usando compat)
+      // Inicializa o Firebase usando o SDK Compat
       if (!firebase.apps.length) {
         firebase.initializeApp(firebaseConfig);
       }
-      
       const auth = firebase.auth();
 
-      // Verifica se o usuário está autenticado. Se não estiver, redireciona para login.html.
+      // Verifica se o usuário está autenticado. Se não estiver, redireciona para login.html;
       auth.onAuthStateChanged((user) => {
         if (!user && !window.location.href.includes("login.html")) {
           window.location.href = "./login.html";
+        } else if (user) {
+          // Exibe o link "Meu Perfil" no menu para usuários autenticados
+          const menuPerfil = document.getElementById("menuPerfil");
+          if (menuPerfil) {
+            menuPerfil.style.display = "inline";
+          }
         }
       });
 
@@ -344,4 +328,4 @@
     });
   </script>
 </body>
-  </html>
+</html>
