@@ -5,22 +5,62 @@
   <meta name="description" content="Swift Hub Catalão - Início">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Swift Hub Catalão - Início</title>
+  
   <!-- Font Awesome para ícones -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.0/css/all.min.css">
   
-  <!-- Firebase (versão 8 compatível) -->
-  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
-  
+  <!-- Firebase Modular SDK -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.8/firebase-app.js";
+    import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/9.6.8/firebase-auth.js";
+
+    const firebaseConfig = {
+      apiKey: "SUA_API_KEY",
+      authDomain: "SEU_DOMINIO.firebaseapp.com",
+      projectId: "SEU_PROJECT_ID",
+      storageBucket: "SEU_STORAGE_BUCKET",
+      messagingSenderId: "SEU_ID",
+      appId: "SEU_APP_ID"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+
+    // Verifica autenticação e ajusta o menu
+    onAuthStateChanged(auth, user => {
+      const menuPerfil = document.getElementById("menuPerfil");
+      const loginMenuItem = document.getElementById("loginMenuItem");
+      const logoutButton = document.getElementById("logoutButton");
+
+      if (user) {
+        menuPerfil.style.display = "inline"; // Exibir "Meu Perfil"
+        loginMenuItem.textContent = "Logado";
+        loginMenuItem.removeAttribute("href");
+        loginMenuItem.style.pointerEvents = "none";
+        logoutButton.style.display = "block"; // Exibir botão de logout
+      } else {
+        menuPerfil.style.display = "none";
+        logoutButton.style.display = "none";
+      }
+    });
+
+    // Lógica de logout
+    document.getElementById("logoutButton").addEventListener("click", function() {
+      signOut(auth).then(() => {
+        window.location.href = "login.html";
+      }).catch(error => {
+        alert("Erro ao sair: " + error.message);
+      });
+    });
+  </script>
+
   <style>
-    /* Reset e configurações básicas */
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body { font-family: Arial, sans-serif; background: #fff; line-height: 1.6; color: #333; }
     .container { max-width: 1200px; margin: auto; padding: 20px; }
     header { background: linear-gradient(45deg, #3C3B6E, #1C1C5B); color: #fff; text-align: center; padding: 30px 0; position: relative; }
     header h1 { font-size: 2.8em; margin-bottom: 10px; }
     header p { font-size: 1.3em; }
-    /* Botão de logout */
     #logoutButton {
       position: absolute;
       right: 20px;
@@ -31,7 +71,7 @@
       padding: 10px 15px;
       border-radius: 5px;
       cursor: pointer;
-      display: none; /* Inicialmente escondido */
+      display: none;
     }
     nav {
       background: #f8f8f8;
@@ -74,7 +114,6 @@
       padding: 20px 0;
       margin-top: 40px;
     }
-    /* Botão flutuante do WhatsApp */
     .whatsapp-float {
       position: fixed;
       bottom: 20px;
@@ -130,61 +169,10 @@
       <p>&copy; 2025 Swift Hub Catalão. Todos os direitos reservados.</p>
     </div>
   </footer>
-  
+
   <a href="https://wa.me/64981226078" class="whatsapp-float" target="_blank">
     <i class="fab fa-whatsapp"></i>
   </a>
-  
-  <script>
-    document.addEventListener("DOMContentLoaded", function() {
-      // Configuração do Firebase
-      const firebaseConfig = {
-        apiKey: "AIzaSyDGBKxvfcY-PA_vC7SA8G0f-TjqjK3OD3o",
-        authDomain: "swifthubcatalao.firebaseapp.com",
-        projectId: "swifthubcatalao",
-        storageBucket: "swifthubcatalao.firebasestorage.app",
-        messagingSenderId: "756803145076",
-        appId: "1:756803145076:web:4593bd78a26a2270a1f021"
-      };
 
-      // Inicializa o Firebase se ainda não estiver inicializado
-      if (!firebase.apps.length) {
-        firebase.initializeApp(firebaseConfig);
-      }
-      const auth = firebase.auth();
-
-      // Verifica o estado de autenticação e atualiza o menu
-      auth.onAuthStateChanged(function(user) {
-        if (!user) {
-          // Se não estiver logado, mantém o menu como está (ou redirecionar, se preferir)
-        } else {
-          // Usuário logado: atualiza item do menu "Login" e exibe "Meu Perfil" e o botão de logout
-          const loginMenuItem = document.getElementById("loginMenuItem");
-          if (loginMenuItem) {
-            loginMenuItem.textContent = "Logado";
-            loginMenuItem.removeAttribute("href");
-            loginMenuItem.style.pointerEvents = "none";
-          }
-          const menuPerfil = document.getElementById("menuPerfil");
-          if (menuPerfil) {
-            menuPerfil.style.display = "inline";
-          }
-          const logoutButton = document.getElementById("logoutButton");
-          if (logoutButton) {
-            logoutButton.style.display = "block";
-          }
-        }
-      });
-
-      // Lógica para logout
-      document.getElementById("logoutButton").addEventListener("click", function() {
-        auth.signOut().then(function() {
-          window.location.href = "login.html";
-        }).catch(function(error) {
-          alert("Erro ao sair: " + error.message);
-        });
-      });
-    });
-  </script>
 </body>
 </html>
