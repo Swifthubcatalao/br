@@ -8,34 +8,28 @@
   <!-- Font Awesome para ícones -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.0/css/all.min.css">
   
-  <!-- Google Fontes -->
-  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+  <!-- Firebase SDK -->
+  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
   
   <style>
-    /* Reset de estilos e fonte */
-    * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Poppins', sans-serif; }
+    /* Reset e configurações globais */
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Arial', sans-serif; }
     body { background: #f4f4f4; display: flex; align-items: center; justify-content: center; min-height: 100vh; }
-
-    /* Container principal */
+    
+    /* Container do perfil */
     .profile-container {
       background: #fff;
       padding: 20px;
       border-radius: 10px;
-      box-shadow: 0px 5px 15px rgba(0, 0, 0, 0.1);
+      box-shadow: 0px 5px 15px rgba(0,0,0,0.1);
       text-align: center;
       width: 100%;
       max-width: 400px;
     }
 
     /* Cabeçalho do perfil */
-    .profile-header {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      flex-direction: column;
-      margin-bottom: 20px;
-    }
-
     .profile-header img {
       width: 80px;
       height: 80px;
@@ -50,11 +44,7 @@
       color: #333;
     }
 
-    /* Inputs de perfil */
-    .profile-form {
-      text-align: left;
-    }
-
+    /* Inputs e botões */
     .profile-form label {
       font-weight: 600;
       font-size: 14px;
@@ -90,7 +80,6 @@
 
     .btn-secondary { background: #555; color: #fff; }
     .btn-secondary:hover { background: #333; }
-
   </style>
 </head>
 <body>
@@ -124,11 +113,6 @@
     <button class="btn btn-secondary" id="resetPassword">Redefinir Senha</button>
   </div>
 
-  <!-- Firebase SDK -->
-  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
-  
   <script>
     const firebaseConfig = {
       apiKey: "SUA_API_KEY",
@@ -186,10 +170,24 @@
         .catch(error => alert("Erro ao verificar código: " + error.message));
     });
 
+    document.getElementById("profileForm").addEventListener("submit", function(e) {
+      e.preventDefault();
+      const user = auth.currentUser;
+
+      db.collection("users").doc(user.uid).set({
+        phone: document.getElementById("phone").value,
+        address: document.getElementById("address").value
+      }, { merge: true }).then(() => {
+        alert("Perfil atualizado com sucesso!");
+      }).catch(error => {
+        alert("Erro ao atualizar perfil: " + error.message);
+      });
+    });
+
     document.getElementById("resetPassword").addEventListener("click", function() {
-      auth.sendPasswordResetEmail(auth.currentUser.email).then(() => alert("E-mail de redefinição enviado!"));
+      auth.sendPasswordResetEmail(auth.currentUser.email)
+        .then(() => alert("E-mail de redefinição enviado!"));
     });
   </script>
-
 </body>
-  </html>
+</html>
