@@ -2,8 +2,8 @@
 <html lang="pt-br">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Meu Perfil - Swift Hub Catalão</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
   <!-- Font Awesome para ícones -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.0/css/all.min.css">
@@ -15,21 +15,28 @@
   
   <style>
     /* Reset e configurações globais */
-    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Arial', sans-serif; }
-    body { background: #f4f4f4; display: flex; align-items: center; justify-content: center; min-height: 100vh; }
-    
-    /* Container do perfil */
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: Arial, sans-serif;
+    }
+    body {
+      background: #f4f4f4;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+    }
     .profile-container {
       background: #fff;
       padding: 20px;
       border-radius: 10px;
-      box-shadow: 0px 5px 15px rgba(0,0,0,0.1);
+      box-shadow: 0 5px 15px rgba(0,0,0,0.1);
       text-align: center;
       width: 100%;
       max-width: 400px;
     }
-
-    /* Cabeçalho do perfil */
     .profile-header img {
       width: 80px;
       height: 80px;
@@ -38,13 +45,10 @@
       border: 3px solid #B22234;
       margin-bottom: 10px;
     }
-
     .profile-header h2 {
       font-size: 22px;
       color: #333;
     }
-
-    /* Inputs e botões */
     .profile-form label {
       font-weight: 600;
       font-size: 14px;
@@ -52,16 +56,14 @@
       margin: 10px 0 5px;
       color: #555;
     }
-
     .profile-form input {
       width: 100%;
       padding: 10px;
+      margin-bottom: 10px;
       border: 1px solid #ccc;
       border-radius: 5px;
       font-size: 14px;
     }
-
-    /* Botões */
     .btn {
       display: block;
       width: 100%;
@@ -74,12 +76,23 @@
       font-weight: bold;
       margin-top: 10px;
     }
-
-    .btn-primary { background: #B22234; color: #fff; }
-    .btn-primary:hover { background: #8A1E27; }
-
-    .btn-secondary { background: #555; color: #fff; }
-    .btn-secondary:hover { background: #333; }
+    .btn-primary {
+      background: #B22234;
+      color: #fff;
+    }
+    .btn-primary:hover {
+      background: #8A1E27;
+    }
+    .btn-secondary {
+      background: #555;
+      color: #fff;
+    }
+    .btn-secondary:hover {
+      background: #333;
+    }
+    #codeVerificationDiv {
+      margin-top: 10px;
+    }
   </style>
 </head>
 <body>
@@ -95,17 +108,17 @@
       <input type="email" id="email" readonly>
 
       <label for="phone"><i class="fas fa-phone"></i> Telefone:</label>
-      <input type="text" id="phone">
+      <input type="text" id="phone" placeholder="(XX) XXXXX-XXXX">
       <button type="button" class="btn btn-secondary" id="sendCode">Enviar Código SMS</button>
 
       <div id="codeVerificationDiv" style="display: none;">
         <label for="verificationCode"><i class="fas fa-key"></i> Código SMS:</label>
-        <input type="text" id="verificationCode">
+        <input type="text" id="verificationCode" placeholder="Digite o código">
         <button type="button" class="btn btn-secondary" id="verifyCode">Verificar Código</button>
       </div>
 
       <label for="address"><i class="fas fa-map-marker-alt"></i> Endereço:</label>
-      <input type="text" id="address">
+      <input type="text" id="address" placeholder="Seu endereço">
 
       <button type="submit" class="btn btn-primary">Atualizar Perfil</button>
     </form>
@@ -114,6 +127,7 @@
   </div>
 
   <script>
+    // Substitua os placeholders abaixo pelos dados reais do seu projeto Firebase.
     const firebaseConfig = {
       apiKey: "SUA_API_KEY",
       authDomain: "SEU_DOMINIO.firebaseapp.com",
@@ -128,28 +142,38 @@
     const db = firebase.firestore();
 
     let confirmationResult;
+    // Configurando reCAPTCHA vinculado ao botão "sendCode"
     const recaptchaVerifier = new firebase.auth.RecaptchaVerifier('sendCode', { size: 'invisible' });
 
+    // Verificação de autenticação com redirecionamento condicional
     auth.onAuthStateChanged(user => {
-      if (!user) {
-        window.location.href = "login.html";
+      if (!user && !window.location.pathname.includes("login.html")) {
+        // Se não houver usuário e não estivermos na página de login, redireciona.
+        window.location.replace("login.html");
         return;
       }
-
-      document.getElementById("profileName").innerText = user.displayName || "Nome do Usuário";
-      document.getElementById("email").value = user.email || "";
-
-      db.collection("users").doc(user.uid).get().then(doc => {
-        if (doc.exists) {
-          document.getElementById("phone").value = doc.data().phone || "";
-          document.getElementById("address").value = doc.data().address || "";
-        }
-      });
+      if (user) {
+        // Preenche os dados do perfil
+        document.getElementById("profileName").innerText = user.displayName || "Nome do Usuário";
+        document.getElementById("email").value = user.email || "";
+        
+        // Carrega dados adicionais do Firestore (telefone e endereço)
+        db.collection("users").doc(user.uid).get().then(doc => {
+          if (doc.exists) {
+            document.getElementById("phone").value = doc.data().phone || "";
+            document.getElementById("address").value = doc.data().address || "";
+          }
+        });
+      }
     });
 
+    // Envio de código SMS para validação do telefone
     document.getElementById("sendCode").addEventListener("click", function() {
       const phoneNumber = document.getElementById("phone").value;
-      if (!phoneNumber) return alert("Insira um telefone válido.");
+      if (!phoneNumber) {
+        alert("Insira um telefone válido.");
+        return;
+      }
 
       auth.currentUser.linkWithPhoneNumber(phoneNumber, recaptchaVerifier)
         .then(result => {
@@ -160,33 +184,38 @@
         .catch(error => alert("Erro ao enviar código: " + error.message));
     });
 
+    // Verificação do código SMS digitado
     document.getElementById("verifyCode").addEventListener("click", function() {
       const code = document.getElementById("verificationCode").value;
       confirmationResult.confirm(code)
         .then(() => {
           alert("Telefone verificado!");
-          db.collection("users").doc(auth.currentUser.uid).set({ phone: document.getElementById("phone").value }, { merge: true });
+          // Atualiza o telefone no Firestore
+          db.collection("users").doc(auth.currentUser.uid).set(
+            { phone: document.getElementById("phone").value },
+            { merge: true }
+          );
         })
         .catch(error => alert("Erro ao verificar código: " + error.message));
     });
 
+    // Atualização dos dados do perfil (telefone e endereço)
     document.getElementById("profileForm").addEventListener("submit", function(e) {
       e.preventDefault();
       const user = auth.currentUser;
-
       db.collection("users").doc(user.uid).set({
         phone: document.getElementById("phone").value,
         address: document.getElementById("address").value
-      }, { merge: true }).then(() => {
-        alert("Perfil atualizado com sucesso!");
-      }).catch(error => {
-        alert("Erro ao atualizar perfil: " + error.message);
-      });
+      }, { merge: true })
+      .then(() => alert("Perfil atualizado com sucesso!"))
+      .catch(error => alert("Erro ao atualizar perfil: " + error.message));
     });
 
+    // Redefinir senha via e-mail
     document.getElementById("resetPassword").addEventListener("click", function() {
       auth.sendPasswordResetEmail(auth.currentUser.email)
-        .then(() => alert("E-mail de redefinição enviado!"));
+        .then(() => alert("E-mail de redefinição enviado!"))
+        .catch(error => alert("Erro: " + error.message));
     });
   </script>
 </body>
