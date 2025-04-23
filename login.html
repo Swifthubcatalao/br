@@ -15,7 +15,6 @@
   <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
 
   <style>
-    /* Reset e estilos gerais */
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body { font-family: Arial, sans-serif; background: #f1f1f1; color: #333; line-height: 1.6; }
     .container { max-width: 400px; margin: auto; padding: 20px; }
@@ -138,133 +137,60 @@
         <p>Não tem conta? <a id="showRegister" href="#">Cadastre-se</a></p>
       </div>
     </div>
-
-    <!-- Formulário de Cadastro -->
-    <div class="form-container" id="registerFormContainer" style="display:none;">
-      <h2>Cadastro</h2>
-      <form id="registerForm">
-        <label for="registerEmail">Email:</label>
-        <input type="email" id="registerEmail" required>
-        <label for="registerPassword">Senha:</label>
-        <input type="password" id="registerPassword" required>
-        <button type="submit">Cadastrar</button>
-      </form>
-      <div class="toggle-link">
-        <p>Já tem conta? <a id="showLogin" href="#">Faça login</a></p>
-      </div>
-    </div>
   </div>
 
-  <!-- Botão flutuante do WhatsApp -->
-  <a href="https://wa.me/64981226078" class="whatsapp-float" target="_blank" aria-label="Contato via WhatsApp">
-    <i class="fab fa-whatsapp"></i>
-  </a>
-
   <script>
-    document.addEventListener('DOMContentLoaded', function() {
-      // Configuração do Firebase
-      const firebaseConfig = {
-        apiKey: "AIzaSyDGBKxvfcY-PA_vC7SA8G0f-TjqjK3OD3o",
-        authDomain: "swifthubcatalao.firebaseapp.com",
-        projectId: "swifthubcatalao",
-        storageBucket: "swifthubcatalao.appspot.com",
-        messagingSenderId: "756803145076",
-        appId: "1:756803145076:web:4593bd78a26a2270a1f021"
-      };
-      // Inicializa o Firebase se ainda não estiver inicializado
-      if (!firebase.apps.length) {
-        firebase.initializeApp(firebaseConfig);
+    const firebaseConfig = {
+      apiKey: "SUA_API_KEY",
+      authDomain: "SEU_DOMINIO.firebaseapp.com",
+      projectId: "SEU_PROJECT_ID",
+      storageBucket: "SEU_STORAGE_BUCKET",
+      messagingSenderId: "SEU_ID",
+      appId: "SEU_APP_ID"
+    };
+
+    firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
+
+    // Corrigindo loop infinito no redirecionamento
+    auth.onAuthStateChanged(user => {
+      if (user && !window.location.pathname.includes("perfil.html")) {
+        window.location.replace("perfil.html");
       }
-      const auth = firebase.auth();
+    });
 
-      // Redireciona usuário logado para perfil.html imediatamente
-      auth.onAuthStateChanged(user => {
-        if (user) {
-          window.location.href = "perfil.html";
-        }
-      });
+    document.getElementById("loginForm").addEventListener("submit", function(e) {
+      e.preventDefault();
+      const email = document.getElementById("loginEmail").value;
+      const password = document.getElementById("loginPassword").value;
 
-      // Função para exibir o modal de erro
-      function showError(message) {
-        document.getElementById("errorMessage").innerHTML = message;
-        document.getElementById("errorModal").style.display = "block";
+      auth.signInWithEmailAndPassword(email, password)
+        .then(userCredential => {
+          const user = userCredential.user;
+
+          if (!user.emailVerified) {
+            alert("Seu e-mail não foi verificado. Por favor, verifique seu e-mail antes de fazer login.");
+            auth.signOut();
+            return;
+          }
+
+          window.location.replace("perfil.html");
+        })
+        .catch(error => {
+          alert("Erro ao fazer login: " + error.message);
+        });
+    });
+
+    document.getElementById("forgotPassword").addEventListener("click", function(e) {
+      e.preventDefault();
+      const email = document.getElementById("loginEmail").value;
+      if (!email) {
+        alert("Digite seu e-mail para redefinir a senha.");
+        return;
       }
-
-      // Fechar modal de erro
-      document.getElementById("closeModal").addEventListener("click", () => {
-        document.getElementById("errorModal").style.display = "none";
-      });
-
-      // Alternar entre formulários de Login e Cadastro
-      document.getElementById("showRegister").addEventListener("click", function(e) {
-        e.preventDefault();
-        document.getElementById("loginFormContainer").style.display = "none";
-        document.getElementById("registerFormContainer").style.display = "block";
-      });
-      document.getElementById("showLogin").addEventListener("click", function(e) {
-        e.preventDefault();
-        document.getElementById("registerFormContainer").style.display = "none";
-        document.getElementById("loginFormContainer").style.display = "block";
-      });
-
-      // Recuperação de senha
-      document.getElementById("forgotPassword").addEventListener("click", function(e) {
-        e.preventDefault();
-        const email = document.getElementById("loginEmail").value;
-        if (!email) {
-          alert("Digite seu e-mail para redefinir a senha.");
-          return;
-        }
-        auth.sendPasswordResetEmail(email)
-          .then(() => alert("E-mail de recuperação enviado!"))
-          .catch(error => showError("Erro ao enviar e-mail: " + error.message));
-      });
-
-      // Cadastro de usuário
-      document.getElementById("registerForm").addEventListener("submit", function(e) {
-        e.preventDefault();
-        const email = document.getElementById("registerEmail").value;
-        const password = document.getElementById("registerPassword").value;
-
-        auth.createUserWithEmailAndPassword(email, password)
-          .then(userCredential => {
-            // Envia e-mail de verificação
-            userCredential.user.sendEmailVerification();
-            alert("Cadastro realizado com sucesso! Verifique seu email.");
-            
-            // Alterna para o formulário de login
-            document.getElementById("showLogin").click();
-          })
-          .catch(error => showError(error.message));
-      });
-
-      // Login de usuário
-      document.getElementById("loginForm").addEventListener("submit", function(e) {
-        e.preventDefault();
-        const email = document.getElementById("loginEmail").value;
-        const password = document.getElementById("loginPassword").value;
-
-        auth.signInWithEmailAndPassword(email, password)
-          .then(userCredential => {
-            // Se o email não estiver verificado, mostra opção para reenviar e-mail de verificação
-            if (!userCredential.user.emailVerified) {
-              document.getElementById("errorMessage").innerHTML = "Por favor, verifique seu email antes de fazer login. <br><button id='resendButton'>Reenviar e-mail de verificação</button>";
-              document.getElementById("errorModal").style.display = "block";
-              auth.signOut();
-              document.getElementById("resendButton").addEventListener("click", function() {
-                userCredential.user.sendEmailVerification()
-                  .then(() => {
-                    alert("E-mail de verificação reenviado!");
-                    document.getElementById("errorModal").style.display = "none";
-                  })
-                  .catch(error => showError(error.message));
-              });
-            } else {
-              window.location.href = "perfil.html";
-            }
-          })
-          .catch(error => showError(error.message));
-      });
+      auth.sendPasswordResetEmail(email)
+        .then(() => alert("E-mail de recuperação enviado!"))
+        .catch(error => alert("Erro ao enviar e-mail: " + error.message));
     });
   </script>
 </body>
