@@ -73,11 +73,11 @@
         console.log("Listeners de inatividade removidos. Timer cancelado.");
     }
     // --- End Inactivity Logout Logic ---
-
+    
     onAuthStateChanged(auth, user => {
       if (!user) {
         // Se o usuário não estiver autenticado, redireciona para a página de login.
-         removeInactivityListeners(); // Ensure timer is off if user logs out or is not authenticated
+          removeInactivityListeners(); // Ensure timer is off if user logs out or is not authenticated
         window.location.replace("login.html"); // Use replace for history management
       } else {
         // Se estiver autenticado, exibe o botão de logout e inicia o timer de inatividade.
@@ -201,7 +201,7 @@
       transition: background 0.2s;
     }
      #logoutButton:hover {
-        background-color: #a01d2d;
+         background-color: #a01d2d;
      }
     
     /* Popup Lateral do Menu */
@@ -356,9 +356,9 @@
        justify-content: center;
        align-items: center;
     }
-     .whatsapp-float i {
-         font-size: 30px;
-     }
+    .whatsapp-float i {
+        font-size: 30px;
+    }
     
     @media (max-width: 768px) {
       .menu-icon {
@@ -386,7 +386,8 @@
     <div id="menuPopup" class="menu-popup">
     <span class="close-menu">&times;</span>
     <a href="index.html">Início</a>
-    <a href="servicos.html">Serviços</a>     <a href="perfil.html">Meu Perfil</a>     <a href="login.html">Login</a>   </div>
+    <a href="perfil.html">Meu Perfil</a>     <a href="login.html">Login</a>
+  </div>
   
     <section id="servico">
     <div class="container">
