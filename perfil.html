@@ -2,8 +2,8 @@
 <html lang="pt-br">
 <head>
   <meta charset="UTF-8">
-  <title>Meu Perfil - Swift Hub Catalão</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Meu Perfil - Swift Hub Catalão</title>
   
   <!-- Font Awesome para ícones -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.0/css/all.min.css">
@@ -142,22 +142,19 @@
     const db = firebase.firestore();
 
     let confirmationResult;
-    // Configurando reCAPTCHA vinculado ao botão "sendCode"
     const recaptchaVerifier = new firebase.auth.RecaptchaVerifier('sendCode', { size: 'invisible' });
 
-    // Verificação de autenticação com redirecionamento condicional
+    // Corrigindo loop infinito no redirecionamento
     auth.onAuthStateChanged(user => {
       if (!user && !window.location.pathname.includes("login.html")) {
-        // Se não houver usuário e não estivermos na página de login, redireciona.
         window.location.replace("login.html");
-        return;
       }
+
       if (user) {
         // Preenche os dados do perfil
         document.getElementById("profileName").innerText = user.displayName || "Nome do Usuário";
         document.getElementById("email").value = user.email || "";
-        
-        // Carrega dados adicionais do Firestore (telefone e endereço)
+
         db.collection("users").doc(user.uid).get().then(doc => {
           if (doc.exists) {
             document.getElementById("phone").value = doc.data().phone || "";
@@ -167,7 +164,6 @@
       }
     });
 
-    // Envio de código SMS para validação do telefone
     document.getElementById("sendCode").addEventListener("click", function() {
       const phoneNumber = document.getElementById("phone").value;
       if (!phoneNumber) {
@@ -184,13 +180,11 @@
         .catch(error => alert("Erro ao enviar código: " + error.message));
     });
 
-    // Verificação do código SMS digitado
     document.getElementById("verifyCode").addEventListener("click", function() {
       const code = document.getElementById("verificationCode").value;
       confirmationResult.confirm(code)
         .then(() => {
           alert("Telefone verificado!");
-          // Atualiza o telefone no Firestore
           db.collection("users").doc(auth.currentUser.uid).set(
             { phone: document.getElementById("phone").value },
             { merge: true }
@@ -199,19 +193,6 @@
         .catch(error => alert("Erro ao verificar código: " + error.message));
     });
 
-    // Atualização dos dados do perfil (telefone e endereço)
-    document.getElementById("profileForm").addEventListener("submit", function(e) {
-      e.preventDefault();
-      const user = auth.currentUser;
-      db.collection("users").doc(user.uid).set({
-        phone: document.getElementById("phone").value,
-        address: document.getElementById("address").value
-      }, { merge: true })
-      .then(() => alert("Perfil atualizado com sucesso!"))
-      .catch(error => alert("Erro ao atualizar perfil: " + error.message));
-    });
-
-    // Redefinir senha via e-mail
     document.getElementById("resetPassword").addEventListener("click", function() {
       auth.sendPasswordResetEmail(auth.currentUser.email)
         .then(() => alert("E-mail de redefinição enviado!"))
