@@ -8,12 +8,12 @@
   <!-- Font Awesome para ícones -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.0/css/all.min.css">
   
-  <!-- Firebase versão 8 compatível -->
+  <!-- Firebase (versão 8 compatível) -->
   <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
   <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
-
+  
   <style>
-    /* Reset e configuração global */
+    /* Reset e configurações básicas */
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body { font-family: Arial, sans-serif; background: #fff; line-height: 1.6; color: #333; }
     .container { max-width: 1200px; margin: auto; padding: 20px; }
@@ -107,6 +107,7 @@
       <ul>
         <li><a href="index.html">Início</a></li>
         <li><a href="servicos.html">Serviços</a></li>
+        <li><a href="perfil.html" id="menuPerfil" style="display: none;">Meu Perfil</a></li>
         <li><a href="login.html" id="loginMenuItem">Login</a></li>
       </ul>
     </div>
@@ -155,19 +156,19 @@
       // Verifica o estado de autenticação e atualiza o menu
       auth.onAuthStateChanged(function(user) {
         if (!user) {
-          // Se o usuário não estiver logado, redireciona para login (exceto na página login)
-          if (window.location.pathname.indexOf("login.html") === -1) {
-            window.location.href = "login.html";
-          }
+          // Se não estiver logado, mantém o menu como está (ou redirecionar, se preferir)
         } else {
-          // Usuário logado: atualiza o item de menu "Login" para "Logado"
+          // Usuário logado: atualiza item do menu "Login" e exibe "Meu Perfil" e o botão de logout
           const loginMenuItem = document.getElementById("loginMenuItem");
           if (loginMenuItem) {
             loginMenuItem.textContent = "Logado";
             loginMenuItem.removeAttribute("href");
             loginMenuItem.style.pointerEvents = "none";
           }
-          // Exibe o botão de logout
+          const menuPerfil = document.getElementById("menuPerfil");
+          if (menuPerfil) {
+            menuPerfil.style.display = "inline";
+          }
           const logoutButton = document.getElementById("logoutButton");
           if (logoutButton) {
             logoutButton.style.display = "block";
