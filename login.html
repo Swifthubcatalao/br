@@ -166,12 +166,15 @@
         messagingSenderId: "756803145076",
         appId: "1:756803145076:web:4593bd78a26a2270a1f021"
       };
-      firebase.initializeApp(firebaseConfig);
+      // Inicializa o Firebase se ainda não estiver inicializado
+      if (!firebase.apps.length) {
+        firebase.initializeApp(firebaseConfig);
+      }
       const auth = firebase.auth();
 
       // Função para exibir o modal de erro
       function showError(message) {
-        document.getElementById("errorMessage").textContent = message;
+        document.getElementById("errorMessage").innerHTML = message;
         document.getElementById("errorModal").style.display = "block";
       }
 
@@ -180,7 +183,7 @@
         document.getElementById("errorModal").style.display = "none";
       });
 
-      // Alternar entre formulários
+      // Alternar entre formulários de Login e Cadastro
       document.getElementById("showRegister").addEventListener("click", function(e) {
         e.preventDefault();
         document.getElementById("loginFormContainer").style.display = "none";
@@ -201,7 +204,7 @@
 
         auth.createUserWithEmailAndPassword(email, password)
           .then((userCredential) => {
-            // Envia email de verificação
+            // Envia e-mail de verificação
             userCredential.user.sendEmailVerification();
             alert("Cadastro realizado com sucesso! Verifique seu email.");
             // Alterna para o formulário de login
@@ -218,10 +221,19 @@
 
         auth.signInWithEmailAndPassword(email, password)
           .then((userCredential) => {
-            // Se o email não foi verificado, notifica e desloga
+            // Se o usuário não possui email verificado, mostrar opção de reenviar
             if (!userCredential.user.emailVerified) {
-              showError("Por favor, verifique seu email antes de fazer login.");
+              document.getElementById("errorMessage").innerHTML = "Por favor, verifique seu email antes de fazer login. <br><button id='resendButton'>Reenviar e-mail de verificação</button>";
+              document.getElementById("errorModal").style.display = "block";
               auth.signOut();
+              document.getElementById("resendButton").addEventListener("click", function() {
+                userCredential.user.sendEmailVerification()
+                  .then(() => {
+                    alert("E-mail de verificação reenviado!");
+                    document.getElementById("errorModal").style.display = "none";
+                  })
+                  .catch(error => showError(error.message));
+              });
             } else {
               window.location.href = "index.html";
             }
