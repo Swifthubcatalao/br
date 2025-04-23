@@ -22,7 +22,7 @@
       signOut
     } from "https://www.gstatic.com/firebasejs/10.5.0/firebase-auth.js";
 
-    // Configure seu Firebase
+    // Configure seu Firebase aqui.
     const firebaseConfig = {
       apiKey: "AIzaSyDGBKxvfcY-PA_vC7SA8G0f-TjqjK3OD3o",
       authDomain: "swifthubcatalao.firebaseapp.com",
@@ -35,14 +35,14 @@
     const app = initializeApp(firebaseConfig);
     const auth = getAuth(app);
 
-    // Atualiza o menu de navegação conforme o status de autenticação.
+    // Verifica o estado de autenticação (se o usuário já estiver logado e com email verificado, redireciona para servicos.html)
     onAuthStateChanged(auth, user => {
       const menuPerfil = document.getElementById("menuPerfil");
       const loginMenuItem = document.getElementById("loginMenuItem");
       const logoutButton = document.getElementById("logoutButton");
       if (user) {
         menuPerfil.style.display = "inline";
-        // Exibe "Logado" com um indicador verde
+        // Exibe "Logado" com indicador verde
         loginMenuItem.innerHTML = "Logado <span class='status-indicator'></span>";
         loginMenuItem.removeAttribute("href");
         loginMenuItem.style.pointerEvents = "none";
@@ -64,7 +64,7 @@
       });
     });
 
-    // Inicia a contagem regressiva no botão de reenvio
+    // Inicia a contagem regressiva no botão de reenvio de email
     function startCountdown(seconds) {
       const btn = document.getElementById("resendButton");
       btn.disabled = true;
@@ -90,30 +90,33 @@
       signInWithEmailAndPassword(auth, email, password)
         .then((userCredential) => {
           const user = userCredential.user;
-          if (!user.emailVerified) {
-            // Se o email não estiver verificado, envia ou reenvia o email de verificação.
-            sendEmailVerification(user)
-              .then(() => {
-                alert("Seu email não foi verificado. Um email de verificação foi enviado. Verifique sua caixa de entrada. Se não receber, utilize o botão de reenvio.");
-                const btn = document.getElementById("resendButton");
-                btn.style.display = "inline-block";
-                btn.innerText = "Enviado";
-                setTimeout(() => {
-                  startCountdown(15);
-                }, 1000);
-              })
-              .catch((error) => alert("Erro ao enviar email de verificação: " + error.message));
-            // Desloga o usuário para evitar acesso sem confirmação.
-            signOut(auth);
-            return;
-          }
-          // Email verificado? Redireciona para a página de serviços.
-          window.location.replace("servicos.html");
+          // Força recarregar os dados do usuário para obter o status atualizado de verificação
+          user.reload().then(() => {
+            if (!user.emailVerified) {
+              // Se o email não estiver verificado (ou seja, é o primeiro login), envia email de verificação
+              sendEmailVerification(user)
+                .then(() => {
+                  alert("Seu email não foi verificado. Um email de verificação foi enviado. Confira sua caixa de entrada. Se não receber, utilize o botão de reenvio.");
+                  const btn = document.getElementById("resendButton");
+                  btn.style.display = "inline-block";
+                  btn.innerText = "Enviado";
+                  setTimeout(() => {
+                    startCountdown(15);
+                  }, 1000);
+                })
+                .catch((error) => alert("Erro ao enviar email de verificação: " + error.message));
+              // Desloga o usuário para evitar acesso sem verificação
+              signOut(auth);
+              return;
+            }
+            // Se o email já estiver verificado, redireciona para a página de serviços.
+            window.location.replace("servicos.html");
+          });
         })
         .catch(error => alert("Erro ao fazer login: " + error.message));
     }
 
-    // Função para tratar o cadastro e envio do email de verificação.
+    // Função para tratar o cadastro e envio do email de verificação
     function handleRegister(e) {
       e.preventDefault();
       const email = document.getElementById("registerEmail").value;
@@ -124,7 +127,7 @@
           const user = userCredential.user;
           sendEmailVerification(user)
             .then(() => {
-              alert("Conta criada com sucesso! Um email de verificação foi enviado. Confirme seu email para fazer login.");
+              alert("Conta criada com sucesso! Um email de verificação foi enviado. Por favor, confirme seu email para fazer login.");
             })
             .catch((error) => alert("Erro ao enviar email de verificação: " + error.message));
         })
@@ -143,7 +146,7 @@
         .catch(error => alert("Erro ao enviar email: " + error.message));
     }
 
-    // Função para reenviar email de verificação com exibição de mensagem "Enviado" por 1 segundo
+    // Função para reenviar email de verificação com exibição de "Enviado" por 1 segundo e contagem regressiva
     function handleResendVerification() {
       const email = document.getElementById("loginEmail").value;
       const password = document.getElementById("loginPassword").value;
@@ -168,6 +171,7 @@
         .catch(error => alert("Erro ao reenviar email: " + error.message));
     }
 
+    // Registra os eventos após o carregamento do DOM.
     document.addEventListener("DOMContentLoaded", function () {
       document.getElementById("loginForm").addEventListener("submit", handleLogin);
       document.getElementById("registerForm").addEventListener("submit", handleRegister);
@@ -198,7 +202,7 @@
       align-items: center;
       min-height: 100vh;
     }
-    /* Cabeçalho da empresa acima do login */
+    /* Cabeçalho da empresa acima do container de login */
     .company-header {
       text-align: center;
       margin-bottom: 20px;
@@ -207,7 +211,7 @@
       font-size: 2.5em;
       color: var(--color-primary);
     }
-    /* Container do login: quadrado branco */
+    /* Container do login: fundo branco com borda e sombra */
     .container {
       background: #ffffff;
       border: 1px solid #ddd;
@@ -284,7 +288,7 @@
       font-size: 1.2em;
       margin-top: 10px;
     }
-    /* Indicador de status (bolinha verde) */
+    /* Indicador de status: bolinha verde com efeito florescente */
     .status-indicator {
       display: inline-block;
       width: 10px;
@@ -308,7 +312,7 @@
   </script>
 </head>
 <body>
-  <!-- Cabeçalho da Empresa (fora do quadrado do login) -->
+  <!-- Cabeçalho da Empresa -->
   <div class="company-header">
     <h1>Swift Hub Catalão</h1>
   </div>
@@ -340,7 +344,7 @@
     </div>
     <!-- Botão para reenviar email de verificação -->
     <button id="resendButton">Reenviar email de verificação</button>
-    <!-- Mensagem informando que o usuário já está logado -->
+    <!-- Mensagem de usuário logado (opcional) -->
     <p id="loggedMessage">Logado!</p>
   </div>
 </body>
