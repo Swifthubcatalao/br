@@ -2,9 +2,9 @@
 <html lang="pt-br">
 <head>
   <meta charset="UTF-8">
-  <meta name="description" content="Swift Hub Catalão - Login, Cadastro e Serviços">
+  <meta name="description" content="Swift Hub Catalão - Login e Cadastro">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Swift Hub Catalão - Index</title>
+  <title>Swift Hub Catalão - Login e Cadastro</title>
   
   <!-- Ícones do Font Awesome -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.0/css/all.min.css">
@@ -12,14 +12,14 @@
   <!-- Firebase Modular SDK -->
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.5.0/firebase-app.js";
-    import { 
+    import {
       getAuth, 
       signInWithEmailAndPassword, 
-      createUserWithEmailAndPassword, 
+      createUserWithEmailAndPassword,
       sendEmailVerification, 
       sendPasswordResetEmail, 
       onAuthStateChanged, 
-      signOut 
+      signOut
     } from "https://www.gstatic.com/firebasejs/10.5.0/firebase-auth.js";
     
     // Configure seu Firebase (substitua pelos seus dados)
@@ -34,65 +34,79 @@
     const app = initializeApp(firebaseConfig);
     const auth = getAuth(app);
     
-    // Quando o status de autenticação mudar, exibe ou oculta os formulários/serviços
+    // Se o usuário já estiver autenticado e com email verificado, direciona para index.html
     onAuthStateChanged(auth, user => {
       if (user && user.emailVerified) {
-        // Usuário autenticado: oculta login e cadastro; mostra os serviços e botão de logout.
-        document.getElementById("loginFormContainer").style.display = "none";
-        document.getElementById("registerFormContainer").style.display = "none";
-        document.getElementById("servicosContainer").style.display = "block";
-        document.getElementById("logoutButton").style.display = "block";
-      } else {
-        // Usuário não autenticado: exibe os formulários; oculta serviços e logout.
-        document.getElementById("servicosContainer").style.display = "none";
-        document.getElementById("logoutButton").style.display = "none";
+        window.location.replace("index.html");
       }
     });
     
+    // Inicia a contagem regressiva para o botão de reenvio
+    function startCountdown(seconds) {
+      const btn = document.getElementById("resendButton");
+      btn.disabled = true;
+      let count = seconds;
+      btn.innerText = `Reenviar em ${count}s`;
+      const interval = setInterval(() => { 
+        count--;
+        btn.innerText = `Reenviar em ${count}s`;
+        if (count <= 0) {
+          clearInterval(interval);
+          btn.disabled = false;
+          btn.innerText = "Reenviar email de verificação";
+        }
+      }, 1000);
+    }
+    
+    // Função para tratar o login
     function handleLogin(e) {
       e.preventDefault();
       const email = document.getElementById("loginEmail").value;
       const password = document.getElementById("loginPassword").value;
       signInWithEmailAndPassword(auth, email, password)
-        .then(userCredential => {
+        .then((userCredential) => {
           const user = userCredential.user;
-          // Atualiza os dados do usuário
+          // Atualiza os dados do usuário para obter o status atualizado
           user.reload().then(() => {
             if (!user.emailVerified) {
+              // Envia email de verificação se não estiver confirmado
               sendEmailVerification(user)
                 .then(() => {
-                  alert("Seu email não foi verificado. Um email de verificação foi enviado. Confira sua caixa de entrada.");
+                  alert("Seu email não foi verificado. Um email de verificação foi enviado. Confira sua caixa de entrada. Se não receber, utilize o botão de reenvio.");
                   const btn = document.getElementById("resendButton");
                   btn.style.display = "inline-block";
                   btn.innerText = "Enviado";
                   setTimeout(() => { startCountdown(15); }, 1000);
                 })
-                .catch(error => alert("Erro ao enviar email de verificação: " + error.message));
+                .catch((error) => alert("Erro ao enviar email de verificação: " + error.message));
               signOut(auth);
               return;
             }
+            window.location.replace("index.html");
           });
         })
         .catch(error => alert("Erro ao fazer login: " + error.message));
     }
     
+    // Função para tratar o cadastro e envio do email de verificação
     function handleRegister(e) {
       e.preventDefault();
       const email = document.getElementById("registerEmail").value;
       const password = document.getElementById("registerPassword").value;
       createUserWithEmailAndPassword(auth, email, password)
-        .then(userCredential => {
+        .then((userCredential) => {
           const user = userCredential.user;
           sendEmailVerification(user)
             .then(() => {
               alert("Conta criada com sucesso! Um email de verificação foi enviado. Confirme seu email para fazer login.");
               document.getElementById("registerMessage").innerText = "Conta criada com sucesso! Verifique seu email para confirmar e fazer login.";
             })
-            .catch(error => alert("Erro ao enviar email de verificação: " + error.message));
+            .catch((error) => alert("Erro ao enviar email de verificação: " + error.message));
         })
         .catch(error => alert("Erro ao criar conta: " + error.message));
     }
     
+    // Função para recuperar senha
     function handleForgotPassword() {
       const email = document.getElementById("loginEmail").value;
       if (!email) {
@@ -104,6 +118,7 @@
         .catch(error => alert("Erro ao enviar email: " + error.message));
     }
     
+    // Função para reenviar email de verificação
     function handleResendVerification() {
       const email = document.getElementById("loginEmail").value;
       const password = document.getElementById("loginPassword").value;
@@ -125,22 +140,7 @@
         .catch(error => alert("Erro ao reenviar email: " + error.message));
     }
     
-    function startCountdown(seconds) {
-      const btn = document.getElementById("resendButton");
-      btn.disabled = true;
-      let count = seconds;
-      btn.innerText = `Reenviar em ${count}s`;
-      const interval = setInterval(() => {
-         count--;
-         btn.innerText = `Reenviar em ${count}s`;
-         if (count <= 0) {
-             clearInterval(interval);
-             btn.disabled = false;
-             btn.innerText = "Reenviar email de verificação";
-         }
-      }, 1000);
-    }
-    
+    // Função de validação da senha em tempo real para o cadastro
     function validatePassword() {
       var password = document.getElementById("registerPassword").value;
       var reqLength = document.getElementById("req-length");
@@ -160,10 +160,12 @@
       reqNumber.style.color = numberCondition ? "green" : "red";
       reqSymbol.style.color = symbolCondition ? "green" : "red";
     
+      // Habilita o botão somente se todas as condições forem satisfeitas.
       const submitButton = document.querySelector("#registerForm button[type='submit']");
       submitButton.disabled = !(lengthCondition && lowerCondition && upperCondition && numberCondition && symbolCondition);
     }
     
+    // Alterna entre os formulários de login e cadastro
     function toggleForm() {
       const loginContainer = document.getElementById("loginFormContainer");
       const registerContainer = document.getElementById("registerFormContainer");
@@ -185,7 +187,7 @@
       });
     }
     
-    // Popup do Menu
+    // Função para o popup do menu
     function toggleMenu() {
       const menuPopup = document.getElementById("menuPopup");
       if (menuPopup) {
@@ -193,15 +195,7 @@
       }
     }
     
-    document.addEventListener("DOMContentLoaded", function(){
-      const menuIcon = document.querySelector(".menu-icon");
-      if (menuIcon) {
-         menuIcon.addEventListener("click", toggleMenu);
-      }
-      const closeBtn = document.querySelector(".close-menu");
-      if (closeBtn) {
-         closeBtn.addEventListener("click", toggleMenu);
-      }
+    document.addEventListener("DOMContentLoaded", function () {
       document.getElementById("loginForm").addEventListener("submit", handleLogin);
       document.getElementById("registerForm").addEventListener("submit", handleRegister);
       document.getElementById("forgotPassword").addEventListener("click", handleForgotPassword);
@@ -209,10 +203,19 @@
       
       const registerPasswordInput = document.getElementById("registerPassword");
       registerPasswordInput.addEventListener("input", validatePassword);
+      
+      const menuIcon = document.querySelector(".menu-icon");
+      if (menuIcon) {
+        menuIcon.addEventListener("click", toggleMenu);
+      }
+      const closeBtn = document.querySelector(".close-menu");
+      if (closeBtn) {
+        closeBtn.addEventListener("click", toggleMenu);
+      }
     });
   </script>
   
-  <!-- Estilos Gerais da Página -->
+  <!-- Estilos Gerais -->
   <style>
     :root {
       --color-primary: #0033A0; /* Azul */
@@ -221,19 +224,17 @@
       --color-dark: #222;
     }
     
-    body {
-      background: var(--color-light);
-      color: var(--color-primary);
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      min-height: 100vh;
-      margin: 0;
+    /* Cabeçalho da Empresa: Substituído por logo */
+    .company-header {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+    .company-header img {
+      width: 200px; /* ajuste conforme necessário */
+      max-width: 100%;
     }
     
-    /* Cabeçalho superior com menu (já definido acima) */
-    
-    /* Containers para login e cadastro */
+    /* Container dos formulários */
     .container {
       margin: 20px 0;
       width: 100%;
@@ -351,9 +352,49 @@
       vertical-align: middle;
     }
     
-    /* Popup do menu (já definido acima) */
+    /* Popup do Menu */
+    .menu-popup {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 250px;
+      height: 100vh;
+      background: var(--color-primary);
+      box-shadow: 2px 0 5px rgba(0,0,0,0.3);
+      transform: translateX(-100%);
+      transition: transform 0.3s ease-in-out;
+      display: flex;
+      flex-direction: column;
+      padding: 20px;
+      z-index: 1000;
+    }
     
-    /* Seção de Serviços */
+    .menu-popup a {
+      color: var(--color-light);
+      font-size: 1.2em;
+      text-decoration: none;
+      padding: 12px;
+      display: block;
+      transition: background 0.2s;
+    }
+    
+    .menu-popup a:hover {
+      background: rgba(255,255,255,0.2);
+    }
+    
+    .close-menu {
+      font-size: 26px;
+      color: var(--color-light);
+      cursor: pointer;
+      margin-bottom: 20px;
+      align-self: flex-end;
+    }
+    
+    .menu-open {
+      transform: translateX(0);
+    }
+    
+    /* Seção de Serviços (exibida após o login) */
     #servicosContainer {
       display: none;
       width: 100%;
@@ -412,11 +453,70 @@
       }
     }
   </style>
+  
+  <script>
+    // Alterna entre os formulários de login e cadastro
+    function toggleForm() {
+      const loginContainer = document.getElementById("loginFormContainer");
+      const registerContainer = document.getElementById("registerFormContainer");
+      if (loginContainer.style.display === "none") {
+        loginContainer.style.display = "block";
+        registerContainer.style.display = "none";
+      } else {
+        loginContainer.style.display = "none";
+        registerContainer.style.display = "block";
+      }
+    }
+  </script>
 </head>
 <body>
-  <!-- Cabeçalho da Empresa -->
+  <!-- Cabeçalho da Empresa substituído pela logo -->
   <div class="company-header">
-    <h1>Swift Hub Catalão</h1>
+    <img src="https://raw.githubusercontent.com/Swifthubcatalao/br/main/imagens/logo.png" alt="Logo Swift Hub Catalão">
+  </div>
+  
+  <!-- Container geral para o conteúdo -->
+  <div class="container">
+    <!-- Formulário de Login -->
+    <div id="loginFormContainer">
+      <h2>Login</h2>
+      <form id="loginForm">
+        <label for="loginEmail">Email :</label>
+        <input type="email" id="loginEmail" required placeholder="Digite seu email">
+        <label for="loginPassword">Senha :</label>
+        <input type="password" id="loginPassword" required placeholder="Digite sua senha">
+        <button type="submit">Entrar</button>
+      </form>
+      <p class="toggle" onclick="toggleForm()">Criar uma conta</p>
+      <p><a id="forgotPassword" href="#">Esqueci minha senha</a></p>
+    </div>
+    
+    <!-- Formulário de Cadastro -->
+    <div id="registerFormContainer" style="display: none;">
+      <h2>Criar Conta</h2>
+      <form id="registerForm">
+        <label for="registerEmail">Email :</label>
+        <input type="email" id="registerEmail" required placeholder="Digite seu email">
+        <label for="registerPassword">Senha :</label>
+        <input type="password" id="registerPassword" required placeholder="Crie uma senha">
+        <ul id="passwordRequirements">
+          <li id="req-length" style="color: red;">Mínimo 8 caracteres</li>
+          <li id="req-lower" style="color: red;">Pelo menos uma letra minúscula</li>
+          <li id="req-upper" style="color: red;">Pelo menos uma letra maiúscula</li>
+          <li id="req-number" style="color: red;">Pelo menos um número</li>
+          <li id="req-symbol" style="color: red;">Pelo menos um símbolo</li>
+        </ul>
+        <button type="submit" disabled>Cadastrar</button>
+      </form>
+      <p id="registerMessage" style="color: var(--color-primary); font-weight: bold;"></p>
+      <p class="toggle" onclick="toggleForm()">Já tenho uma conta</p>
+    </div>
+    
+    <!-- Botão para reenviar email de verificação -->
+    <button id="resendButton">Reenviar email de verificação</button>
+    
+    <!-- Mensagem informando que o usuário já está logado -->
+    <p id="loggedMessage">Logado!</p>
   </div>
   
   <!-- Cabeçalho com Menu, Logo e Logout -->
@@ -435,48 +535,7 @@
     <a href="login.html">Login</a>
   </div>
   
-  <!-- Formulário de Login -->
-  <div id="loginFormContainer" class="container">
-    <h2>Login</h2>
-    <form id="loginForm">
-      <label for="loginEmail">Email :</label>
-      <input type="email" id="loginEmail" required placeholder="Digite seu email">
-      <label for="loginPassword">Senha :</label>
-      <input type="password" id="loginPassword" required placeholder="Digite sua senha">
-      <button type="submit">Entrar</button>
-    </form>
-    <p class="toggle" onclick="toggleForm()">Criar uma conta</p>
-    <p><a id="forgotPassword" href="#">Esqueci minha senha</a></p>
-  </div>
-  
-  <!-- Formulário de Cadastro -->
-  <div id="registerFormContainer" class="container" style="display: none;">
-    <h2>Criar Conta</h2>
-    <form id="registerForm">
-      <label for="registerEmail">Email :</label>
-      <input type="email" id="registerEmail" required placeholder="Digite seu email">
-      <label for="registerPassword">Senha :</label>
-      <input type="password" id="registerPassword" required placeholder="Crie uma senha">
-      <ul id="passwordRequirements">
-        <li id="req-length" style="color: red;">Mínimo 8 caracteres</li>
-        <li id="req-lower" style="color: red;">Pelo menos uma letra minúscula</li>
-        <li id="req-upper" style="color: red;">Pelo menos uma letra maiúscula</li>
-        <li id="req-number" style="color: red;">Pelo menos um número</li>
-        <li id="req-symbol" style="color: red;">Pelo menos um símbolo</li>
-      </ul>
-      <button type="submit" disabled>Cadastrar</button>
-    </form>
-    <p id="registerMessage" style="color: var(--color-primary); font-weight: bold;"></p>
-    <p class="toggle" onclick="toggleForm()">Já tenho uma conta</p>
-  </div>
-  
-  <!-- Botão para reenviar email de verificação -->
-  <button id="resendButton">Reenviar email de verificação</button>
-  
-  <!-- Mensagem informando que o usuário já está logado -->
-  <p id="loggedMessage">Logado!</p>
-  
-  <!-- Seção de Serviços (exibe após o login bem-sucedido) -->
+  <!-- Seção de Serviços (exibida após o login bem-sucedido) -->
   <div id="servicosContainer">
     <h2>Serviços Disponíveis</h2>
     <div class="service-card">
