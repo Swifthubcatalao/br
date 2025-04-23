@@ -1,444 +1,500 @@
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
-  <meta charset="UTF-8">
-  <meta name="description" content="Swift Hub Catalão - Serviços">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Swift Hub Catalão - Serviços</title>
-  
-  <!-- Ícones do Font Awesome -->
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.0/css/all.min.css">
-  
-  <!-- Firebase Modular SDK -->
-  <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.5.0/firebase-app.js";
-    import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.5.0/firebase-auth.js";
-    
-    const firebaseConfig = { 
-      apiKey: "AIzaSyDGBKxvfcY-PA_vC7SA8G0f-TjqjK3OD3o",
-      authDomain: "swifthubcatalao.firebaseapp.com",
-      projectId: "swifthubcatalao", 
-      storageBucket: "swifthubcatalao.firebasestorage.app",
-      messagingSenderId: "756803145076",
-      appId: "1:756803145076:web:4593bd78a26a2270a1f021"
-    };
-    
-    const app = initializeApp(firebaseConfig);
-    const auth = getAuth(app);
-    
-    onAuthStateChanged(auth, user => {
-      if (!user) {
-        // Se o usuário não estiver autenticado, redireciona para a página de login.
-        window.location.href = "login.html";
-      } else {
-        // Se estiver autenticado, exibe o botão de logout.
-        const logoutBtn = document.getElementById("logoutButton");
-        if (logoutBtn) {
-          logoutBtn.style.display = "block";
-        }
+  <meta charset="UTF-8">
+  <meta name="description" content="Swift Hub Catalão - Serviços">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Swift Hub Catalão - Serviços</title>
+  
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.0/css/all.min.css">
+  
+    <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.5.0/firebase-app.js";
+    import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.5.0/firebase-auth.js";
+    
+    const firebaseConfig = { 
+      apiKey: "AIzaSyDGBKxvfcY-PA_vC7SA8G0f-TjqjK3OD3o",
+      authDomain: "swifthubcatalao.firebaseapp.com",
+      projectId: "swifthubcatalao", 
+      storageBucket: "swifthubcatalao.firebasestorage.app",
+      messagingSenderId: "756803145076",
+      appId: "1:756803145076:web:4593bd78a26a2270a1f021"
+    };
+    
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+
+    // --- Inactivity Logout Logic (Copied from previous steps for consistency) ---
+    const INACTIVITY_TIMEOUT = 30 * 60 * 1000; // 30 minutes in milliseconds
+    let logoutTimer = null;
+
+    function resetTimer() {
+      if (logoutTimer) {
+        clearTimeout(logoutTimer);
       }
-    });
-    
-    document.addEventListener("DOMContentLoaded", function () {
-      const logoutBtn = document.getElementById("logoutButton");
-      if (logoutBtn) {
-        logoutBtn.addEventListener("click", () => {
-          signOut(auth).then(() => window.location.href = "login.html");
+      logoutTimer = setTimeout(() => {
+        console.log("Inatividade detectada. Desconectando...");
+        signOut(auth).then(() => {
+          // Optional: Display a message before redirecting
+          // alert("Você foi desconectado por inatividade.");
+          window.location.replace("login.html"); // Redirect to login
+        }).catch(error => {
+          console.error("Erro ao desconectar por inatividade:", error);
+          // Even on error, attempt redirect to prevent being stuck
+          window.location.replace("login.html");
         });
-      }
-    });
-    
-    // Função para alternar o popup do menu.
-    function toggleMenu() {
-      const menuPopup = document.getElementById("menuPopup");
-      if (menuPopup) {
-        menuPopup.classList.toggle("menu-open");
-      } else {
-        console.error("Popup do menu não encontrado.");
-      }
+      }, INACTIVITY_TIMEOUT);
     }
-    
-    document.addEventListener("DOMContentLoaded", function(){
-      const menuIcon = document.querySelector(".menu-icon");
-      if (menuIcon) {
-         menuIcon.addEventListener("click", toggleMenu);
-      } else {
-         console.error("Ícone do menu não encontrado.");
-      }
-  
-      const closeBtn = document.querySelector(".close-menu");
-      if (closeBtn) {
-         closeBtn.addEventListener("click", toggleMenu);
-      } else {
-         console.error("Botão de fechar o menu não encontrado.");
-      }
-    });
-  </script>
-  
-  <style>
-    :root {
-      --color-primary: #0033A0;    /* Azul */
-      --color-secondary: #C8102E;    /* Vermelho */
-      --color-light: #ffffff;        /* Branco */
-      --color-dark: #333;
+
+    function setupInactivityListeners() {
+        // Remove existing listeners if they were set up before
+        document.removeEventListener("mousemove", resetTimer);
+        document.removeEventListener("keydown", resetTimer);
+        document.removeEventListener("click", resetTimer);
+        document.removeEventListener("scroll", resetTimer);
+        // Add new listeners
+        document.addEventListener("mousemove", resetTimer);
+        document.addEventListener("keydown", resetTimer);
+        document.addEventListener("click", resetTimer);
+        document.addEventListener("scroll", resetTimer);
+        console.log("Listeners de inatividade configurados. Timer iniciado.");
+        resetTimer(); // Start the timer immediately upon setup
     }
-    
-    /* Reset e estilos globais */
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-      font-family: Arial, sans-serif;
+
+     function removeInactivityListeners() {
+        if (logoutTimer) {
+            clearTimeout(logoutTimer);
+            logoutTimer = null;
+        }
+        document.removeEventListener("mousemove", resetTimer);
+        document.removeEventListener("keydown", resetTimer);
+        document.removeEventListener("click", resetTimer);
+        document.removeEventListener("scroll", resetTimer);
+        console.log("Listeners de inatividade removidos. Timer cancelado.");
     }
-    
-    body {
-      background: #fff;
-      line-height: 1.6;
-      color: #333;
-    }
-    
-    .container {
-      max-width: 1200px;
-      margin: auto;
-      padding: 20px;
-    }
-    
-    /* =============================
-       Cabeçalho com Ícone de Menu, Logo e Logout
-       ============================= */
-    header {
-      background: var(--color-light);
-      padding: 15px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      position: relative;
-      border-bottom: 1px solid #ddd;
-    }
-    
-    /* Ícone de menu no canto esquerdo superior */
-    .menu-icon {
-      font-size: 28px;
-      color: var(--color-primary);
-      cursor: pointer;
-      position: absolute;
-      left: 15px;
-      top: 50%;
-      transform: translateY(-50%);
-    }
-    
-    /* Logo centralizada */
-    .logo {
-      max-width: 120px;
-      height: auto;
-      display: block;
-    }
-    
-    /* Botão de logout no canto superior direito em vermelho */
-    #logoutButton {
-      position: absolute;
-      right: 15px;
-      top: 50%;
-      transform: translateY(-50%);
-      background-color: var(--color-secondary);
-      color: var(--color-light);
-      border: none;
-      padding: 10px 15px;
-      border-radius: 5px;
-      cursor: pointer;
-      display: none;  /* ficará oculto até que o usuário esteja autenticado */
-    }
-    
-    /* Popup Lateral do Menu */
-    .menu-popup {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 250px;
-      height: 100vh;
-      background: var(--color-primary);
-      box-shadow: 2px 0 5px rgba(0,0,0,0.3);
-      transform: translateX(-100%);
-      transition: transform 0.3s ease-in-out;
-      display: flex;
-      flex-direction: column;
-      padding: 20px;
-      z-index: 1000;
-    }
-    
-    .menu-popup a {
-      color: var(--color-light);
-      font-size: 1.2em;
-      text-decoration: none;
-      padding: 12px;
-      display: block;
-      transition: background 0.2s;
-    }
-    
-    .menu-popup a:hover {
-      background: rgba(255,255,255,0.2);
-    }
-    
-    .close-menu {
-      font-size: 26px;
-      color: var(--color-light);
-      cursor: pointer;
-      margin-bottom: 20px;
-      align-self: flex-end;
-    }
-    
-    .menu-open {
-      transform: translateX(0);
-    }
-    
-    /* =============================
-       Seção de Serviços (Cards)
-       ============================= */
-    section#servico {
-      padding: 40px 0;
-      text-align: center;
-    }
-    
-    section#servico h2 {
-      font-size: 2em;
-      margin-bottom: 20px;
-      color: var(--color-primary);
-    }
-    
-    .cards {
-      display: flex;
-      flex-wrap: wrap;
-      justify-content: center;
-      gap: 20px;
-    }
-    
-    .card {
-      background: #fff;
-      border-radius: 8px;
-      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-      width: 250px;
-      padding: 20px;
-      transition: transform 0.2s, box-shadow 0.2s;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-    }
-    
-    .card:hover {
-      transform: scale(1.03);
-      box-shadow: 0 4px 10px rgba(0,0,0,0.2);
-    }
-    
-    .card img {
-      width: 100%;
-      height: auto;
-      border-radius: 5px;
-      margin-bottom: 15px;
-    }
-    
-    .card h3 {
-      font-size: 1.5em;
-      margin-bottom: 10px;
-      color: var(--color-primary);
-    }
-    
-    .card p {
-      font-size: 0.9em;
-      margin-bottom: 15px;
-      text-align: left;
-      color: #555;
-    }
-    
-    /* Botão "Agendar" alinhado ao fundo do card */
-    .card a {
-      display: inline-block;
-      background: var(--color-secondary);
-      color: var(--color-light);
-      padding: 10px 15px;
-      text-decoration: none;
-      border-radius: 5px;
-      transition: background 0.2s;
-      align-self: stretch;
-      text-align: center;
+    // --- End Inactivity Logout Logic ---
+
+    onAuthStateChanged(auth, user => {
+      if (!user) {
+        // Se o usuário não estiver autenticado, redireciona para a página de login.
+         removeInactivityListeners(); // Ensure timer is off if user logs out or is not authenticated
+        window.location.replace("login.html"); // Use replace for history management
+      } else {
+        // Se estiver autenticado, exibe o botão de logout e inicia o timer de inatividade.
+        const logoutBtn = document.getElementById("logoutButton");
+        if (logoutBtn) {
+          logoutBtn.style.display = "block";
+        }
+         setupInactivityListeners(); // Start inactivity timer for logged-in users
+      }
+    });
+    
+    document.addEventListener("DOMContentLoaded", function () {
+      const logoutBtn = document.getElementById("logoutButton");
+      if (logoutBtn) {
+        logoutBtn.addEventListener("click", () => {
+          signOut(auth).then(() => window.location.replace("login.html")); // Use replace
+        });
+      }
+    });
+    
+    // Função para alternar o popup do menu.
+    function toggleMenu() {
+      const menuPopup = document.getElementById("menuPopup");
+      if (menuPopup) {
+        menuPopup.classList.toggle("menu-open");
+      } else {
+        console.error("Popup do menu não encontrado.");
+      }
+    }
+    
+    document.addEventListener("DOMContentLoaded", function(){
+      const menuIcon = document.querySelector(".menu-icon");
+      if (menuIcon) {
+         menuIcon.addEventListener("click", toggleMenu);
+      } else {
+         console.error("Ícone do menu não encontrado.");
+      }
+  
+      const closeBtn = document.querySelector(".close-menu");
+      if (closeBtn) {
+         closeBtn.addEventListener("click", toggleMenu);
+      } else {
+         console.error("Botão de fechar o menu não encontrado.");
+      }
+    });
+  </script>
+  
+  <style>
+    :root {
+      --color-primary: #0033A0;    /* Azul */
+      --color-secondary: #C8102E;    /* Vermelho */
+      --color-light: #ffffff;        /* Branco */
+      --color-dark: #333;
+    }
+    
+    /* Reset e estilos globais */
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: Arial, sans-serif;
+    }
+    
+    body {
+      background: #fff;
+      line-height: 1.6;
+      color: #333;
+    }
+    
+    .container {
+      max-width: 1200px;
+      margin: auto;
+      padding: 20px;
+    }
+    
+    /* =============================
+       Cabeçalho com Ícone de Menu, Logo e Logout
+       ============================= */
+    header {
+      background: var(--color-light);
+      padding: 15px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      border-bottom: 1px solid #ddd;
+    }
+    
+    /* Ícone de menu no canto esquerdo superior */
+    .menu-icon {
+      font-size: 28px;
+      color: var(--color-primary);
+      cursor: pointer;
+      position: absolute;
+      left: 15px;
+      top: 50%;
+      transform: translateY(-50%);
+    }
+    
+    /* Logo centralizada */
+    .logo {
+      max-width: 120px;
+      height: auto;
+      display: block;
+    }
+    
+    /* Botão de logout no canto superior direito em vermelho */
+    #logoutButton {
+      position: absolute;
+      right: 15px;
+      top: 50%;
+      transform: translateY(-50%);
+      background-color: var(--color-secondary);
+      color: var(--color-light);
+      border: none;
+      padding: 10px 15px;
+      border-radius: 5px;
+      cursor: pointer;
+      display: none;  /* ficará oculto até que o usuário esteja autenticado */
       font-weight: bold;
-      margin-top: auto;
-    }
-    
-    .card a:hover {
-      background: #a01d2d;
-    }
-    
-    /* =============================
-       Footer
-       ============================= */
-    footer {
-      background: var(--color-secondary);
-      color: var(--color-light);
-      text-align: center;
-      padding: 20px 0;
-      margin-top: 40px;
-    }
-    
-    footer p {
-      font-size: 0.9em;
-    }
-    
-    .whatsapp-float {
-      position: fixed;
-      bottom: 20px;
-      right: 20px;
-      background: #25D366;
-      color: var(--color-light);
-      border-radius: 50%;
-      width: 60px;
-      height: 60px;
-      text-align: center;
-      line-height: 60px;
-      font-size: 30px;
-      z-index: 1000;
-      box-shadow: 2px 2px 3px rgba(0,0,0,0.3);
-    }
-    
-    @media (max-width: 768px) {
-      .menu-icon {
-        font-size: 24px;
-      }
-      .logo {
-        max-width: 100px;
-      }
-      .card {
-        width: 90%;
-      }
-    }
-  </style>
+      transition: background 0.2s;
+    }
+     #logoutButton:hover {
+        background-color: #a01d2d;
+     }
+    
+    /* Popup Lateral do Menu */
+    .menu-popup {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 250px;
+      height: 100vh;
+      background: var(--color-primary);
+      box-shadow: 2px 0 5px rgba(0,0,0,0.3);
+      transform: translateX(-100%);
+      transition: transform 0.3s ease-in-out;
+      display: flex;
+      flex-direction: column;
+      padding: 20px;
+      z-index: 1000;
+    }
+    
+    .menu-popup a {
+      color: var(--color-light);
+      font-size: 1.2em;
+      text-decoration: none;
+      padding: 12px;
+      display: block;
+      transition: background 0.2s;
+    }
+    
+    .menu-popup a:hover {
+      background: rgba(255,255,255,0.2);
+    }
+    
+    .close-menu {
+      font-size: 26px;
+      color: var(--color-light);
+      cursor: pointer;
+      margin-bottom: 20px;
+      align-self: flex-end;
+    }
+    
+    .menu-open {
+      transform: translateX(0);
+    }
+    
+    /* =============================
+       Seção de Serviços (Cards)
+       ============================= */
+    section#servico {
+      padding: 40px 0;
+      text-align: center;
+    }
+    
+    section#servico h2 {
+      font-size: 2em;
+      margin-bottom: 20px;
+      color: var(--color-primary);
+    }
+    
+    .cards {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 20px;
+    }
+    
+    .card {
+      background: #fff;
+      border-radius: 8px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+      width: 250px;
+      padding: 20px;
+      transition: transform 0.2s, box-shadow 0.2s;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    
+    .card:hover {
+      transform: scale(1.03);
+      box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+    }
+    
+    .card img {
+      width: 100%;
+      height: auto;
+      border-radius: 5px;
+      margin-bottom: 15px;
+    }
+    
+    .card h3 {
+      font-size: 1.5em;
+      margin-bottom: 10px;
+      color: var(--color-primary);
+    }
+    
+    .card p {
+      font-size: 0.9em;
+      margin-bottom: 15px;
+      text-align: left;
+      color: #555;
+    }
+    
+    /* Botão "Agendar" alinhado ao fundo do card */
+    .card a {
+      display: inline-block;
+      background: var(--color-secondary);
+      color: var(--color-light);
+      padding: 10px 15px;
+      text-decoration: none;
+      border-radius: 5px;
+      transition: background 0.2s;
+      align-self: stretch;
+      text-align: center;
+      font-weight: bold;
+      margin-top: auto;
+    }
+    
+    .card a:hover {
+      background: #a01d2d;
+    }
+    
+    /* =============================
+       Footer
+       ============================= */
+    footer {
+      background: var(--color-secondary);
+      color: var(--color-light);
+      text-align: center;
+      padding: 20px 0;
+      margin-top: 40px;
+    }
+    
+    footer p {
+      font-size: 0.9em;
+    }
+    
+    .whatsapp-float {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      background: #25D366;
+      color: var(--color-light);
+      border-radius: 50%;
+      width: 60px;
+      height: 60px;
+      text-align: center;
+      line-height: 60px;
+      font-size: 30px;
+      z-index: 1000;
+      box-shadow: 2px 2px 3px rgba(0,0,0,0.3);
+       display: flex; /* Center icon */
+       justify-content: center;
+       align-items: center;
+    }
+     .whatsapp-float i {
+         font-size: 30px;
+     }
+    
+    @media (max-width: 768px) {
+      .menu-icon {
+        font-size: 24px;
+      }
+      .logo {
+        max-width: 100px;
+      }
+      .card {
+        width: 90%;
+      }
+    }
+  </style>
 </head>
 <body>
 
-  <!-- Cabeçalho com ícone de menu, logo centralizada e botão de logout -->
-  <header>
-    <div class="container">
-      <i class="fas fa-bars menu-icon"></i>
-      <img src="https://raw.githubusercontent.com/Swifthubcatalao/br/main/imagens/logo.png" alt="Logo Swift Hub Catalão" class="logo">
-      <button id="logoutButton">Sair</button>
-    </div>
-  </header>
-  
-  <!-- Popup do Menu -->
-  <div id="menuPopup" class="menu-popup">
-    <span class="close-menu">&times;</span>
-    <a href="index.html">Início</a>
-    <a href="login.html">Login</a>
-  </div>
-  
-  <!-- Seção de Serviços -->
-  <section id="servico">
-    <div class="container">
-      <h2>Serviços Disponíveis</h2>
-      <div class="cards">
-        <div class="card">
-          <img src="https://raw.githubusercontent.com/Swifthubcatalao/br/main/imagens/limpeza-de-estofados.jpg" alt="Limpeza de Estofados">
-          <h3>Limpeza de Estofados</h3>
-          <p>Remova manchas, odores e sujeira de sofás, poltronas e móveis, restaurando sua aparência e higiene.</p>
-          <a href="https://wa.me/64981226078?text=Oi,%20preciso%20de%20limpeza%20de%20estofados" target="_blank">Agendar</a>
-        </div>
-        <div class="card">
-          <img src="https://raw.githubusercontent.com/Swifthubcatalao/br/main/imagens/encanador.jpg" alt="Encanador">
-          <h3>Encanador</h3>
-          <p>Resolva problemas hidráulicos com reparos e manutenções realizados por profissionais capacitados.</p>
-          <a href="https://wa.me/64981226078?text=Oi,%20preciso%20de%20um%20encanador" target="_blank">Agendar</a>
-        </div>
-        <div class="card">
-          <img src="https://raw.githubusercontent.com/Swifthubcatalao/br/main/imagens/dedetizacao.jpg" alt="Dedetização">
-          <h3>Dedetização</h3>
-          <p>Elimine pragas e garanta ambientes mais seguros e limpos com serviços especializados.</p>
-          <a href="https://wa.me/64981226078?text=Oi,%20preciso%20de%20dedetizacao" target="_blank">Agendar</a>
-        </div>
-        <div class="card">
-          <img src="https://raw.githubusercontent.com/Swifthubcatalao/br/main/imagens/jardineiro.jpg" alt="Jardineiro">
-          <h3>Jardineiro</h3>
-          <p>Cuide do seu jardim com serviços de poda, manutenção e paisagismo para mantê-lo sempre bonito.</p>
-          <a href="https://wa.me/64981226078?text=Oi,%20preciso%20de%20um%20jardineiro" target="_blank">Agendar</a>
-        </div>
-        <div class="card">
-          <img src="https://raw.githubusercontent.com/Swifthubcatalao/br/main/imagens/marceneiro.jpg" alt="Marceneiro">
-          <h3>Marceneiro</h3>
-          <p>Móveis sob medida e reparos em madeira com acabamento perfeito para transformar seus espaços.</p>
-          <a href="https://wa.me/64981226078?text=Oi,%20preciso%20de%20um%20marceneiro" target="_blank">Agendar</a>
-        </div>
-        <div class="card">
-          <img src="https://raw.githubusercontent.com/Swifthubcatalao/br/main/imagens/eletricista.jpg" alt="Eletricista">
-          <h3>Eletricista</h3>
-          <p>Instalações, manutenções e reparos elétricos para garantir a segurança e o funcionamento do seu imóvel.</p>
-          <a href="https://wa.me/64981226078?text=Oi,%20preciso%20de%20um%20eletricista" target="_blank">Agendar</a>
-        </div>
-        <div class="card">
-          <img src="https://raw.githubusercontent.com/Swifthubcatalao/br/main/imagens/pintor.png" alt="Pintor">
-          <h3>Pintor</h3>
-          <p>Pintura residencial ou comercial com acabamento de alta qualidade para renovar qualquer ambiente.</p>
-          <a href="https://wa.me/64981226078?text=Oi,%20preciso%20de%20um%20pintor" target="_blank">Agendar</a>
-        </div>
-        <div class="card">
-          <img src="https://raw.githubusercontent.com/Swifthubcatalao/br/main/imagens/montagem-de-moveis.jpg" alt="Montagem de Móveis">
-          <h3>Montagem de Móveis</h3>
-          <p>Profissionais especializados para montar seus móveis com rapidez, agilidade e precisão.</p>
-          <a href="https://wa.me/64981226078?text=Oi,%20preciso%20de%20montagem%20de%20moveis" target="_blank">Agendar</a>
-        </div>
-        <div class="card">
-          <img src="https://raw.githubusercontent.com/Swifthubcatalao/br/main/imagens/limpeza-caixa-agua.png" alt="Limpeza de Caixa d'Água">
-          <h3>Limpeza de Caixa d'Água</h3>
-          <p>Higienize sua caixa d'água e garanta água pura e segura para consumo.</p>
-          <a href="https://wa.me/64981226078?text=Oi,%20preciso%20de%20limpeza%20de%20caixa%20da%20agua" target="_blank">Agendar</a>
-        </div>
-        <div class="card">
-          <img src="https://raw.githubusercontent.com/Swifthubcatalao/br/main/imagens/vigilancia-temporaria.jpg" alt="Vigilância Temporária">
-          <h3>Vigilância Temporária</h3>
-          <p>Serviço de monitoramento para períodos curtos, garantindo a segurança do seu evento ou imóvel.</p>
-          <a href="https://wa.me/64981226078?text=Oi,%20preciso%20de%20vigilancia%20temporaria" target="_blank">Agendar</a>
-        </div>
-        <div class="card">
-          <img src="https://raw.githubusercontent.com/Swifthubcatalao/br/main/imagens/instalacao-de-cameras.jpg" alt="Instalação de Câmeras">
-          <h3>Instalação de Câmeras</h3>
-          <p>Implemente sistemas modernos de vigilância para monitorar e proteger seu imóvel.</p>
-          <a href="https://wa.me/64981226078?text=Oi,%20preciso%20de%20instalacao%20de%20cameras" target="_blank">Agendar</a>
-        </div>
-        <div class="card">
-          <img src="https://raw.githubusercontent.com/Swifthubcatalao/br/main/imagens/frete-mudanca.jpg" alt="Frete de Mudanças">
-          <h3>Frete de Mudanças</h3>
-          <p>Equipe especializada para mudanças, garantindo o transporte organizado e seguro dos seus bens.</p>
-          <a href="https://wa.me/64981226078?text=Oi,%20preciso%20de%20frete%20de%20mudancas" target="_blank">Agendar</a>
-        </div>
-        <div class="card">
-          <img src="https://raw.githubusercontent.com/Swifthubcatalao/br/main/imagens/serralheria.jpg" alt="Serralheria">
-          <h3>Serralheria</h3>
-          <p>Serviços em metal com reparos e confecções personalizadas para atender suas necessidades.</p>
-          <a href="https://wa.me/64981226078?text=Oi,%20preciso%20de%20serralheria" target="_blank">Agendar</a>
-        </div>
-        <div class="card">
-          <img src="https://raw.githubusercontent.com/Swifthubcatalao/br/main/imagens/higienizacao-ar-condicionado.png" alt="Higienização de Ar Condicionado">
-          <h3>Higienização de Ar Condicionado</h3>
-          <p>Mantenha seu ar condicionado limpo e livre de bactérias para um ar mais saudável e eficiente.</p>
-          <a href="https://wa.me/64981226078?text=Oi,%20preciso%20de%20higienizacao%20de%20ar%20condicionado" target="_blank">Agendar</a>
-        </div>
-        <div class="card">
-          <img src="https://raw.githubusercontent.com/Swifthubcatalao/br/main/imagens/placa-solar.png" alt="Placa Solar">
-          <h3>Placa Solar</h3>
-          <p>Instalação e manutenção de sistemas de energia solar para economizar e contribuir com o meio ambiente.</p>
-          <a href="https://wa.me/64981226078?text=Oi,%20preciso%20de%20servico%20em%20placa%20solar" target="_blank">Agendar</a>
-        </div>
-      </div>
-    </div>
-  </section>
-  
-  <footer>
-    <div class="container">
-      <p>&copy; 2025 Swift Hub Catalão. Todos os direitos reservados.</p>
-    </div>
-  </footer>
-  
-  <!-- Botão flutuante do WhatsApp -->
-  <a href="https://wa.me/64981226078" class="whatsapp-float" target="_blank">
-    <i class="fab fa-whatsapp"></i>
-  </a>
-  
+    <header>
+    <div class="container">
+      <i class="fas fa-bars menu-icon"></i>
+      <img src="https://raw.githubusercontent.com/Swifthubcatalao/br/main/imagens/logo.png" alt="Logo Swift Hub Catalão" class="logo">
+      <button id="logoutButton">Sair</button>
+    </div>
+  </header>
+  
+    <div id="menuPopup" class="menu-popup">
+    <span class="close-menu">&times;</span>
+    <a href="index.html">Início</a>
+    <a href="servicos.html">Serviços</a>     <a href="perfil.html">Meu Perfil</a>     <a href="login.html">Login</a>   </div>
+  
+    <section id="servico">
+    <div class="container">
+      <h2>Serviços Disponíveis</h2>
+      <div class="cards">
+        <div class="card">
+          <img src="https://raw.githubusercontent.com/Swifthubcatalao/br/main/imagens/limpeza-de-estofados.jpg" alt="Limpeza de Estofados">
+          <h3>Limpeza de Estofados</h3>
+          <p>Remova manchas, odores e sujeira de sofás, poltronas e móveis, restaurando sua aparência e higiene.</p>
+          <a href="https://wa.me/64981226078?text=Oi,%20preciso%20de%20limpeza%20de%20estofados" target="_blank">Agendar</a>
+        </div>
+        <div class="card">
+          <img src="https://raw.githubusercontent.com/Swifthubcatalao/br/main/imagens/encanador.jpg" alt="Encanador">
+          <h3>Encanador</h3>
+          <p>Resolva problemas hidráulicos com reparos e manutenções realizados por profissionais capacitados.</p>
+          <a href="https://wa.me/64981226078?text=Oi,%20preciso%20de%20um%20encanador" target="_blank">Agendar</a>
+        </div>
+        <div class="card">
+          <img src="https://raw.githubusercontent.com/Swifthubcatalao/br/main/imagens/dedetizacao.jpg" alt="Dedetização">
+          <h3>Dedetização</h3>
+          <p>Elimine pragas e garanta ambientes mais seguros e limpos com serviços especializados.</p>
+          <a href="https://wa.me/64981226078?text=Oi,%20preciso%20de%20dedetizacao" target="_blank">Agendar</a>
+        </div>
+        <div class="card">
+          <img src="https://raw.githubusercontent.com/Swifthubcatalao/br/main/imagens/jardineiro.jpg" alt="Jardineiro">
+          <h3>Jardineiro</h3>
+          <p>Cuide do seu jardim com serviços de poda, manutenção e paisagismo para mantê-lo sempre bonito.</p>
+          <a href="https://wa.me/64981226078?text=Oi,%20preciso%20de%20um%20jardineiro" target="_blank">Agendar</a>
+        </div>
+        <div class="card">
+          <img src="https://raw.githubusercontent.com/Swifthubcatalao/br/main/imagens/marceneiro.jpg" alt="Marceneiro">
+          <h3>Marceneiro</h3>
+          <p>Móveis sob medida e reparos em madeira com acabamento perfeito para transformar seus espaços.</p>
+          <a href="https://wa.me/64981226078?text=Oi,%20preciso%20de%20um%20marceneiro" target="_blank">Agendar</a>
+        </div>
+        <div class="card">
+          <img src="https://raw.githubusercontent.com/Swifthubcatalao/br/main/imagens/eletricista.jpg" alt="Eletricista">
+          <h3>Eletricista</h3>
+          <p>Instalações, manutenções e reparos elétricos para garantir a segurança e o funcionamento do seu imóvel.</p>
+          <a href="https://wa.me/64981226078?text=Oi,%20preciso%20de%20um%20eletricista" target="_blank">Agendar</a>
+        </div>
+        <div class="card">
+          <img src="https://raw.githubusercontent.com/Swifthubcatalao/br/main/imagens/pintor.png" alt="Pintor">
+          <h3>Pintor</h3>
+          <p>Pintura residencial ou comercial com acabamento de alta qualidade para renovar qualquer ambiente.</p>
+          <a href="https://wa.me/64981226078?text=Oi,%20preciso%20de%20um%20pintor" target="_blank">Agendar</a>
+        </div>
+        <div class="card">
+          <img src="https://raw.githubusercontent.com/Swifthubcatalao/br/main/imagens/montagem-de-moveis.jpg" alt="Montagem de Móveis">
+          <h3>Montagem de Móveis</h3>
+          <p>Profissionais especializados para montar seus móveis com rapidez, agilidade e precisão.</p>
+          <a href="https://wa.me/64981226078?text=Oi,%20preciso%20de%20montagem%20de%20moveis" target="_blank">Agendar</a>
+        </div>
+        <div class="card">
+          <img src="https://raw.githubusercontent.com/Swifthubcatalao/br/main/imagens/limpeza-caixa-agua.png" alt="Limpeza de Caixa d'Água">
+          <h3>Limpeza de Caixa d'Água</h3>
+          <p>Higienize sua caixa d'água e garanta água pura e segura para consumo.</p>
+          <a href="https://wa.me/64981226078?text=Oi,%20preciso%20de%20limpeza%20de%20caixa%20da%20agua" target="_blank">Agendar</a>
+        </div>
+        <div class="card">
+          <img src="https://raw.githubusercontent.com/Swifthubcatalao/br/main/imagens/vigilancia-temporaria.jpg" alt="Vigilância Temporária">
+          <h3>Vigilância Temporária</h3>
+          <p>Serviço de monitoramento para períodos curtos, garantindo a segurança do seu evento ou imóvel.</p>
+          <a href="https://wa.me/64981226078?text=Oi,%20preciso%20de%20vigilancia%20temporaria" target="_blank">Agendar</a>
+        </div>
+        <div class="card">
+          <img src="https://raw.githubusercontent.com/Swifthubcatalao/br/main/imagens/instalacao-de-cameras.jpg" alt="Instalação de Câmeras">
+          <h3>Instalação de Câmeras</h3>
+          <p>Implemente sistemas modernos de vigilância para monitorar e proteger seu imóvel.</p>
+          <a href="https://wa.me/64981226078?text=Oi,%20preciso%20de%20instalacao%20de%20cameras" target="_blank">Agendar</a>
+        </div>
+        <div class="card">
+          <img src="https://raw.githubusercontent.com/Swifthubcatalao/br/main/imagens/frete-mudanca.jpg" alt="Frete de Mudanças">
+          <h3>Frete de Mudanças</h3>
+          <p>Equipe especializada para mudanças, garantindo o transporte organizado e seguro dos seus bens.</p>
+          <a href="https://wa.me/64981226078?text=Oi,%20preciso%20de%20frete%20de%20mudancas" target="_blank">Agendar</a>
+        </div>
+        <div class="card">
+          <img src="https://raw.githubusercontent.com/Swifthubcatalao/br/main/imagens/serralheria.jpg" alt="Serralheria">
+          <h3>Serralheria</h3>
+          <p>Serviços em metal com reparos e confecções personalizadas para atender suas necessidades.</p>
+          <a href="https://wa.me/64981226078?text=Oi,%20preciso%20de%20serralheria" target="_blank">Agendar</a>
+        </div>
+        <div class="card">
+          <img src="https://raw.githubusercontent.com/Swifthubcatalao/br/main/imagens/higienizacao-ar-condicionado.png" alt="Higienização de Ar Condicionado">
+          <h3>Higienização de Ar Condicionado</h3>
+          <p>Mantenha seu ar condicionado limpo e livre de bactérias para um ar mais saudável e eficiente.</p>
+          <a href="https://wa.me/64981226078?text=Oi,%20preciso%20de%20higienizacao%20de%20ar%20condicionado" target="_blank">Agendar</a>
+        </div>
+        <div class="card">
+          <img src="https://raw.githubusercontent.com/Swifthubcatalao/br/main/imagens/placa-solar.png" alt="Placa Solar">
+          <h3>Placa Solar</h3>
+          <p>Instalação e manutenção de sistemas de energia solar para economizar e contribuir com o meio ambiente.</p>
+          <a href="https://wa.me/64981226078?text=Oi,%20preciso%20de%20servico%20em%20placa%20solar" target="_blank">Agendar</a>
+        </div>
+      </div>
+    </div>
+  </section>
+  
+  <footer>
+    <div class="container">
+      <p>&copy; 2025 Swift Hub Catalão. Todos os direitos reservados.</p>
+    </div>
+  </footer>
+  
+    <a href="https://wa.me/64981226078" class="whatsapp-float" target="_blank">
+    <i class="fab fa-whatsapp"></i>
+  </a>
+  
 </body>
 </html>
