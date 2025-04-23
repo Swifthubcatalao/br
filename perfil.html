@@ -5,14 +5,15 @@
   <meta name="description" content="Swift Hub Catalão - Perfil do Usuário">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Swift Hub Catalão - Meu Perfil</title>
-  
+
   <!-- Ícones do Font Awesome -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.0/css/all.min.css">
   <!-- Google reCAPTCHA API -->
   <script src="https://www.google.com/recaptcha/api.js" async defer></script>
-  
+
   <!-- Firebase Modular SDK e Firestore -->
   <script type="module">
+    // Importações dos módulos Firebase
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.5.0/firebase-app.js";
     import {
       getAuth,
@@ -28,26 +29,30 @@
       setDoc
     } from "https://www.gstatic.com/firebasejs/10.5.0/firebase-firestore.js";
 
-    // Configuração do Firebase – substitua pelos seus dados
+    // Configuração do Firebase – substitua pelos seus dados reais
     const firebaseConfig = {
       apiKey: "AIzaSyDGBKxvfcY-PA_vC7SA8G0f-TjqjK3OD3o",
       authDomain: "swifthubcatalao.firebaseapp.com",
       projectId: "swifthubcatalao",
       storageBucket: "swifthubcatalao.firebasestorage.app",
       messagingSenderId: "756803145076",
-      appId: "1:756803145076:web:097f4d3d5b28cc6ca1f021"
+      appId: "1:756803145076:web:4593bd78a26a2270a1f021"
     };
 
     const app = initializeApp(firebaseConfig);
     const auth = getAuth(app);
     const db = getFirestore(app);
 
-    let confirmationResult = null; // Armazena o resultado de verificação SMS
-    let recaptchaVerifier = null;   // Armazena o objeto reCAPTCHA
+    // Para testes locais, se necessário, pode desabilitar a verificação de aplicativo (não use em produção)
+    // auth.settings.appVerificationDisabledForTesting = true;
+
+    let confirmationResult = null; // Resultado da verificação SMS
+    let recaptchaVerifier = null;   // Objeto reCAPTCHA
 
     /* --- Inactivity Logout Logic --- */
     const INACTIVITY_TIMEOUT = 30 * 60 * 1000; // 30 minutos
     let logoutTimer = null;
+
     function resetTimer() {
       if (logoutTimer) clearTimeout(logoutTimer);
       logoutTimer = setTimeout(() => {
@@ -60,6 +65,7 @@
         });
       }, INACTIVITY_TIMEOUT);
     }
+
     function setupInactivityListeners() {
       document.addEventListener("mousemove", resetTimer);
       document.addEventListener("keydown", resetTimer);
@@ -67,6 +73,7 @@
       document.addEventListener("scroll", resetTimer);
       resetTimer();
     }
+
     function removeInactivityListeners() {
       if (logoutTimer) clearTimeout(logoutTimer);
       document.removeEventListener("mousemove", resetTimer);
@@ -92,10 +99,14 @@
       }
     });
 
-    // Carrega e preenche os dados do perfil do usuário
+    // Preenche os dados do perfil do usuário
     async function displayUserProfile(user) {
       const emailElement = document.getElementById("userEmail");
-      emailElement.value = user.email || "Email não disponível";
+      if (emailElement) {
+        emailElement.value = user.email || "Email não disponível";
+      } else {
+        console.error("Campo de email (userEmail) não encontrado.");
+      }
 
       const nameInput = document.getElementById("userName");
       const addressInput = document.getElementById("userAddress");
@@ -106,47 +117,69 @@
       const phoneStatusMessage = document.getElementById("phoneStatusMessage");
 
       if (user.phoneNumber) {
-        phoneInput.value = user.phoneNumber;
-        phoneInput.disabled = true;
-        document.getElementById("sendCodeButton").style.display = "none";
-        phoneStatus.innerText = "Telefone verificado: " + user.phoneNumber;
-        phoneStatus.style.color = "green";
-        sendCodeSection.style.display = "none";
-        verifyCodeSection.style.display = "none";
-        document.getElementById("recaptcha-container").style.display = "none";
+        if(phoneInput) {
+          phoneInput.value = user.phoneNumber;
+          phoneInput.disabled = true;
+        }
+        const sendBtn = document.getElementById("sendCodeButton");
+        if(sendBtn) { sendBtn.style.display = "none"; }
+        if (phoneStatus) {
+          phoneStatus.innerText = "Telefone verificado: " + user.phoneNumber;
+          phoneStatus.style.color = "green";
+        }
+        if (sendCodeSection) sendCodeSection.style.display = "none";
+        if (verifyCodeSection) verifyCodeSection.style.display = "none";
+        const recaptchaEl = document.getElementById("recaptcha-container");
+        if (recaptchaEl) recaptchaEl.style.display = "none";
       } else {
-        phoneStatus.innerText = "Telefone não verificado.";
-        phoneStatus.style.color = "orange";
-        sendCodeSection.style.display = "block";
-        verifyCodeSection.style.display = "none";
-        document.getElementById("recaptcha-container").style.display = "block";
+        if (phoneStatus) {
+          phoneStatus.innerText = "Telefone não verificado.";
+          phoneStatus.style.color = "orange";
+        }
+        if (sendCodeSection) sendCodeSection.style.display = "block";
+        if (verifyCodeSection) verifyCodeSection.style.display = "none";
+        const recaptchaEl = document.getElementById("recaptcha-container");
+        if (recaptchaEl) recaptchaEl.style.display = "block";
       }
 
-      const userDocRef = doc(db, "users", user.uid);
-      const userDocSnap = await getDoc(userDocRef);
-      if (userDocSnap.exists()) {
-        const userData = userDocSnap.data();
-        nameInput.value = userData.name || "";
-        addressInput.value = userData.address || "";
-        if (userData.phoneNumber && !user.phoneNumber) {
-          phoneInput.value = userData.phoneNumber;
-          phoneInput.disabled = true;
-          document.getElementById("sendCodeButton").style.display = "none";
-          phoneStatus.innerText = "Telefone (via dados salvos): " + userData.phoneNumber;
-          phoneStatus.style.color = "blue";
-          sendCodeSection.style.display = "none";
-          verifyCodeSection.style.display = "none";
-          document.getElementById("recaptcha-container").style.display = "none";
+      // Carrega dados adicionais do Firestore, se disponíveis
+      try {
+        const userDocRef = doc(db, "users", user.uid);
+        const userDocSnap = await getDoc(userDocRef);
+        if (userDocSnap.exists()) {
+          const userData = userDocSnap.data();
+          if(nameInput) nameInput.value = userData.name || "";
+          if(addressInput) addressInput.value = userData.address || "";
+          if(userData.phoneNumber && !user.phoneNumber) {
+            if(phoneInput) {
+              phoneInput.value = userData.phoneNumber;
+              phoneInput.disabled = true;
+            }
+            const sendBtn = document.getElementById("sendCodeButton");
+            if(sendBtn) { sendBtn.style.display = "none"; }
+            if(phoneStatus) {
+              phoneStatus.innerText = "Telefone (via dados salvos): " + userData.phoneNumber;
+              phoneStatus.style.color = "blue";
+            }
+            if(sendCodeSection) sendCodeSection.style.display = "none";
+            if(verifyCodeSection) verifyCodeSection.style.display = "none";
+            if(document.getElementById("recaptcha-container")) {
+              document.getElementById("recaptcha-container").style.display = "none";
+            }
+          }
+        } else {
+          console.log("Nenhum dado de perfil encontrado para este usuário.");
         }
-      } else {
-        console.log("Nenhum dado de perfil encontrado.");
+      } catch (e) {
+        console.error("Erro ao buscar os dados do perfil:", e);
       }
     }
 
-    // Inicializa o reCAPTCHA para verificação por SMS
+    // Inicializa o reCAPTCHA
     function initializeRecaptcha(user) {
+      const recaptchaEl = document.getElementById("recaptcha-container");
       if (!user || user.phoneNumber) {
-        document.getElementById("recaptcha-container").style.display = "none";
+        if(recaptchaEl) recaptchaEl.style.display = "none";
         return;
       }
       if (!recaptchaVerifier) {
@@ -154,29 +187,33 @@
           'size': 'normal',
           'callback': (response) => {
             console.log("reCAPTCHA resolvido!");
-            document.getElementById("sendCodeButton").disabled = false;
+            const sendBtn = document.getElementById("sendCodeButton");
+            if(sendBtn) sendBtn.disabled = false;
           },
           'expired-callback': () => {
             console.log("reCAPTCHA expirado. Resolva novamente.");
-            document.getElementById("sendCodeButton").disabled = true;
+            const sendBtn = document.getElementById("sendCodeButton");
+            if(sendBtn) sendBtn.disabled = true;
             recaptchaVerifier.render().then(widgetId => grecaptcha.reset(widgetId));
           }
         }, auth);
 
         recaptchaVerifier.render().then(widgetId => {
           console.log("reCAPTCHA renderizado. Widget ID:", widgetId);
-          document.getElementById("sendCodeButton").disabled = true;
+          const sendBtn = document.getElementById("sendCodeButton");
+          if(sendBtn) sendBtn.disabled = true;
         });
       } else {
         recaptchaVerifier.render().then(widgetId => {
-          document.getElementById("recaptcha-container").style.display = "block";
+          if(recaptchaEl) recaptchaEl.style.display = "block";
           grecaptcha.reset(widgetId);
-          document.getElementById("sendCodeButton").disabled = true;
+          const sendBtn = document.getElementById("sendCodeButton");
+          if(sendBtn) sendBtn.disabled = true;
         });
       }
     }
 
-    // Envio do código SMS: adiciona "+55" automaticamente se o usuário não incluir
+    // Envia o código SMS (com adição automática de "+55" se necessário)
     async function handleSendCode(event) {
       event.preventDefault();
       const phoneInput = document.getElementById("userPhone");
@@ -189,7 +226,6 @@
       if (!phoneNumber.startsWith("+")) {
         phoneNumber = "+55" + phoneNumber;
       }
-
       if (phoneNumber.length < 10) {
         phoneStatusMessage.innerText = "Formato de telefone inválido.";
         phoneStatusMessage.style.color = "red";
@@ -218,7 +254,7 @@
       }
     }
 
-    // Verifica o código SMS digitado
+    // Verifica o código SMS digitado pelo usuário
     async function handleVerifyCode(event) {
       event.preventDefault();
       const verificationCodeInput = document.getElementById("verificationCode");
@@ -250,7 +286,6 @@
           "Telefone verificado: " + user.phoneNumber;
         document.getElementById("phoneVerificationStatus").style.color = "green";
         document.getElementById("recaptcha-container").style.display = "none";
-        
         const userDocRef = doc(db, "users", user.uid);
         await setDoc(userDocRef, { phoneNumber: user.phoneNumber }, { merge: true });
         console.log("Número de telefone salvo no Firestore.");
@@ -262,7 +297,7 @@
       }
     }
 
-    // Salva os dados pessoais do perfil
+    // Salva os dados pessoais (nome e endereço)
     async function handleSaveProfile(event) {
       event.preventDefault();
       const user = auth.currentUser;
@@ -333,12 +368,26 @@
       } else {
         console.error("Botão de logout não encontrado.");
       }
-      document.getElementById("profileForm").addEventListener("submit", handleSaveProfile);
-      document.getElementById("sendCodeForm").addEventListener("submit", handleSendCode);
-      document.getElementById("verifyCodeForm").addEventListener("submit", handleVerifyCode);
-      document.getElementById("verifyCodeSection").style.display = "none";
-      document.getElementById("phoneStatusMessage").innerText = "";
-      document.getElementById("saveStatusMessage").innerText = "";
+      const profileForm = document.getElementById("profileForm");
+      if (profileForm) {
+        profileForm.addEventListener("submit", handleSaveProfile);
+      }
+      const sendCodeForm = document.getElementById("sendCodeForm");
+      if (sendCodeForm) {
+        sendCodeForm.addEventListener("submit", handleSendCode);
+      }
+      const verifyCodeForm = document.getElementById("verifyCodeForm");
+      if (verifyCodeForm) {
+        verifyCodeForm.addEventListener("submit", handleVerifyCode);
+      }
+      const verifyCodeSection = document.getElementById("verifyCodeSection");
+      if (verifyCodeSection) {
+        verifyCodeSection.style.display = "none";
+      }
+      const phoneStatusMessage = document.getElementById("phoneStatusMessage");
+      if (phoneStatusMessage) phoneStatusMessage.innerText = "";
+      const saveStatusMessage = document.getElementById("saveStatusMessage");
+      if (saveStatusMessage) saveStatusMessage.innerText = "";
     });
   </script>
 
@@ -363,7 +412,7 @@
     }
     .container {
       max-width: 800px;
-      margin: 100px auto 20px auto; /* Espaço superior para não ficar sob o header fixo */
+      margin: 100px auto 20px auto; /* Espaço superior para que o conteúdo não fique sob o header fixo */
       padding: 20px;
       background: #fff;
       border-radius: 8px;
@@ -664,7 +713,7 @@
   </a>
 
   <script type="module">
-    // Os event listeners e inicializações já estão configurados acima (no bloco de script do head).
+    // Os event listeners e inicializações foram configurados no bloco de script acima.
   </script>
 </body>
 </html>
