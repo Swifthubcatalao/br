@@ -22,7 +22,7 @@
       signOut
     } from "https://www.gstatic.com/firebasejs/10.5.0/firebase-auth.js";
 
-    // Configure seu Firebase aqui.
+    // Configure seu Firebase
     const firebaseConfig = {
       apiKey: "AIzaSyDGBKxvfcY-PA_vC7SA8G0f-TjqjK3OD3o",
       authDomain: "swifthubcatalao.firebaseapp.com",
@@ -91,12 +91,11 @@
         .then((userCredential) => {
           const user = userCredential.user;
           if (!user.emailVerified) {
-            // Se o email não estiver verificado, envia o email de verificação.
+            // Se o email não estiver verificado, envia ou reenvia o email de verificação.
             sendEmailVerification(user)
               .then(() => {
-                alert("Seu email não foi verificado. Um email de verificação foi enviado. Confira sua caixa de entrada. Se não receber, utilize o botão de reenvio.");
+                alert("Seu email não foi verificado. Um email de verificação foi enviado. Verifique sua caixa de entrada. Se não receber, utilize o botão de reenvio.");
                 const btn = document.getElementById("resendButton");
-                // Exibe o botão e mostra "Enviado" por 1 segundo
                 btn.style.display = "inline-block";
                 btn.innerText = "Enviado";
                 setTimeout(() => {
@@ -108,12 +107,13 @@
             signOut(auth);
             return;
           }
+          // Email verificado? Redireciona para a página de serviços.
           window.location.replace("servicos.html");
         })
         .catch(error => alert("Erro ao fazer login: " + error.message));
     }
 
-    // Função para tratar o cadastro e enviar email de verificação.
+    // Função para tratar o cadastro e envio do email de verificação.
     function handleRegister(e) {
       e.preventDefault();
       const email = document.getElementById("registerEmail").value;
@@ -131,7 +131,7 @@
         .catch(error => alert("Erro ao criar conta: " + error.message));
     }
 
-    // Função para recuperar senha.
+    // Função para recuperar senha
     function handleForgotPassword() {
       const email = document.getElementById("loginEmail").value;
       if (!email) {
@@ -143,7 +143,7 @@
         .catch(error => alert("Erro ao enviar email: " + error.message));
     }
 
-    // Função para reenviar email de verificação com contagem e mensagem "Enviado" por 1 segundo.
+    // Função para reenviar email de verificação com exibição de mensagem "Enviado" por 1 segundo
     function handleResendVerification() {
       const email = document.getElementById("loginEmail").value;
       const password = document.getElementById("loginPassword").value;
@@ -162,13 +162,12 @@
               })
               .catch(error => alert("Erro ao reenviar email: " + error.message));
           } else {
-            alert("Seu email já está verificado. Por favor, faça login.");
+            alert("Seu email já está verificado. Faça login normalmente.");
           }
         })
         .catch(error => alert("Erro ao reenviar email: " + error.message));
     }
 
-    // Registra os eventos quando o DOM estiver pronto.
     document.addEventListener("DOMContentLoaded", function () {
       document.getElementById("loginForm").addEventListener("submit", handleLogin);
       document.getElementById("registerForm").addEventListener("submit", handleRegister);
@@ -184,6 +183,7 @@
       --color-light: #ffffff;      /* Branco */
       --color-dark: #222;
     }
+    /* Reset */
     * {
       box-sizing: border-box;
       margin: 0;
@@ -191,24 +191,36 @@
       font-family: Arial, sans-serif;
     }
     body {
-      background: linear-gradient(135deg, var(--color-primary), var(--color-secondary));
-      color: var(--color-light);
+      background: #ffffff; /* Fundo branco */
+      color: var(--color-primary); /* Texto azul */
       display: flex;
       justify-content: center;
       align-items: center;
-      height: 100vh;
+      min-height: 100vh;
     }
-    .container {
-      background: rgba(255, 255, 255, 0.2);
-      padding: 30px;
-      border-radius: 15px;
-      box-shadow: 0px 5px 15px rgba(0, 0, 0, 0.3);
-      max-width: 400px;
+    /* Cabeçalho da empresa acima do login */
+    .company-header {
       text-align: center;
-      backdrop-filter: blur(10px);
+      margin-bottom: 20px;
+    }
+    .company-header h1 {
+      font-size: 2.5em;
+      color: var(--color-primary);
+    }
+    /* Container do login: quadrado branco */
+    .container {
+      background: #ffffff;
+      border: 1px solid #ddd;
+      padding: 30px;
+      border-radius: 10px;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+      max-width: 400px;
+      width: 100%;
+      text-align: center;
     }
     h2 {
       margin-bottom: 15px;
+      color: var(--color-primary);
     }
     form {
       display: flex;
@@ -218,16 +230,16 @@
     form label {
       margin-bottom: 5px;
       font-weight: bold;
-      color: var(--color-light);
+      color: var(--color-primary);
     }
     form input {
       padding: 10px;
       margin-bottom: 10px;
-      border: none;
+      border: 1px solid var(--color-primary);
       border-radius: 5px;
       font-size: 14px;
-      background: rgba(255, 255, 255, 0.3);
-      color: var(--color-light);
+      background: #ffffff;
+      color: var(--color-primary);
     }
     form button {
       padding: 12px;
@@ -246,13 +258,13 @@
       margin-top: 15px;
       cursor: pointer;
       font-weight: bold;
-      color: #FFD700;
+      color: var(--color-primary);
     }
     .toggle:hover {
-      color: #FFA500;
+      color: var(--color-secondary);
     }
     #forgotPassword {
-      color: var(--color-light);
+      color: var(--color-primary);
       text-decoration: underline;
       cursor: pointer;
     }
@@ -272,7 +284,7 @@
       font-size: 1.2em;
       margin-top: 10px;
     }
-    /* Estilo para o indicador de status (bolinha verde) */
+    /* Indicador de status (bolinha verde) */
     .status-indicator {
       display: inline-block;
       width: 10px;
@@ -286,6 +298,7 @@
   </style>
 
   <script>
+    // Alterna entre os formulários de login e cadastro
     function toggleForm() {
       const loginContainer = document.getElementById("loginFormContainer");
       const registerContainer = document.getElementById("registerFormContainer");
@@ -295,6 +308,10 @@
   </script>
 </head>
 <body>
+  <!-- Cabeçalho da Empresa (fora do quadrado do login) -->
+  <div class="company-header">
+    <h1>Swift Hub Catalão</h1>
+  </div>
   <div class="container">
     <!-- Formulário de Login -->
     <div id="loginFormContainer">
@@ -321,7 +338,7 @@
       </form>
       <p class="toggle" onclick="toggleForm()">Já tenho uma conta</p>
     </div>
-    <!-- Botão para reenviar email de verificação (exibido quando necessário) -->
+    <!-- Botão para reenviar email de verificação -->
     <button id="resendButton">Reenviar email de verificação</button>
     <!-- Mensagem informando que o usuário já está logado -->
     <p id="loggedMessage">Logado!</p>
