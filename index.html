@@ -7,36 +7,40 @@
   <title>Swift Hub Catalão - Início</title>
 
   <!-- Ícones do Font Awesome -->
-  <link rel="preload" 
-        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.0/css/all.min.css" 
-        as="style" onload="this.rel='stylesheet'">
+  <link rel="preload" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.0/css/all.min.css" as="style" onload="this.rel='stylesheet'">
   <noscript>
-    <link rel="stylesheet" 
-          href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.0/css/all.min.css">
   </noscript>
 
   <style>
     :root {
-      --color-primary: #0033A0;  /* Azul */
-      --color-secondary: #C8102E;  /* Vermelho */
-      --color-light: #ffffff;  /* Branco */
+      --color-primary: #0033A0;   /* Azul */
+      --color-secondary: #C8102E;   /* Vermelho */
+      --color-light: #ffffff;       /* Branco */
       --color-dark: #333;
     }
 
+    /* Reset e estilos globais */
     * {
       box-sizing: border-box;
       margin: 0;
       padding: 0;
     }
-
     body {
       font-family: Arial, sans-serif;
       background: var(--color-light);
       line-height: 1.6;
       color: var(--color-dark);
     }
+    .container {
+      max-width: 1200px;
+      margin: auto;
+      padding: 20px;
+    }
 
-    /* Estilização do cabeçalho */
+    /* =============================
+       Cabeçalho Atualizado
+       ============================= */
     header {
       background: var(--color-light);
       padding: 15px;
@@ -46,7 +50,7 @@
       border-bottom: 1px solid #ddd;
     }
 
-    /* Ícone de menu */
+    /* Ícone de menu à esquerda */
     .menu-icon {
       font-size: 28px;
       color: var(--color-primary);
@@ -58,9 +62,11 @@
     .logo {
       max-width: 120px;
       height: auto;
+      display: block;
+      margin: 0 auto;
     }
 
-    /* Estilos do popup do menu */
+    /* Popup Lateral do Menu */
     .menu-popup {
       position: fixed;
       top: 0;
@@ -74,9 +80,8 @@
       display: flex;
       flex-direction: column;
       padding: 20px;
+      z-index: 1000;
     }
-
-    /* Estilos dos links dentro do menu */
     .menu-popup a {
       color: var(--color-light);
       font-size: 1.2em;
@@ -85,24 +90,110 @@
       display: block;
       transition: background 0.2s;
     }
-
     .menu-popup a:hover {
-      background: rgba(255,255,255,0.2);
+      background: rgba(255, 255, 255, 0.2);
     }
-
-    /* Botão para fechar o menu */
     .close-menu {
       font-size: 26px;
       color: var(--color-light);
       cursor: pointer;
       align-self: flex-end;
     }
-
-    /* Classe ativa para abrir o menu */
     .menu-open {
       transform: translateX(0);
     }
 
+    /* =============================
+       Blog Container (Layout original)
+       ============================= */
+    main.blog-container {
+      max-width: 800px;
+      margin: 40px auto;
+      padding: 20px;
+    }
+    article.post {
+      border-bottom: 1px solid #ddd;
+      padding-bottom: 20px;
+      margin-bottom: 20px;
+    }
+    article.post:last-child {
+      border: none;
+    }
+    article.post img {
+      width: 100%;
+      height: auto;
+      border-radius: 10px;
+      margin-bottom: 15px;
+    }
+    article.post h2 {
+      font-size: 1.8em;
+      margin-bottom: 10px;
+      color: var(--color-primary);
+    }
+    article.post p {
+      font-size: 1em;
+      text-align: justify;
+    }
+    /* Botão Consultar Serviços */
+    .consultar-button-container {
+      text-align: center;
+      margin-top: 40px;
+    }
+    .consultar-button {
+      display: inline-block;
+      background: var(--color-primary);
+      color: var(--color-light);
+      padding: 15px 30px;
+      text-decoration: none;
+      font-size: 1.1em;
+      font-weight: bold;
+      border-radius: 8px;
+      transition: background 0.3s, transform 0.2s;
+      cursor: pointer;
+    }
+    .consultar-button:hover {
+      background: #00227A;
+      transform: scale(1.03);
+    }
+
+    /* =============================
+       Footer
+       ============================= */
+    footer {
+      background: var(--color-secondary);
+      color: var(--color-light);
+      text-align: center;
+      padding: 20px 0;
+      margin-top: 40px;
+    }
+    footer p {
+      font-size: 0.9em;
+    }
+    /* Botão flutuante do WhatsApp */
+    .whatsapp-float {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      background: #25D366;
+      color: var(--color-light);
+      border-radius: 50%;
+      width: 60px;
+      height: 60px;
+      text-align: center;
+      line-height: 60px;
+      font-size: 30px;
+      z-index: 1000;
+      box-shadow: 2px 2px 3px rgba(0,0,0,0.3);
+    }
+    /* Responsividade */
+    @media (max-width: 768px) {
+      .menu-icon { font-size: 24px; }
+      header .logo { max-width: 100px; }
+      nav ul li { margin: 0 10px; font-size: 0.9em; }
+      article.post h2 { font-size: 1.6em; }
+      article.post p { font-size: 0.95em; }
+      .consultar-button { padding: 12px 25px; font-size: 1em; }
+    }
   </style>
 
   <script>
@@ -113,14 +204,13 @@
 </head>
 <body>
 
-  <!-- Cabeçalho com Ícone de Menu e Logo -->
+  <!-- Cabeçalho Atualizado: Ícone de menu à esquerda e logo centralizada -->
   <header>
     <i class="fas fa-bars menu-icon" onclick="toggleMenu()"></i>
-    <img src="https://raw.githubusercontent.com/Swifthubcatalao/br/main/imagens/logo.png" 
-         alt="Logo Swift Hub Catalão" class="logo">
+    <img src="https://raw.githubusercontent.com/Swifthubcatalao/br/main/imagens/logo.png" alt="Logo Swift Hub Catalão" class="logo">
   </header>
 
-  <!-- Menu Lateral (popup) -->
+  <!-- Popup Lateral do Menu -->
   <div id="menuPopup" class="menu-popup">
     <span class="close-menu" onclick="toggleMenu()">&times;</span>
     <a href="index.html">Início</a>
@@ -128,46 +218,38 @@
     <a href="login.html">Login</a>
   </div>
 
+  <!-- Restante do Layout: Blog Container, Posts, Botão e Footer -->
   <main class="blog-container">
     <!-- Post 1 -->
     <article class="post">
-      <img src="https://raw.githubusercontent.com/Swifthubcatalao/br/main/imagens/post1.jpg" 
-           alt="Transformação na Contratação">
-      <div class="post-info">
-        <h2>A Transformação na Contratação de Serviços</h2>
-        <p>
-          Vivemos em uma era de mudanças onde a digitalização simplifica a contratação de serviços. Nossa plataforma alia tecnologia e praticidade para conectar pessoas a profissionais especializados. Soluções modernas tornam processos complexos em experiências ágeis e seguras, transformando desafios em resultados eficientes.
-        </p>
-      </div>
+      <img src="https://raw.githubusercontent.com/Swifthubcatalao/br/main/imagens/post1.jpg" alt="Transformação na Contratação">
+      <h2>A Transformação na Contratação de Serviços</h2>
+      <p>
+        Vivemos em uma era de mudanças onde a digitalização simplifica a contratação de serviços. Nossa plataforma alia tecnologia e praticidade para conectar pessoas a profissionais especializados. Soluções modernas tornam processos complexos em experiências ágeis e seguras, transformando desafios em resultados eficientes.
+      </p>
     </article>
     <!-- Post 2 -->
     <article class="post">
-      <img src="https://raw.githubusercontent.com/Swifthubcatalao/br/main/imagens/post2.jpg" 
-           alt="Inovação na Gestão">
-      <div class="post-info">
-        <h2>A Importância da Inovação na Gestão</h2>
-        <p>
-          Inovar na forma de gerir e contratar serviços é essencial para eliminar burocracias e reduzir custos. Adotar ferramentas digitais otimizadas facilita a administração e aprimora a transparência no fluxo de processos. Nossa abordagem transforma a experiência de contratações, agregando valor com soluções simples e eficazes.
-        </p>
-      </div>
+      <img src="https://raw.githubusercontent.com/Swifthubcatalao/br/main/imagens/post2.jpg" alt="Inovação na Gestão">
+      <h2>A Importância da Inovação na Gestão</h2>
+      <p>
+        Inovar na forma de gerir e contratar serviços é essencial para eliminar burocracias e reduzir custos. Adotar ferramentas digitais otimizadas facilita a administração e aprimora a transparência no fluxo de processos. Nossa abordagem transforma a experiência de contratações, agregando valor com soluções simples e eficazes.
+      </p>
     </article>
     <!-- Post 3 -->
     <article class="post">
-      <img src="https://raw.githubusercontent.com/Swifthubcatalao/br/main/imagens/post3.jpg" 
-           alt="Conectando Soluções com Eficiência">
-      <div class="post-info">
-        <h2>Conectando Soluções com Eficiência</h2>
-        <p>
-          Nossa plataforma foi desenvolvida para proporcionar uma experiência intuitiva e eficiente. Ao conectar clientes a profissionais de qualidade, garantimos que cada atendimento seja realizado com rapidez e segurança. A facilidade na contratação de serviços eleva o nível de eficiência, transformando a forma de resolver desafios cotidianos.
-        </p>
-      </div>
+      <img src="https://raw.githubusercontent.com/Swifthubcatalao/br/main/imagens/post3.jpg" alt="Conectando Soluções com Eficiência">
+      <h2>Conectando Soluções com Eficiência</h2>
+      <p>
+        Nossa plataforma foi desenvolvida para proporcionar uma experiência intuitiva e eficiente. Ao conectar clientes a profissionais de qualidade, garantimos que cada atendimento seja realizado com rapidez e segurança. A facilidade na contratação de serviços eleva o nível de eficiência, transformando a forma de resolver desafios cotidianos.
+      </p>
     </article>
     <!-- Botão Consultar Serviços -->
     <div class="consultar-button-container">
       <a href="servicos.html" class="consultar-button">Consultar Serviços</a>
     </div>
   </main>
-  
+
   <footer>
     <div class="container">
       <p>&copy; 2025 Swift Hub Catalão. Todos os direitos reservados.</p>
@@ -177,6 +259,6 @@
   <a href="https://wa.me/64981226078" class="whatsapp-float" target="_blank" aria-label="Fale conosco pelo WhatsApp">
     <i class="fab fa-whatsapp"></i>
   </a>
-
+  
 </body>
 </html>
