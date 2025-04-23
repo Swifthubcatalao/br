@@ -147,59 +147,61 @@
   </a>
 
   <script>
-    // Configuração do Firebase
-    const firebaseConfig = {
-      apiKey: "AIzaSyDGBKxvfcY-PA_vC7SA8G0f-TjqjK3OD3o",
-      authDomain: "swifthubcatalao.firebaseapp.com",
-      projectId: "swifthubcatalao",
-      storageBucket: "swifthubcatalao.firebasestorage.app",
-      messagingSenderId: "756803145076",
-      appId: "1:756803145076:web:4593bd78a26a2270a1f021"
-    };
-    firebase.initializeApp(firebaseConfig);
-    const auth = firebase.auth();
+    document.addEventListener('DOMContentLoaded', function() {
+      // Configuração do Firebase
+      const firebaseConfig = {
+        apiKey: "AIzaSyDGBKxvfcY-PA_vC7SA8G0f-TjqjK3OD3o",
+        authDomain: "swifthubcatalao.firebaseapp.com",
+        projectId: "swifthubcatalao",
+        storageBucket: "swifthubcatalao.firebasestorage.app",
+        messagingSenderId: "756803145076",
+        appId: "1:756803145076:web:4593bd78a26a2270a1f021"
+      };
+      firebase.initializeApp(firebaseConfig);
+      const auth = firebase.auth();
+      
+      // Função para exibir erro
+      function showError(message) {
+        document.getElementById("errorMessage").textContent = message;
+        document.getElementById("errorModal").style.display = "block";
+      }
+      document.getElementById("closeModal").addEventListener("click", function() {
+        document.getElementById("errorModal").style.display = "none";
+      });
 
-    // Função para exibir erro
-    function showError(message) {
-      document.getElementById("errorMessage").textContent = message;
-      document.getElementById("errorModal").style.display = "block";
-    }
-    document.getElementById("closeModal").addEventListener("click", function() {
-      document.getElementById("errorModal").style.display = "none";
-    });
+      // Alternar entre login e cadastro
+      document.getElementById("showRegister").addEventListener("click", function(e) {
+        e.preventDefault();
+        document.getElementById("loginFormContainer").style.display = "none";
+        document.getElementById("registerFormContainer").style.display = "block";
+      });
+      document.getElementById("showLogin").addEventListener("click", function(e) {
+        e.preventDefault();
+        document.getElementById("registerFormContainer").style.display = "none";
+        document.getElementById("loginFormContainer").style.display = "block";
+      });
 
-    // Alternar entre login e cadastro
-    document.getElementById("showRegister").addEventListener("click", function(e) {
-      e.preventDefault();
-      document.getElementById("loginFormContainer").style.display = "none";
-      document.getElementById("registerFormContainer").style.display = "block";
-    });
-    document.getElementById("showLogin").addEventListener("click", function(e) {
-      e.preventDefault();
-      document.getElementById("registerFormContainer").style.display = "none";
-      document.getElementById("loginFormContainer").style.display = "block";
-    });
+      // Cadastro de usuário
+      document.getElementById("registerForm").addEventListener("submit", function(e) {
+        e.preventDefault();
+        const email = document.getElementById("registerEmail").value;
+        const password = document.getElementById("registerPassword").value;
 
-    // Cadastro de usuário
-    document.getElementById("registerForm").addEventListener("submit", function(e) {
-      e.preventDefault();
-      const email = document.getElementById("registerEmail").value;
-      const password = document.getElementById("registerPassword").value;
+        auth.createUserWithEmailAndPassword(email, password)
+          .then(() => alert("Cadastro realizado com sucesso!"))
+          .catch(error => showError(error.message));
+      });
 
-      auth.createUserWithEmailAndPassword(email, password)
-        .then(() => alert("Cadastro realizado com sucesso!"))
-        .catch(error => showError(error.message));
-    });
+      // Login de usuário
+      document.getElementById("loginForm").addEventListener("submit", function(e) {
+        e.preventDefault();
+        const email = document.getElementById("loginEmail").value;
+        const password = document.getElementById("loginPassword").value;
 
-    // Login de usuário
-    document.getElementById("loginForm").addEventListener("submit", function(e) {
-      e.preventDefault();
-      const email = document.getElementById("loginEmail").value;
-      const password = document.getElementById("loginPassword").value;
-
-      auth.signInWithEmailAndPassword(email, password)
-        .then(() => window.location.href = "index.html")
-        .catch(error => showError(error.message));
+        auth.signInWithEmailAndPassword(email, password)
+          .then(() => window.location.href = "index.html")
+          .catch(error => showError(error.message));
+      });
     });
   </script>
 
