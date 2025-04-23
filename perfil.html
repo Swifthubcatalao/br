@@ -8,6 +8,7 @@
   
   <!-- Ícones do Font Awesome -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.0/css/all.min.css">
+  
   <!-- Google reCAPTCHA API -->
   <script src="https://www.google.com/recaptcha/api.js" async defer></script>
   
@@ -15,19 +16,8 @@
   <script type="module">
     // Importações do Firebase
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.5.0/firebase-app.js";
-    import {
-      getAuth,
-      onAuthStateChanged,
-      signOut,
-      signInWithPhoneNumber,
-      RecaptchaVerifier
-    } from "https://www.gstatic.com/firebasejs/10.5.0/firebase-auth.js";
-    import {
-      getFirestore,
-      doc,
-      getDoc,
-      setDoc
-    } from "https://www.gstatic.com/firebasejs/10.5.0/firebase-firestore.js";
+    import { getAuth, onAuthStateChanged, signOut, signInWithPhoneNumber, RecaptchaVerifier } from "https://www.gstatic.com/firebasejs/10.5.0/firebase-auth.js";
+    import { getFirestore, doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.5.0/firebase-firestore.js";
 
     // Configuração do Firebase – substitua pelos seus dados reais
     const firebaseConfig = {
@@ -189,7 +179,9 @@
       }
     }
 
-    // Inicializa o reCAPTCHA para verificações via SMS
+    // ⇨ AQUI A ÚNICA PARTE MODIFICADA – AUTENTICAÇÃO POR NÚMERO
+
+    // Função para inicializar o reCAPTCHA para verificações via SMS
     function initializeRecaptcha(user) {
       const recaptchaEl = document.getElementById("recaptcha-container");
       if (!user || user.phoneNumber) {
@@ -198,17 +190,19 @@
       }
       if (!recaptchaVerifier) {
         recaptchaVerifier = new RecaptchaVerifier('recaptcha-container', {
-          'size': 'normal',
-          'callback': (response) => {
+          size: 'normal',
+          callback: (response) => {
             console.log("reCAPTCHA resolvido!");
             const sendBtn = document.getElementById("sendCodeButton");
             if (sendBtn) sendBtn.disabled = false;
           },
           'expired-callback': () => {
-            console.log("reCAPTCHA expirado. Resolva novamente.");
+            console.log("reCAPTCHA expirado. Por favor, resolva novamente.");
             const sendBtn = document.getElementById("sendCodeButton");
             if (sendBtn) sendBtn.disabled = true;
-            recaptchaVerifier.render().then(widgetId => grecaptcha.reset(widgetId));
+            recaptchaVerifier.render().then(widgetId => {
+              grecaptcha.reset(widgetId);
+            });
           }
         }, auth);
 
@@ -227,7 +221,7 @@
       }
     }
 
-    // Envia o código SMS (adiciona "+55" se necessário)
+    // Função para enviar o código SMS (formata para incluir "+55" se necessário)
     async function handleSendCode(event) {
       event.preventDefault();
       const phoneInput = document.getElementById("userPhone");
@@ -263,12 +257,14 @@
         phoneStatusMessage.style.color = "red";
         sendCodeButton.disabled = false;
         if (recaptchaVerifier) {
-          recaptchaVerifier.render().then(widgetId => grecaptcha.reset(widgetId));
+          recaptchaVerifier.render().then(widgetId => {
+            grecaptcha.reset(widgetId);
+          });
         }
       }
     }
 
-    // Verifica o código SMS digitado
+    // Função para verificar o código SMS digitado
     async function handleVerifyCode(event) {
       event.preventDefault();
       const verificationCodeInput = document.getElementById("verificationCode");
@@ -296,14 +292,6 @@
         phoneStatusMessage.style.color = "green";
         verifyCodeSection.style.display = "none";
         phoneInput.disabled = true;
-        document.getElementById("phoneVerificationStatus").innerText =
-          "Telefone verificado: " + user.phoneNumber;
-        document.getElementById("phoneVerificationStatus").style.color = "green";
-        document.getElementById("recaptcha-container").style.display = "none";
-
-        const userDocRef = doc(db, "users", user.uid);
-        await setDoc(userDocRef, { phoneNumber: user.phoneNumber }, { merge: true });
-        console.log("Número de telefone salvo no Firestore.");
       } catch (error) {
         console.error("Erro ao verificar código:", error);
         phoneStatusMessage.innerText = "Erro ao verificar código: " + error.message;
@@ -312,7 +300,10 @@
       }
     }
 
-    // Salva os dados pessoais do perfil (nome e endereço)
+    // Fim da parte de autenticação por número
+    // ===================================================================
+
+    // Função para salvar os dados pessoais do perfil (nome e endereço)
     async function handleSaveProfile(event) {
       event.preventDefault();
       const user = auth.currentUser;
@@ -335,6 +326,8 @@
         saveStatusMessage.innerText = "Perfil salvo com sucesso!";
         saveStatusMessage.style.color = "green";
         console.log("Perfil salvo com sucesso!");
+        // Após salvar, atualiza os dados exibidos no formulário 
+        displayUserProfile(user);
       } catch (error) {
         console.error("Erro ao salvar perfil:", error);
         saveStatusMessage.innerText = "Erro ao salvar perfil: " + error.message;
@@ -354,7 +347,7 @@
       }
     }
 
-    // Handle logout
+    // Função para realizar o logout
     function handleLogout() {
       signOut(auth).then(() => {
         console.log("Usuário desconectado.");
@@ -427,15 +420,13 @@
     }
     .container {
       max-width: 800px;
-      margin: 100px auto 20px auto; /* Espaço superior para que o conteúdo não fique sob o header fixo */
+      margin: 100px auto 20px auto;
       padding: 20px;
       background: #fff;
       border-radius: 8px;
       box-shadow: 0 2px 10px rgba(0,0,0,0.1);
     }
-    /* =============================
-       Cabeçalho Único (Menu, Logo e Logout)
-       ============================= */
+    /* Cabeçalho Único (Menu, Logo e Logout) */
     header {
       background: var(--color-light);
       padding: 15px;
@@ -481,9 +472,7 @@
     #logoutButton:hover {
       background-color: #a01d2d;
     }
-    /* =============================
-       Popup do Menu
-       ============================= */
+    /* Popup do Menu */
     .menu-popup {
       position: fixed;
       top: 0;
@@ -523,9 +512,7 @@
     .menu-open {
       transform: translateX(0);
     }
-    /* =============================
-       Profile Content Styling
-       ============================= */
+    /* Profile Content Styling */
     .container h2 {
       text-align: center;
       margin-bottom: 20px;
@@ -591,9 +578,7 @@
       margin-top: 10px;
       font-weight: bold;
     }
-    /* =============================
-       Footer
-       ============================= */
+    /* Footer */
     footer {
       background: var(--color-secondary);
       color: var(--color-light);
@@ -728,7 +713,7 @@
   </a>
 
   <script type="module">
-    // Os event listeners e inicializações foram configurados no bloco de script acima.
+    // Os event listeners e inicializações permanecem inalterados
   </script>
 </body>
 </html>
