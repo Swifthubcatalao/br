@@ -28,24 +28,30 @@
     
     onAuthStateChanged(auth, user => {
       if (!user) {
-        // Se o usuário NÃO estiver autenticado, redireciona para a página de login.
         window.location.href = "login.html";
       } else {
-        // Se estiver autenticado, exibe o botão de logout.
-        document.getElementById("logoutButton").style.display = "block";
+        // Se necessário, você pode exibir elementos de logout.
+        // document.getElementById("logoutButton").style.display = "block";
       }
     });
     
-    // Adiciona o evento de logout quando o DOM estiver carregado.
     document.addEventListener("DOMContentLoaded", function () {
-      document.getElementById("logoutButton").addEventListener("click", () => {
-        signOut(auth).then(() => window.location.href = "login.html");
-      });
+      // Se houver botão de logout, ative-o
+      const logoutBtn = document.getElementById("logoutButton");
+      if(logoutBtn){
+        logoutBtn.addEventListener("click", () => {
+          signOut(auth).then(() => window.location.href = "login.html");
+        });
+      }
     });
+    
+    // Função para alternar o popup do menu
+    function toggleMenu() {
+      document.getElementById("menuPopup").classList.toggle("menu-open");
+    }
   </script>
   
   <style>
-    /* Variáveis de Cores */
     :root {
       --color-primary: #0033A0;    /* Azul */
       --color-secondary: #C8102E;    /* Vermelho */
@@ -53,7 +59,7 @@
       --color-dark: #333;
     }
     
-    /* Reset e estilo global */
+    /* Reset e estilos globais */
     * {
       box-sizing: border-box;
       margin: 0;
@@ -74,53 +80,37 @@
     }
     
     /* =============================
-       Cabeçalho com Popup de Menu (alterado)
+       Cabeçalho com Popup de Menu
        ============================= */
-       
     header {
       background: var(--color-light);
       padding: 15px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
       border-bottom: 1px solid #ddd;
     }
     
-    /* Dentro do cabeçalho, usamos um container para alinhar o ícone e a logo */
-    header .container {
-      display: flex;
-      align-items: center;
-      position: relative;
-    }
-    
-    /* Ícone de menu à esquerda */
+    /* Ícone de menu no canto esquerdo superior */
     .menu-icon {
       font-size: 28px;
       color: var(--color-primary);
       cursor: pointer;
+      position: absolute;
+      left: 15px;
+      top: 50%;
+      transform: translateY(-50%);
     }
     
-    /* Logo centralizada (pode ocupar a parte central do cabeçalho) */
+    /* Logo centralizada */
     .logo {
       max-width: 120px;
       height: auto;
-      margin: 0 auto;
       display: block;
     }
     
-    /* Se ainda houver o botão de logout em algum momento (opcional) */
-    #logoutButton {
-      position: absolute;
-      right: 20px;
-      top: 50%;
-      transform: translateY(-50%);
-      background-color: #B22234;
-      color: #fff;
-      border: none;
-      padding: 10px 15px;
-      border-radius: 5px;
-      cursor: pointer;
-      display: none;
-    }
-    
-    /* Popup Lateral do Menu */
+    /* Popup Lateral do Menu (sem o menu antigo) */
     .menu-popup {
       position: fixed;
       top: 0;
@@ -162,37 +152,8 @@
     }
     
     /* =============================
-       Nav e demais elementos inalterados do código original
+       Seção de Serviços (Cards)
        ============================= */
-    
-    nav {
-      background: #f8f8f8;
-      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-    }
-    
-    nav .container ul {
-      display: flex;
-      justify-content: center;
-      list-style: none;
-      padding: 10px;
-    }
-    
-    nav .container ul li {
-      margin: 0 20px;
-    }
-    
-    nav .container ul li a {
-      text-decoration: none;
-      font-weight: bold;
-      color: #3C3B6E;
-      font-size: 1.1em;
-      transition: color 0.2s;
-    }
-    
-    nav .container ul li a:hover {
-      color: #B22234;
-    }
-    
     section#servico {
       padding: 40px 0;
       text-align: center;
@@ -201,7 +162,7 @@
     section#servico h2 {
       font-size: 2em;
       margin-bottom: 20px;
-      color: #3C3B6E;
+      color: var(--color-primary);
     }
     
     .cards {
@@ -238,7 +199,7 @@
     .card h3 {
       font-size: 1.5em;
       margin-bottom: 10px;
-      color: #3C3B6E;
+      color: var(--color-primary);
     }
     
     .card p {
@@ -248,11 +209,11 @@
       color: #555;
     }
     
-    /* Correção para alinhar os botões "Agendar" */
+    /* Botão "Agendar" alinhado ao fundo do card */
     .card a {
       display: inline-block;
-      background: #B22234;
-      color: #fff;
+      background: var(--color-secondary);
+      color: var(--color-light);
       padding: 10px 15px;
       text-decoration: none;
       border-radius: 5px;
@@ -267,9 +228,12 @@
       background: #a01d2d;
     }
     
+    /* =============================
+       Footer
+       ============================= */
     footer {
-      background: #B22234;
-      color: #fff;
+      background: var(--color-secondary);
+      color: var(--color-light);
       text-align: center;
       padding: 20px 0;
       margin-top: 40px;
@@ -284,7 +248,7 @@
       bottom: 20px;
       right: 20px;
       background: #25D366;
-      color: #fff;
+      color: var(--color-light);
       border-radius: 50%;
       width: 60px;
       height: 60px;
@@ -296,35 +260,30 @@
     }
     
     @media (max-width: 768px) {
-      nav .container ul {
-        flex-direction: column;
+      .menu-icon {
+        font-size: 24px;
       }
-      nav .container ul li {
-        margin: 10px 0;
+      .logo {
+        max-width: 100px;
       }
       .card {
         width: 90%;
       }
     }
   </style>
-  
-  <script>
-    function toggleMenu() {
-      document.getElementById("menuPopup").classList.toggle("menu-open");
-    }
-  </script>
-  
 </head>
 <body>
-  <!-- Cabeçalho atualizado com ícone de menu e logo centralizada -->
+
+  <!-- Cabeçalho com ícone de menu e logo centralizada -->
   <header>
     <div class="container">
       <i class="fas fa-bars menu-icon" onclick="toggleMenu()"></i>
       <img src="https://raw.githubusercontent.com/Swifthubcatalao/br/main/imagens/logo.png" alt="Logo Swift Hub Catalão" class="logo">
+      <!-- Se precisar do botão logout, ele pode ser inserido aqui, mas neste exemplo ele não será exibido -->
     </div>
   </header>
   
-  <!-- Popup Lateral do Menu -->
+  <!-- Popup do Menu (exclusivo) -->
   <div id="menuPopup" class="menu-popup">
     <span class="close-menu" onclick="toggleMenu()">&times;</span>
     <a href="index.html">Início</a>
@@ -332,16 +291,7 @@
     <a href="login.html">Login</a>
   </div>
   
-  <!-- Restante do layout mantém-se inalterado -->
-  <nav>
-    <div class="container">
-      <ul>
-        <li><a href="index.html">Início</a></li>
-        <li><a href="servicos.html">Serviços</a></li>
-      </ul>
-    </div>
-  </nav>
-  
+  <!-- Seção de Serviços -->
   <section id="servico">
     <div class="container">
       <h2>Serviços Disponíveis</h2>
@@ -438,5 +388,6 @@
   <a href="https://wa.me/64981226078" class="whatsapp-float" target="_blank">
     <i class="fab fa-whatsapp"></i>
   </a>
+  
 </body>
 </html>
