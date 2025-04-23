@@ -7,14 +7,16 @@
   <title>Swift Hub Catalão - Login</title>
   <!-- Font Awesome para ícones -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.0/css/all.min.css">
-  <!-- Firebase SDK -->
-  <script src="https://www.gstatic.com/firebasejs/9.6.8/firebase-app.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.6.8/firebase-auth.js"></script>
+  <!-- Firebase versão 8 compatível -->
+  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
+
   <style>
     /* Reset e estilos gerais */
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body { font-family: Arial, sans-serif; background: #f1f1f1; color: #333; line-height: 1.6; }
     .container { max-width: 400px; margin: auto; padding: 20px; }
+    
     /* Estilos do Modal de Erro */
     .modal {
       display: none;
@@ -45,6 +47,7 @@
       top: 5px;
       right: 10px;
     }
+
     /* Estilos dos formulários */
     .form-container {
       background: #fff;
@@ -82,6 +85,7 @@
       text-decoration: none;
       cursor: pointer;
     }
+    
     /* Botão flutuante do WhatsApp */
     .whatsapp-float {
       position: fixed;
@@ -157,19 +161,14 @@
         messagingSenderId: "756803145076",
         appId: "1:756803145076:web:4593bd78a26a2270a1f021"
       };
-      firebase.initializeApp(firebaseConfig);
-      const auth = firebase.auth();
       
-      // Função para exibir erro
-      function showError(message) {
-        document.getElementById("errorMessage").textContent = message;
-        document.getElementById("errorModal").style.display = "block";
+      if (!firebase.apps.length) {
+        firebase.initializeApp(firebaseConfig);
       }
-      document.getElementById("closeModal").addEventListener("click", function() {
-        document.getElementById("errorModal").style.display = "none";
-      });
 
-      // Alternar entre login e cadastro
+      const auth = firebase.auth();
+
+      // Alternância entre login e cadastro
       document.getElementById("showRegister").addEventListener("click", function(e) {
         e.preventDefault();
         document.getElementById("loginFormContainer").style.display = "none";
@@ -186,21 +185,10 @@
         e.preventDefault();
         const email = document.getElementById("registerEmail").value;
         const password = document.getElementById("registerPassword").value;
-
+        
         auth.createUserWithEmailAndPassword(email, password)
           .then(() => alert("Cadastro realizado com sucesso!"))
-          .catch(error => showError(error.message));
-      });
-
-      // Login de usuário
-      document.getElementById("loginForm").addEventListener("submit", function(e) {
-        e.preventDefault();
-        const email = document.getElementById("loginEmail").value;
-        const password = document.getElementById("loginPassword").value;
-
-        auth.signInWithEmailAndPassword(email, password)
-          .then(() => window.location.href = "index.html")
-          .catch(error => showError(error.message));
+          .catch(error => alert("Erro: " + error.message));
       });
     });
   </script>
