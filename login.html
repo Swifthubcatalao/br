@@ -22,7 +22,7 @@
       signOut
     } from "https://www.gstatic.com/firebasejs/10.5.0/firebase-auth.js";
 
-    // Configure seu Firebase aqui.
+    // Configure seu Firebase (substitua pelos seus dados reais)
     const firebaseConfig = {
       apiKey: "AIzaSyDGBKxvfcY-PA_vC7SA8G0f-TjqjK3OD3o",
       authDomain: "swifthubcatalao.firebaseapp.com",
@@ -35,36 +35,14 @@
     const app = initializeApp(firebaseConfig);
     const auth = getAuth(app);
 
-    // Atualiza o menu de navegação conforme o status de autenticação.
+    // Verifica se o usuário já estiver autenticado e com email verificado para redirecionar
     onAuthStateChanged(auth, user => {
-      const menuPerfil = document.getElementById("menuPerfil");
-      const loginMenuItem = document.getElementById("loginMenuItem");
-      const logoutButton = document.getElementById("logoutButton");
-      if (user) {
-        menuPerfil.style.display = "inline";
-        // Exibe "Logado" com indicador verde
-        loginMenuItem.innerHTML = "Logado <span class='status-indicator'></span>";
-        loginMenuItem.removeAttribute("href");
-        loginMenuItem.style.pointerEvents = "none";
-        logoutButton.style.display = "block";
-      } else {
-        menuPerfil.style.display = "none";
-        loginMenuItem.textContent = "Login";
-        loginMenuItem.setAttribute("href", "login.html");
-        logoutButton.style.display = "none";
+      if (user && user.emailVerified) {
+        window.location.replace("servicos.html");
       }
     });
 
-    // Evento de logout
-    document.getElementById("logoutButton").addEventListener("click", function() {
-      signOut(auth).then(() => {
-        window.location.href = "login.html";
-      }).catch(error => {
-        alert("Erro ao sair: " + error.message);
-      });
-    });
-
-    // Inicia a contagem regressiva no botão de reenvio de email
+    // Função para iniciar a contagem regressiva no botão de reenvio
     function startCountdown(seconds) {
       const btn = document.getElementById("resendButton");
       btn.disabled = true;
@@ -81,7 +59,7 @@
       }, 1000);
     }
 
-    // Função para tratar o login
+    // Função para tratar o login com user.reload() para atualizar o status do usuário
     function handleLogin(e) {
       e.preventDefault();
       const email = document.getElementById("loginEmail").value;
@@ -90,10 +68,10 @@
       signInWithEmailAndPassword(auth, email, password)
         .then((userCredential) => {
           const user = userCredential.user;
-          // Atualiza os dados do usuário para obter status atualizado
+          // Recarrega os dados do usuário para garantir que o status emailVerified esteja atualizado
           user.reload().then(() => {
             if (!user.emailVerified) {
-              // Se o email não estiver verificado, envia email de verificação e orienta o usuário.
+              // Se o email não estiver verificado (primeiro login), envia o email de verificação
               sendEmailVerification(user)
                 .then(() => {
                   alert("Seu email não foi verificado. Um email de verificação foi enviado. Confira sua caixa de entrada. Se não receber, utilize o botão de reenvio.");
@@ -108,7 +86,7 @@
               signOut(auth);
               return;
             }
-            // Email verificado? Redireciona para a página de serviços.
+            // Email já verificado: redireciona para "servicos.html"
             window.location.replace("servicos.html");
           });
         })
@@ -126,7 +104,6 @@
           const user = userCredential.user;
           sendEmailVerification(user)
             .then(() => {
-              // Exibe mensagem tanto com alert quanto inline
               alert("Conta criada com sucesso! Um email de verificação foi enviado. Por favor, confirme seu email para fazer login.");
               document.getElementById("registerMessage").innerText = "Conta criada com sucesso! Verifique seu email para confirmar e fazer login.";
             })
@@ -135,7 +112,7 @@
         .catch(error => alert("Erro ao criar conta: " + error.message));
     }
 
-    // Função para recuperar senha.
+    // Função para recuperar senha
     function handleForgotPassword() {
       const email = document.getElementById("loginEmail").value;
       if (!email) {
@@ -147,7 +124,7 @@
         .catch(error => alert("Erro ao enviar email: " + error.message));
     }
 
-    // Função para reenviar email de verificação com "Enviado" e contagem regressiva
+    // Função para reenviar email de verificação com exibição de "Enviado" por 1 segundo seguida da contagem
     function handleResendVerification() {
       const email = document.getElementById("loginEmail").value;
       const password = document.getElementById("loginPassword").value;
@@ -172,7 +149,7 @@
         .catch(error => alert("Erro ao reenviar email: " + error.message));
     }
 
-    // Registra os eventos após o carregamento do DOM
+    // Registra os eventos após o carregamento do DOM.
     document.addEventListener("DOMContentLoaded", function () {
       document.getElementById("loginForm").addEventListener("submit", handleLogin);
       document.getElementById("registerForm").addEventListener("submit", handleRegister);
@@ -203,7 +180,7 @@
       align-items: center;
       min-height: 100vh;
     }
-    /* Cabeçalho da empresa acima do login */
+    /* Cabeçalho da empresa (nome acima do container de login) */
     .company-header {
       text-align: center;
       margin-bottom: 20px;
@@ -212,7 +189,7 @@
       font-size: 2.5em;
       color: var(--color-primary);
     }
-    /* Container do login: fundo branco com borda e sombra */
+    /* Container do login */
     .container {
       background: #ffffff;
       border: 1px solid #ddd;
@@ -303,7 +280,6 @@
   </style>
 
   <script>
-    // Alterna entre os formulários de login e cadastro
     function toggleForm() {
       const loginContainer = document.getElementById("loginFormContainer");
       const registerContainer = document.getElementById("registerFormContainer");
@@ -346,7 +322,7 @@
     </div>
     <!-- Botão para reenviar email de verificação -->
     <button id="resendButton">Reenviar email de verificação</button>
-    <!-- Mensagem informando que o usuário já está logado -->
+    <!-- Mensagem informando que o usuário já está logado (opcional) -->
     <p id="loggedMessage">Logado!</p>
   </div>
 </body>
