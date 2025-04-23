@@ -28,11 +28,15 @@
     
     onAuthStateChanged(auth, user => {
       if (!user) {
-        // Se o usuário NÃO estiver autenticado, redireciona para a página de login.
+        // Se o usuário não estiver autenticado, redireciona para a página de login.
         window.location.href = "login.html";
+      } else {
+        // Se estiver autenticado, exibe o botão de logout.
+        const logoutBtn = document.getElementById("logoutButton");
+        if (logoutBtn) {
+          logoutBtn.style.display = "block";
+        }
       }
-      // Se necessário, exiba o botão de logout (não será usado neste exemplo)
-      // else { document.getElementById("logoutButton").style.display = "block"; }
     });
     
     document.addEventListener("DOMContentLoaded", function () {
@@ -44,7 +48,7 @@
       }
     });
     
-    // Função para alternar o popup do menu
+    // Função para alternar o popup do menu.
     function toggleMenu() {
       const menuPopup = document.getElementById("menuPopup");
       if (menuPopup) {
@@ -100,7 +104,7 @@
     }
     
     /* =============================
-       Cabeçalho com Ícone de Menu e Popup
+       Cabeçalho com Ícone de Menu, Logo e Logout
        ============================= */
     header {
       background: var(--color-light);
@@ -112,7 +116,7 @@
       border-bottom: 1px solid #ddd;
     }
     
-    /* Ícone de menu posicionado no canto esquerdo superior */
+    /* Ícone de menu no canto esquerdo superior */
     .menu-icon {
       font-size: 28px;
       color: var(--color-primary);
@@ -128,6 +132,21 @@
       max-width: 120px;
       height: auto;
       display: block;
+    }
+    
+    /* Botão de logout no canto superior direito em vermelho */
+    #logoutButton {
+      position: absolute;
+      right: 15px;
+      top: 50%;
+      transform: translateY(-50%);
+      background-color: var(--color-secondary);
+      color: var(--color-light);
+      border: none;
+      padding: 10px 15px;
+      border-radius: 5px;
+      cursor: pointer;
+      display: none;  /* ficará oculto até que o usuário esteja autenticado */
     }
     
     /* Popup Lateral do Menu */
@@ -295,22 +314,23 @@
 </head>
 <body>
 
-  <!-- Cabeçalho com ícone de menu e logo centralizada -->
+  <!-- Cabeçalho com ícone de menu, logo centralizada e botão de logout -->
   <header>
     <div class="container">
       <i class="fas fa-bars menu-icon"></i>
       <img src="https://raw.githubusercontent.com/Swifthubcatalao/br/main/imagens/logo.png" alt="Logo Swift Hub Catalão" class="logo">
+      <button id="logoutButton">Sair</button>
     </div>
   </header>
   
-  <!-- Popup do Menu (com apenas "Início" e "Login") -->
+  <!-- Popup do Menu -->
   <div id="menuPopup" class="menu-popup">
     <span class="close-menu">&times;</span>
     <a href="index.html">Início</a>
     <a href="login.html">Login</a>
   </div>
   
-  <!-- Seção de Serviços (agora a página principal - Index) -->
+  <!-- Seção de Serviços -->
   <section id="servico">
     <div class="container">
       <h2>Serviços Disponíveis</h2>
