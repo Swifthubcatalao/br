@@ -177,10 +177,10 @@
       }
       const auth = firebase.auth();
 
-      // Redireciona usuário logado para perfil.html imediatamente
+      // Redireciona usuário logado para perfil.html se estiver logado
       auth.onAuthStateChanged(user => {
         if (user) {
-          window.location.href = "perfil.html";
+          window.location.replace("perfil.html");
         }
       });
 
@@ -225,14 +225,12 @@
         e.preventDefault();
         const email = document.getElementById("registerEmail").value;
         const password = document.getElementById("registerPassword").value;
-
         auth.createUserWithEmailAndPassword(email, password)
           .then(userCredential => {
-            // Envia e-mail de verificação
+            // Envia e-mail de verificação e alerta o usuário
             userCredential.user.sendEmailVerification();
             alert("Cadastro realizado com sucesso! Verifique seu email.");
-            
-            // Alterna para o formulário de login
+            // Alterna para o formulário de login após cadastro
             document.getElementById("showLogin").click();
           })
           .catch(error => showError(error.message));
@@ -243,10 +241,9 @@
         e.preventDefault();
         const email = document.getElementById("loginEmail").value;
         const password = document.getElementById("loginPassword").value;
-
         auth.signInWithEmailAndPassword(email, password)
           .then(userCredential => {
-            // Se o email não estiver verificado, mostra opção para reenviar e-mail de verificação
+            // Se o email não estiver verificado, exibe opção para reenviar verificação
             if (!userCredential.user.emailVerified) {
               document.getElementById("errorMessage").innerHTML = "Por favor, verifique seu email antes de fazer login. <br><button id='resendButton'>Reenviar e-mail de verificação</button>";
               document.getElementById("errorModal").style.display = "block";
@@ -260,7 +257,7 @@
                   .catch(error => showError(error.message));
               });
             } else {
-              window.location.href = "perfil.html";
+              window.location.replace("perfil.html");
             }
           })
           .catch(error => showError(error.message));
