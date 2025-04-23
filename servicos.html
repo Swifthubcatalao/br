@@ -5,27 +5,27 @@
   <meta name="description" content="Swift Hub Catalão - Serviços">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Swift Hub Catalão - Serviços</title>
-
+  
   <!-- Ícones do Font Awesome -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.0/css/all.min.css">
-
+  
   <!-- Firebase Modular SDK -->
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.5.0/firebase-app.js";
     import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.5.0/firebase-auth.js";
-
-    const firebaseConfig = {
+    
+    const firebaseConfig = { 
       apiKey: "AIzaSyDGBKxvfcY-PA_vC7SA8G0f-TjqjK3OD3o",
       authDomain: "swifthubcatalao.firebaseapp.com",
-      projectId: "swifthubcatalao",
+      projectId: "swifthubcatalao", 
       storageBucket: "swifthubcatalao.firebasestorage.app",
       messagingSenderId: "756803145076",
       appId: "1:756803145076:web:4593bd78a26a2270a1f021"
     };
-
+    
     const app = initializeApp(firebaseConfig);
     const auth = getAuth(app);
-
+    
     onAuthStateChanged(auth, user => {
       if (!user) {
         // Se o usuário NÃO estiver autenticado, redireciona para a página de login.
@@ -35,7 +35,7 @@
         document.getElementById("logoutButton").style.display = "block";
       }
     });
-
+    
     // Adiciona o evento de logout quando o DOM estiver carregado.
     document.addEventListener("DOMContentLoaded", function () {
       document.getElementById("logoutButton").addEventListener("click", () => {
@@ -43,8 +43,16 @@
       });
     });
   </script>
-
+  
   <style>
+    /* Variáveis de Cores */
+    :root {
+      --color-primary: #0033A0;    /* Azul */
+      --color-secondary: #C8102E;    /* Vermelho */
+      --color-light: #ffffff;        /* Branco */
+      --color-dark: #333;
+    }
+    
     /* Reset e estilo global */
     * {
       box-sizing: border-box;
@@ -52,34 +60,57 @@
       padding: 0;
       font-family: Arial, sans-serif;
     }
+    
     body {
       background: #fff;
       line-height: 1.6;
       color: #333;
     }
+    
     .container {
       max-width: 1200px;
       margin: auto;
       padding: 20px;
     }
+    
+    /* =============================
+       Cabeçalho com Popup de Menu (alterado)
+       ============================= */
+       
     header {
-      background: linear-gradient(45deg, #3C3B6E, #1C1C5B);
-      color: #fff;
-      text-align: center;
-      padding: 30px 0;
+      background: var(--color-light);
+      padding: 15px;
+      border-bottom: 1px solid #ddd;
+    }
+    
+    /* Dentro do cabeçalho, usamos um container para alinhar o ícone e a logo */
+    header .container {
+      display: flex;
+      align-items: center;
       position: relative;
     }
-    header h1 {
-      font-size: 2.8em;
-      margin-bottom: 10px;
+    
+    /* Ícone de menu à esquerda */
+    .menu-icon {
+      font-size: 28px;
+      color: var(--color-primary);
+      cursor: pointer;
     }
-    header p {
-      font-size: 1.3em;
+    
+    /* Logo centralizada (pode ocupar a parte central do cabeçalho) */
+    .logo {
+      max-width: 120px;
+      height: auto;
+      margin: 0 auto;
+      display: block;
     }
+    
+    /* Se ainda houver o botão de logout em algum momento (opcional) */
     #logoutButton {
       position: absolute;
       right: 20px;
-      top: 20px;
+      top: 50%;
+      transform: translateY(-50%);
       background-color: #B22234;
       color: #fff;
       border: none;
@@ -88,19 +119,68 @@
       cursor: pointer;
       display: none;
     }
+    
+    /* Popup Lateral do Menu */
+    .menu-popup {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 250px;
+      height: 100vh;
+      background: var(--color-primary);
+      box-shadow: 2px 0px 5px rgba(0,0,0,0.3);
+      transform: translateX(-100%);
+      transition: transform 0.3s ease-in-out;
+      display: flex;
+      flex-direction: column;
+      padding: 20px;
+      z-index: 1000;
+    }
+    
+    .menu-popup a {
+      color: var(--color-light);
+      font-size: 1.2em;
+      text-decoration: none;
+      padding: 12px;
+      display: block;
+      transition: background 0.2s;
+    }
+    
+    .menu-popup a:hover {
+      background: rgba(255, 255, 255, 0.2);
+    }
+    
+    .close-menu {
+      font-size: 26px;
+      color: var(--color-light);
+      cursor: pointer;
+      align-self: flex-end;
+    }
+    
+    .menu-open {
+      transform: translateX(0);
+    }
+    
+    /* =============================
+       Nav e demais elementos inalterados do código original
+       ============================= */
+    
     nav {
       background: #f8f8f8;
       box-shadow: 0 2px 5px rgba(0,0,0,0.1);
     }
+    
     nav .container ul {
       display: flex;
       justify-content: center;
       list-style: none;
       padding: 10px;
     }
+    
     nav .container ul li {
       margin: 0 20px;
     }
+    
     nav .container ul li a {
       text-decoration: none;
       font-weight: bold;
@@ -108,24 +188,29 @@
       font-size: 1.1em;
       transition: color 0.2s;
     }
+    
     nav .container ul li a:hover {
       color: #B22234;
     }
+    
     section#servico {
       padding: 40px 0;
       text-align: center;
     }
+    
     section#servico h2 {
       font-size: 2em;
       margin-bottom: 20px;
       color: #3C3B6E;
     }
+    
     .cards {
       display: flex;
       flex-wrap: wrap;
       justify-content: center;
       gap: 20px;
     }
+    
     .card {
       background: #fff;
       border-radius: 8px;
@@ -137,27 +222,33 @@
       flex-direction: column;
       align-items: center;
     }
+    
     .card:hover {
       transform: scale(1.03);
       box-shadow: 0 4px 10px rgba(0,0,0,0.2);
     }
+    
     .card img {
       width: 100%;
       height: auto;
       border-radius: 5px;
       margin-bottom: 15px;
     }
+    
     .card h3 {
       font-size: 1.5em;
       margin-bottom: 10px;
       color: #3C3B6E;
     }
+    
     .card p {
       font-size: 0.9em;
       margin-bottom: 15px;
       text-align: left;
       color: #555;
     }
+    
+    /* Correção para alinhar os botões "Agendar" */
     .card a {
       display: inline-block;
       background: #B22234;
@@ -169,10 +260,13 @@
       align-self: stretch;
       text-align: center;
       font-weight: bold;
+      margin-top: auto;
     }
+    
     .card a:hover {
       background: #a01d2d;
     }
+    
     footer {
       background: #B22234;
       color: #fff;
@@ -180,6 +274,11 @@
       padding: 20px 0;
       margin-top: 40px;
     }
+    
+    footer p {
+      font-size: 0.9em;
+    }
+    
     .whatsapp-float {
       position: fixed;
       bottom: 20px;
@@ -195,6 +294,7 @@
       z-index: 1000;
       box-shadow: 2px 2px 3px rgba(0,0,0,0.3);
     }
+    
     @media (max-width: 768px) {
       nav .container ul {
         flex-direction: column;
@@ -207,15 +307,32 @@
       }
     }
   </style>
+  
+  <script>
+    function toggleMenu() {
+      document.getElementById("menuPopup").classList.toggle("menu-open");
+    }
+  </script>
+  
 </head>
 <body>
+  <!-- Cabeçalho atualizado com ícone de menu e logo centralizada -->
   <header>
     <div class="container">
-      <h1>Swift Hub Catalão</h1>
-      <p>Conectando você aos melhores profissionais</p>
-      <button id="logoutButton">Sair</button>
+      <i class="fas fa-bars menu-icon" onclick="toggleMenu()"></i>
+      <img src="https://raw.githubusercontent.com/Swifthubcatalao/br/main/imagens/logo.png" alt="Logo Swift Hub Catalão" class="logo">
     </div>
   </header>
+  
+  <!-- Popup Lateral do Menu -->
+  <div id="menuPopup" class="menu-popup">
+    <span class="close-menu" onclick="toggleMenu()">&times;</span>
+    <a href="index.html">Início</a>
+    <a href="servicos.html">Serviços</a>
+    <a href="login.html">Login</a>
+  </div>
+  
+  <!-- Restante do layout mantém-se inalterado -->
   <nav>
     <div class="container">
       <ul>
@@ -224,95 +341,83 @@
       </ul>
     </div>
   </nav>
+  
   <section id="servico">
     <div class="container">
       <h2>Serviços Disponíveis</h2>
       <div class="cards">
-        <!-- 1. Limpeza de Estofados -->
         <div class="card">
           <img src="https://raw.githubusercontent.com/Swifthubcatalao/br/main/imagens/limpeza-de-estofados.jpg" alt="Limpeza de Estofados">
           <h3>Limpeza de Estofados</h3>
           <p>Remova manchas, odores e sujeira de sofás, poltronas e móveis, restaurando sua aparência e higiene.</p>
           <a href="https://wa.me/64981226078?text=Oi,%20preciso%20de%20limpeza%20de%20estofados" target="_blank">Agendar</a>
         </div>
-        <!-- 2. Encanador -->
         <div class="card">
           <img src="https://raw.githubusercontent.com/Swifthubcatalao/br/main/imagens/encanador.jpg" alt="Encanador">
           <h3>Encanador</h3>
           <p>Resolva problemas hidráulicos com reparos e manutenções realizados por profissionais capacitados.</p>
           <a href="https://wa.me/64981226078?text=Oi,%20preciso%20de%20um%20encanador" target="_blank">Agendar</a>
         </div>
-        <!-- 3. Detetização -->
         <div class="card">
           <img src="https://raw.githubusercontent.com/Swifthubcatalao/br/main/imagens/detetizacao.jpg" alt="Detetização">
           <h3>Dedetização</h3>
           <p>Elimine pragas e garanta ambientes mais seguros e limpos com serviços especializados.</p>
           <a href="https://wa.me/64981226078?text=Oi,%20preciso%20de%20dedetizacao" target="_blank">Agendar</a>
         </div>
-        <!-- 4. Jardineiro -->
         <div class="card">
           <img src="https://raw.githubusercontent.com/Swifthubcatalao/br/main/imagens/jardineiro.jpg" alt="Jardineiro">
           <h3>Jardineiro</h3>
           <p>Cuide do seu jardim com serviços de poda, manutenção e paisagismo para mantê-lo sempre bonito.</p>
           <a href="https://wa.me/64981226078?text=Oi,%20preciso%20de%20um%20jardineiro" target="_blank">Agendar</a>
         </div>
-        <!-- 5. Marceneiro -->
         <div class="card">
           <img src="https://raw.githubusercontent.com/Swifthubcatalao/br/main/imagens/marceneiro.jpg" alt="Marceneiro">
           <h3>Marceneiro</h3>
           <p>Móveis sob medida e reparos em madeira com acabamento perfeito para transformar seus espaços.</p>
           <a href="https://wa.me/64981226078?text=Oi,%20preciso%20de%20um%20marceneiro" target="_blank">Agendar</a>
         </div>
-        <!-- 6. Eletricista -->
         <div class="card">
           <img src="https://raw.githubusercontent.com/Swifthubcatalao/br/main/imagens/eletricista.jpg" alt="Eletricista">
           <h3>Eletricista</h3>
           <p>Instalações, manutenções e reparos elétricos para garantir a segurança e o funcionamento do seu imóvel.</p>
           <a href="https://wa.me/64981226078?text=Oi,%20preciso%20de%20um%20eletricista" target="_blank">Agendar</a>
         </div>
-        <!-- 7. Pintor -->
         <div class="card">
           <img src="https://raw.githubusercontent.com/Swifthubcatalao/br/main/imagens/pintor.jpg" alt="Pintor">
           <h3>Pintor</h3>
           <p>Pintura residencial ou comercial com acabamento de alta qualidade para renovar qualquer ambiente.</p>
           <a href="https://wa.me/64981226078?text=Oi,%20preciso%20de%20um%20pintor" target="_blank">Agendar</a>
         </div>
-        <!-- 8. Montagem de Móveis -->
         <div class="card">
           <img src="https://raw.githubusercontent.com/Swifthubcatalao/br/main/imagens/montagem-de-moveis.jpg" alt="Montagem de Móveis">
           <h3>Montagem de Móveis</h3>
           <p>Profissionais especializados para montar seus móveis com rapidez, agilidade e precisão.</p>
           <a href="https://wa.me/64981226078?text=Oi,%20preciso%20de%20montagem%20de%20moveis" target="_blank">Agendar</a>
         </div>
-        <!-- 9. Limpeza de Caixa d'Água -->
         <div class="card">
           <img src="https://raw.githubusercontent.com/Swifthubcatalao/br/main/imagens/limpeza-caixa-agua.jpg" alt="Limpeza de Caixa d'Água">
           <h3>Limpeza de Caixa d'Água</h3>
           <p>Higienize sua caixa d'água e garanta água pura e segura para consumo.</p>
           <a href="https://wa.me/64981226078?text=Oi,%20preciso%20de%20limpeza%20de%20caixa%20da%20agua" target="_blank">Agendar</a>
         </div>
-        <!-- 10. Vigilância Temporária -->
         <div class="card">
           <img src="https://raw.githubusercontent.com/Swifthubcatalao/br/main/imagens/vigilancia-temporaria.jpg" alt="Vigilância Temporária">
           <h3>Vigilância Temporária</h3>
           <p>Serviço de monitoramento para períodos curtos, garantindo a segurança do seu evento ou imóvel.</p>
           <a href="https://wa.me/64981226078?text=Oi,%20preciso%20de%20vigilancia%20temporaria" target="_blank">Agendar</a>
         </div>
-        <!-- 11. Instalação de Câmeras -->
         <div class="card">
           <img src="https://raw.githubusercontent.com/Swifthubcatalao/br/main/imagens/instalacao-de-cameras.jpg" alt="Instalação de Câmeras">
           <h3>Instalação de Câmeras</h3>
           <p>Implemente sistemas modernos de vigilância para monitorar e proteger seu imóvel.</p>
           <a href="https://wa.me/64981226078?text=Oi,%20preciso%20de%20instalacao%20de%20cameras" target="_blank">Agendar</a>
         </div>
-        <!-- 12. Frete de Mudanças -->
         <div class="card">
           <img src="https://raw.githubusercontent.com/Swifthubcatalao/br/main/imagens/frete-mudanca.jpg" alt="Frete de Mudanças">
           <h3>Frete de Mudanças</h3>
           <p>Equipe especializada para mudanças, garantindo o transporte organizado e seguro dos seus bens.</p>
           <a href="https://wa.me/64981226078?text=Oi,%20preciso%20de%20frete%20de%20mudancas" target="_blank">Agendar</a>
         </div>
-        <!-- 13. Serralheria -->
         <div class="card">
           <img src="https://raw.githubusercontent.com/Swifthubcatalao/br/main/imagens/serralheria.jpg" alt="Serralheria">
           <h3>Serralheria</h3>
@@ -322,11 +427,13 @@
       </div>
     </div>
   </section>
+  
   <footer>
     <div class="container">
       <p>&copy; 2025 Swift Hub Catalão. Todos os direitos reservados.</p>
     </div>
   </footer>
+  
   <!-- Botão flutuante do WhatsApp -->
   <a href="https://wa.me/64981226078" class="whatsapp-float" target="_blank">
     <i class="fab fa-whatsapp"></i>
