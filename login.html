@@ -31,7 +31,6 @@
       height: 100%;
       background: rgba(0,0,0,0.5);
     }
-
     .modal-content {
       background: #fff;
       margin: 15% auto;
@@ -42,7 +41,6 @@
       text-align: center;
       position: relative;
     }
-
     .close {
       color: #aaa;
       font-size: 28px;
@@ -53,6 +51,7 @@
       right: 10px;
     }
 
+    /* Estilos dos formulários */
     .form-container {
       background: #fff;
       padding: 20px;
@@ -61,13 +60,11 @@
       margin-bottom: 20px;
       text-align: center;
     }
-
     form {
       display: flex;
       flex-direction: column;
       text-align: left;
     }
-
     form label { margin-bottom: 5px; font-weight: bold; }
     form input {
       padding: 10px;
@@ -75,7 +72,6 @@
       border: 1px solid #ccc;
       border-radius: 5px;
     }
-
     form button {
       padding: 10px;
       background: #B22234;
@@ -85,7 +81,6 @@
       cursor: pointer;
       transition: background 0.2s;
     }
-
     form button:hover { background: #a01d2d; }
     .toggle-link { margin-top: 10px; }
     .toggle-link a {
@@ -94,6 +89,7 @@
       cursor: pointer;
     }
 
+    /* Botão flutuante do WhatsApp */
     .whatsapp-float {
       position: fixed;
       bottom: 20px;
@@ -123,6 +119,7 @@
 
   <!-- Área de Login e Cadastro -->
   <div class="container">
+    <!-- Formulário de Login -->
     <div class="form-container" id="loginFormContainer">
       <h2>Login</h2>
       <form id="loginForm">
@@ -137,6 +134,7 @@
       </div>
     </div>
 
+    <!-- Formulário de Cadastro -->
     <div class="form-container" id="registerFormContainer" style="display:none;">
       <h2>Cadastro</h2>
       <form id="registerForm">
@@ -171,17 +169,18 @@
       firebase.initializeApp(firebaseConfig);
       const auth = firebase.auth();
 
-      // Modal de erro
+      // Função para exibir o modal de erro
       function showError(message) {
         document.getElementById("errorMessage").textContent = message;
         document.getElementById("errorModal").style.display = "block";
       }
 
+      // Fechar modal de erro
       document.getElementById("closeModal").addEventListener("click", () => {
         document.getElementById("errorModal").style.display = "none";
       });
 
-      // Alternar formulários
+      // Alternar entre formulários
       document.getElementById("showRegister").addEventListener("click", function(e) {
         e.preventDefault();
         document.getElementById("loginFormContainer").style.display = "none";
@@ -194,7 +193,7 @@
         document.getElementById("loginFormContainer").style.display = "block";
       });
 
-      // Cadastro
+      // Cadastro de usuário
       document.getElementById("registerForm").addEventListener("submit", function(e) {
         e.preventDefault();
         const email = document.getElementById("registerEmail").value;
@@ -202,14 +201,16 @@
 
         auth.createUserWithEmailAndPassword(email, password)
           .then((userCredential) => {
+            // Envia email de verificação
             userCredential.user.sendEmailVerification();
             alert("Cadastro realizado com sucesso! Verifique seu email.");
+            // Alterna para o formulário de login
             document.getElementById("showLogin").click();
           })
           .catch(error => showError(error.message));
       });
 
-      // Login
+      // Login de usuário
       document.getElementById("loginForm").addEventListener("submit", function(e) {
         e.preventDefault();
         const email = document.getElementById("loginEmail").value;
@@ -217,6 +218,7 @@
 
         auth.signInWithEmailAndPassword(email, password)
           .then((userCredential) => {
+            // Se o email não foi verificado, notifica e desloga
             if (!userCredential.user.emailVerified) {
               showError("Por favor, verifique seu email antes de fazer login.");
               auth.signOut();
