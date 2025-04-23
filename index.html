@@ -2,17 +2,75 @@
 <html lang="pt-br">
 <head>
   <meta charset="UTF-8">
-  <meta name="description" content="Swift Hub Catalão - Início">
+  <meta name="description" content="Swift Hub Catalão - Serviços">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Swift Hub Catalão - Início</title>
-
+  <title>Swift Hub Catalão - Serviços</title>
+  
   <!-- Ícones do Font Awesome -->
-  <link rel="preload" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.0/css/all.min.css" 
-        as="style" onload="this.rel='stylesheet'">
-  <noscript>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.0/css/all.min.css">
-  </noscript>
-
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.0/css/all.min.css">
+  
+  <!-- Firebase Modular SDK -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.5.0/firebase-app.js";
+    import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.5.0/firebase-auth.js";
+    
+    const firebaseConfig = { 
+      apiKey: "AIzaSyDGBKxvfcY-PA_vC7SA8G0f-TjqjK3OD3o",
+      authDomain: "swifthubcatalao.firebaseapp.com",
+      projectId: "swifthubcatalao", 
+      storageBucket: "swifthubcatalao.firebasestorage.app",
+      messagingSenderId: "756803145076",
+      appId: "1:756803145076:web:4593bd78a26a2270a1f021"
+    };
+    
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    
+    onAuthStateChanged(auth, user => {
+      if (!user) {
+        // Se o usuário NÃO estiver autenticado, redireciona para a página de login.
+        window.location.href = "login.html";
+      }
+      // Se necessário, exiba o botão de logout (não será usado neste exemplo)
+      // else { document.getElementById("logoutButton").style.display = "block"; }
+    });
+    
+    document.addEventListener("DOMContentLoaded", function () {
+      const logoutBtn = document.getElementById("logoutButton");
+      if (logoutBtn) {
+        logoutBtn.addEventListener("click", () => {
+          signOut(auth).then(() => window.location.href = "login.html");
+        });
+      }
+    });
+    
+    // Função para alternar o popup do menu
+    function toggleMenu() {
+      const menuPopup = document.getElementById("menuPopup");
+      if (menuPopup) {
+        menuPopup.classList.toggle("menu-open");
+      } else {
+        console.error("Popup do menu não encontrado.");
+      }
+    }
+    
+    document.addEventListener("DOMContentLoaded", function(){
+      const menuIcon = document.querySelector(".menu-icon");
+      if (menuIcon) {
+         menuIcon.addEventListener("click", toggleMenu);
+      } else {
+         console.error("Ícone do menu não encontrado.");
+      }
+  
+      const closeBtn = document.querySelector(".close-menu");
+      if (closeBtn) {
+         closeBtn.addEventListener("click", toggleMenu);
+      } else {
+         console.error("Botão de fechar o menu não encontrado.");
+      }
+    });
+  </script>
+  
   <style>
     :root {
       --color-primary: #0033A0;    /* Azul */
@@ -20,50 +78,58 @@
       --color-light: #ffffff;        /* Branco */
       --color-dark: #333;
     }
-
+    
     /* Reset e estilos globais */
     * {
       box-sizing: border-box;
       margin: 0;
       padding: 0;
-    }
-    body {
       font-family: Arial, sans-serif;
-      background: var(--color-light);
-      line-height: 1.6;
-      color: var(--color-dark);
     }
+    
+    body {
+      background: #fff;
+      line-height: 1.6;
+      color: #333;
+    }
+    
     .container {
       max-width: 1200px;
       margin: auto;
       padding: 20px;
     }
-
+    
     /* =============================
-       Cabeçalho com Popup de Menu
+       Cabeçalho com Ícone de Menu e Popup
        ============================= */
-
     header {
       background: var(--color-light);
       padding: 15px;
       display: flex;
       align-items: center;
-      justify-content: space-between;
+      justify-content: center;
+      position: relative;
       border-bottom: 1px solid #ddd;
     }
-    /* Ícone de menu à esquerda */
+    
+    /* Ícone de menu posicionado no canto esquerdo superior */
     .menu-icon {
       font-size: 28px;
       color: var(--color-primary);
       cursor: pointer;
+      position: absolute;
+      left: 15px;
+      top: 50%;
+      transform: translateY(-50%);
     }
+    
     /* Logo centralizada */
     .logo {
       max-width: 120px;
       height: auto;
       display: block;
-      margin: 0 auto;
     }
+    
     /* Popup Lateral do Menu */
     .menu-popup {
       position: fixed;
@@ -72,7 +138,7 @@
       width: 250px;
       height: 100vh;
       background: var(--color-primary);
-      box-shadow: 2px 0px 5px rgba(0,0,0,0.3);
+      box-shadow: 2px 0 5px rgba(0,0,0,0.3);
       transform: translateX(-100%);
       transition: transform 0.3s ease-in-out;
       display: flex;
@@ -80,6 +146,7 @@
       padding: 20px;
       z-index: 1000;
     }
+    
     .menu-popup a {
       color: var(--color-light);
       font-size: 1.2em;
@@ -88,84 +155,100 @@
       display: block;
       transition: background 0.2s;
     }
+    
     .menu-popup a:hover {
-      background: rgba(255, 255, 255, 0.2);
+      background: rgba(255,255,255,0.2);
     }
+    
     .close-menu {
       font-size: 26px;
       color: var(--color-light);
       cursor: pointer;
+      margin-bottom: 20px;
       align-self: flex-end;
     }
+    
     .menu-open {
       transform: translateX(0);
     }
-
+    
     /* =============================
-       Blog Container - Posts (Formato Lista PC)
+       Seção de Serviços (Cards)
        ============================= */
-    main.blog-container {
-      max-width: 800px;
-      margin: 40px auto;
-      padding: 20px;
+    section#servico {
+      padding: 40px 0;
+      text-align: center;
     }
-
-    /* Cada post será exibido como um item de uma lista: imagem à esquerda e texto à direita */
-    article.post {
-      display: flex;
-      align-items: flex-start;
-      gap: 20px;
-      border-bottom: 1px solid #ddd;
-      padding-bottom: 20px;
+    
+    section#servico h2 {
+      font-size: 2em;
       margin-bottom: 20px;
+      color: var(--color-primary);
     }
-    article.post:last-child {
-      border: none;
-      margin-bottom: 0;
+    
+    .cards {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 20px;
     }
-    /* Tamanho fixo para as imagens dos posts (PC) */
-    article.post img {
-      max-width: 200px;
+    
+    .card {
+      background: #fff;
+      border-radius: 8px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+      width: 250px;
+      padding: 20px;
+      transition: transform 0.2s, box-shadow 0.2s;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    
+    .card:hover {
+      transform: scale(1.03);
+      box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+    }
+    
+    .card img {
       width: 100%;
       height: auto;
-      border-radius: 10px;
+      border-radius: 5px;
+      margin-bottom: 15px;
     }
-    /* Bloco com título e texto */
-    .post-info {
-      flex: 1;
-    }
-    .post-info h2 {
-      font-size: 1.8em;
+    
+    .card h3 {
+      font-size: 1.5em;
       margin-bottom: 10px;
       color: var(--color-primary);
     }
-    .post-info p {
-      font-size: 1em;
-      text-align: justify;
+    
+    .card p {
+      font-size: 0.9em;
+      margin-bottom: 15px;
+      text-align: left;
+      color: #555;
     }
-
-    /* Botão Consultar Serviços */
-    .consultar-button-container {
-      text-align: center;
-      margin-top: 40px;
-    }
-    .consultar-button {
+    
+    /* Botão "Agendar" alinhado ao fundo do card */
+    .card a {
       display: inline-block;
-      background: var(--color-primary);
+      background: var(--color-secondary);
       color: var(--color-light);
-      padding: 15px 30px;
+      padding: 10px 15px;
       text-decoration: none;
-      font-size: 1.1em;
+      border-radius: 5px;
+      transition: background 0.2s;
+      align-self: stretch;
+      text-align: center;
       font-weight: bold;
-      border-radius: 8px;
-      transition: background 0.3s, transform 0.2s;
-      cursor: pointer;
+      margin-top: auto;
     }
-    .consultar-button:hover {
-      background: #00227A;
-      transform: scale(1.03);
+    
+    .card a:hover {
+      background: #a01d2d;
     }
-
+    
     /* =============================
        Footer
        ============================= */
@@ -176,11 +259,11 @@
       padding: 20px 0;
       margin-top: 40px;
     }
+    
     footer p {
       font-size: 0.9em;
     }
-
-    /* Botão flutuante do WhatsApp */
+    
     .whatsapp-float {
       position: fixed;
       bottom: 20px;
@@ -196,95 +279,132 @@
       z-index: 1000;
       box-shadow: 2px 2px 3px rgba(0,0,0,0.3);
     }
-
-    /* =============================
-       Responsividade: Em telas menores, empilha os elementos
-       ============================= */
+    
     @media (max-width: 768px) {
-      /* Os posts empilham verticalmente */
-      article.post {
-        flex-direction: column;
+      .menu-icon {
+        font-size: 24px;
       }
-      article.post img {
-        max-width: 100%;
+      .logo {
+        max-width: 100px;
       }
-      /* Ajuste do tamanho do ícone de menu e logo */
-      .menu-icon { font-size: 24px; }
-      header .logo { max-width: 100px; }
+      .card {
+        width: 90%;
+      }
     }
   </style>
-
-  <script>
-    function toggleMenu() {
-      document.getElementById("menuPopup").classList.toggle("menu-open");
-    }
-  </script>
 </head>
 <body>
 
-  <!-- Cabeçalho com Ícone de Menu à esquerda e logo centralizada -->
+  <!-- Cabeçalho com ícone de menu e logo centralizada -->
   <header>
-    <i class="fas fa-bars menu-icon" onclick="toggleMenu()"></i>
-    <img src="https://raw.githubusercontent.com/Swifthubcatalao/br/main/imagens/logo.png" 
-         alt="Logo Swift Hub Catalão" class="logo">
+    <div class="container">
+      <i class="fas fa-bars menu-icon"></i>
+      <img src="https://raw.githubusercontent.com/Swifthubcatalao/br/main/imagens/logo.png" alt="Logo Swift Hub Catalão" class="logo">
+    </div>
   </header>
-
-  <!-- Popup Lateral do Menu -->
+  
+  <!-- Popup do Menu (com apenas "Início" e "Login") -->
   <div id="menuPopup" class="menu-popup">
-    <span class="close-menu" onclick="toggleMenu()">&times;</span>
+    <span class="close-menu">&times;</span>
     <a href="index.html">Início</a>
-    <a href="servicos.html">Serviços</a>
     <a href="login.html">Login</a>
   </div>
-
-  <!-- Blog Container com Posts (Formato Lista para PC) -->
-  <main class="blog-container">
-    <!-- Post 1 -->
-    <article class="post">
-      <img src="https://raw.githubusercontent.com/Swifthubcatalao/br/main/imagens/post1.jpg" 
-           alt="Transformação na Contratação">
-      <div class="post-info">
-        <h2>A Transformação na Contratação de Serviços</h2>
-        <p>
-          Vivemos em uma era de mudanças onde a digitalização simplifica a contratação de serviços. Nossa plataforma alia tecnologia e praticidade para conectar pessoas a profissionais especializados. Soluções modernas tornam processos complexos em experiências ágeis e seguras, transformando desafios em resultados eficientes.
-        </p>
+  
+  <!-- Seção de Serviços (agora a página principal - Index) -->
+  <section id="servico">
+    <div class="container">
+      <h2>Serviços Disponíveis</h2>
+      <div class="cards">
+        <div class="card">
+          <img src="https://raw.githubusercontent.com/Swifthubcatalao/br/main/imagens/limpeza-de-estofados.jpg" alt="Limpeza de Estofados">
+          <h3>Limpeza de Estofados</h3>
+          <p>Remova manchas, odores e sujeira de sofás, poltronas e móveis, restaurando sua aparência e higiene.</p>
+          <a href="https://wa.me/64981226078?text=Oi,%20preciso%20de%20limpeza%20de%20estofados" target="_blank">Agendar</a>
+        </div>
+        <div class="card">
+          <img src="https://raw.githubusercontent.com/Swifthubcatalao/br/main/imagens/encanador.jpg" alt="Encanador">
+          <h3>Encanador</h3>
+          <p>Resolva problemas hidráulicos com reparos e manutenções realizados por profissionais capacitados.</p>
+          <a href="https://wa.me/64981226078?text=Oi,%20preciso%20de%20um%20encanador" target="_blank">Agendar</a>
+        </div>
+        <div class="card">
+          <img src="https://raw.githubusercontent.com/Swifthubcatalao/br/main/imagens/detetizacao.jpg" alt="Detetização">
+          <h3>Dedetização</h3>
+          <p>Elimine pragas e garanta ambientes mais seguros e limpos com serviços especializados.</p>
+          <a href="https://wa.me/64981226078?text=Oi,%20preciso%20de%20dedetizacao" target="_blank">Agendar</a>
+        </div>
+        <div class="card">
+          <img src="https://raw.githubusercontent.com/Swifthubcatalao/br/main/imagens/jardineiro.jpg" alt="Jardineiro">
+          <h3>Jardineiro</h3>
+          <p>Cuide do seu jardim com serviços de poda, manutenção e paisagismo para mantê-lo sempre bonito.</p>
+          <a href="https://wa.me/64981226078?text=Oi,%20preciso%20de%20um%20jardineiro" target="_blank">Agendar</a>
+        </div>
+        <div class="card">
+          <img src="https://raw.githubusercontent.com/Swifthubcatalao/br/main/imagens/marceneiro.jpg" alt="Marceneiro">
+          <h3>Marceneiro</h3>
+          <p>Móveis sob medida e reparos em madeira com acabamento perfeito para transformar seus espaços.</p>
+          <a href="https://wa.me/64981226078?text=Oi,%20preciso%20de%20um%20marceneiro" target="_blank">Agendar</a>
+        </div>
+        <div class="card">
+          <img src="https://raw.githubusercontent.com/Swifthubcatalao/br/main/imagens/eletricista.jpg" alt="Eletricista">
+          <h3>Eletricista</h3>
+          <p>Instalações, manutenções e reparos elétricos para garantir a segurança e o funcionamento do seu imóvel.</p>
+          <a href="https://wa.me/64981226078?text=Oi,%20preciso%20de%20um%20eletricista" target="_blank">Agendar</a>
+        </div>
+        <div class="card">
+          <img src="https://raw.githubusercontent.com/Swifthubcatalao/br/main/imagens/pintor.jpg" alt="Pintor">
+          <h3>Pintor</h3>
+          <p>Pintura residencial ou comercial com acabamento de alta qualidade para renovar qualquer ambiente.</p>
+          <a href="https://wa.me/64981226078?text=Oi,%20preciso%20de%20um%20pintor" target="_blank">Agendar</a>
+        </div>
+        <div class="card">
+          <img src="https://raw.githubusercontent.com/Swifthubcatalao/br/main/imagens/montagem-de-moveis.jpg" alt="Montagem de Móveis">
+          <h3>Montagem de Móveis</h3>
+          <p>Profissionais especializados para montar seus móveis com rapidez, agilidade e precisão.</p>
+          <a href="https://wa.me/64981226078?text=Oi,%20preciso%20de%20montagem%20de%20moveis" target="_blank">Agendar</a>
+        </div>
+        <div class="card">
+          <img src="https://raw.githubusercontent.com/Swifthubcatalao/br/main/imagens/limpeza-caixa-agua.jpg" alt="Limpeza de Caixa d'Água">
+          <h3>Limpeza de Caixa d'Água</h3>
+          <p>Higienize sua caixa d'água e garanta água pura e segura para consumo.</p>
+          <a href="https://wa.me/64981226078?text=Oi,%20preciso%20de%20limpeza%20de%20caixa%20da%20agua" target="_blank">Agendar</a>
+        </div>
+        <div class="card">
+          <img src="https://raw.githubusercontent.com/Swifthubcatalao/br/main/imagens/vigilancia-temporaria.jpg" alt="Vigilância Temporária">
+          <h3>Vigilância Temporária</h3>
+          <p>Serviço de monitoramento para períodos curtos, garantindo a segurança do seu evento ou imóvel.</p>
+          <a href="https://wa.me/64981226078?text=Oi,%20preciso%20de%20vigilancia%20temporaria" target="_blank">Agendar</a>
+        </div>
+        <div class="card">
+          <img src="https://raw.githubusercontent.com/Swifthubcatalao/br/main/imagens/instalacao-de-cameras.jpg" alt="Instalação de Câmeras">
+          <h3>Instalação de Câmeras</h3>
+          <p>Implemente sistemas modernos de vigilância para monitorar e proteger seu imóvel.</p>
+          <a href="https://wa.me/64981226078?text=Oi,%20preciso%20de%20instalacao%20de%20cameras" target="_blank">Agendar</a>
+        </div>
+        <div class="card">
+          <img src="https://raw.githubusercontent.com/Swifthubcatalao/br/main/imagens/frete-mudanca.jpg" alt="Frete de Mudanças">
+          <h3>Frete de Mudanças</h3>
+          <p>Equipe especializada para mudanças, garantindo o transporte organizado e seguro dos seus bens.</p>
+          <a href="https://wa.me/64981226078?text=Oi,%20preciso%20de%20frete%20de%20mudancas" target="_blank">Agendar</a>
+        </div>
+        <div class="card">
+          <img src="https://raw.githubusercontent.com/Swifthubcatalao/br/main/imagens/serralheria.jpg" alt="Serralheria">
+          <h3>Serralheria</h3>
+          <p>Serviços em metal com reparos e confecções personalizadas para atender suas necessidades.</p>
+          <a href="https://wa.me/64981226078?text=Oi,%20preciso%20de%20serralheria" target="_blank">Agendar</a>
+        </div>
       </div>
-    </article>
-    <!-- Post 2 -->
-    <article class="post">
-      <img src="https://raw.githubusercontent.com/Swifthubcatalao/br/main/imagens/post2.jpg" 
-           alt="Inovação na Gestão">
-      <div class="post-info">
-        <h2>A Importância da Inovação na Gestão</h2>
-        <p>
-          Inovar na forma de gerir e contratar serviços é essencial para eliminar burocracias e reduzir custos. Adotar ferramentas digitais otimizadas facilita a administração e aprimora a transparência no fluxo de processos. Nossa abordagem transforma a experiência de contratações, agregando valor com soluções simples e eficazes.
-        </p>
-      </div>
-    </article>
-    <!-- Post 3 -->
-    <article class="post">
-      <img src="https://raw.githubusercontent.com/Swifthubcatalao/br/main/imagens/post3.jpg" 
-           alt="Conectando Soluções com Eficiência">
-      <div class="post-info">
-        <h2>Conectando Soluções com Eficiência</h2>
-        <p>
-          Nossa plataforma foi desenvolvida para proporcionar uma experiência intuitiva e eficiente. Ao conectar clientes a profissionais de qualidade, garantimos que cada atendimento seja realizado com rapidez e segurança. A facilidade na contratação de serviços eleva o nível de eficiência, transformando a forma de resolver desafios cotidianos.
-        </p>
-      </div>
-    </article>
-    <!-- Botão Consultar Serviços -->
-    <div class="consultar-button-container">
-      <a href="servicos.html" class="consultar-button">Consultar Serviços</a>
     </div>
-  </main>
-
+  </section>
+  
   <footer>
     <div class="container">
       <p>&copy; 2025 Swift Hub Catalão. Todos os direitos reservados.</p>
     </div>
   </footer>
-
-  <a href="https://wa.me/64981226078" class="whatsapp-float" target="_blank" aria-label="Fale conosco pelo WhatsApp">
+  
+  <!-- Botão flutuante do WhatsApp -->
+  <a href="https://wa.me/64981226078" class="whatsapp-float" target="_blank">
     <i class="fab fa-whatsapp"></i>
   </a>
   
