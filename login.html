@@ -88,6 +88,10 @@
       text-decoration: none;
       cursor: pointer;
     }
+    .forgot-link {
+      margin-top: 10px;
+      text-align: center;
+    }
 
     /* Botão flutuante do WhatsApp */
     .whatsapp-float {
@@ -129,6 +133,7 @@
         <input type="password" id="loginPassword" required>
         <button type="submit">Entrar</button>
       </form>
+      <p class="forgot-link"><a id="forgotPassword" href="#">Esqueci minha senha</a></p>
       <div class="toggle-link">
         <p>Não tem conta? <a id="showRegister" href="#">Cadastre-se</a></p>
       </div>
@@ -172,6 +177,13 @@
       }
       const auth = firebase.auth();
 
+      // Redireciona usuário logado para perfil.html imediatamente
+      auth.onAuthStateChanged(user => {
+        if (user) {
+          window.location.href = "perfil.html";
+        }
+      });
+
       // Função para exibir o modal de erro
       function showError(message) {
         document.getElementById("errorMessage").innerHTML = message;
@@ -189,11 +201,23 @@
         document.getElementById("loginFormContainer").style.display = "none";
         document.getElementById("registerFormContainer").style.display = "block";
       });
-
       document.getElementById("showLogin").addEventListener("click", function(e) {
         e.preventDefault();
         document.getElementById("registerFormContainer").style.display = "none";
         document.getElementById("loginFormContainer").style.display = "block";
+      });
+
+      // Recuperação de senha
+      document.getElementById("forgotPassword").addEventListener("click", function(e) {
+        e.preventDefault();
+        const email = document.getElementById("loginEmail").value;
+        if (!email) {
+          alert("Digite seu e-mail para redefinir a senha.");
+          return;
+        }
+        auth.sendPasswordResetEmail(email)
+          .then(() => alert("E-mail de recuperação enviado!"))
+          .catch(error => showError("Erro ao enviar e-mail: " + error.message));
       });
 
       // Cadastro de usuário
@@ -203,10 +227,11 @@
         const password = document.getElementById("registerPassword").value;
 
         auth.createUserWithEmailAndPassword(email, password)
-          .then((userCredential) => {
+          .then(userCredential => {
             // Envia e-mail de verificação
             userCredential.user.sendEmailVerification();
             alert("Cadastro realizado com sucesso! Verifique seu email.");
+            
             // Alterna para o formulário de login
             document.getElementById("showLogin").click();
           })
@@ -220,8 +245,8 @@
         const password = document.getElementById("loginPassword").value;
 
         auth.signInWithEmailAndPassword(email, password)
-          .then((userCredential) => {
-            // Se o usuário não possui email verificado, mostrar opção de reenviar
+          .then(userCredential => {
+            // Se o email não estiver verificado, mostra opção para reenviar e-mail de verificação
             if (!userCredential.user.emailVerified) {
               document.getElementById("errorMessage").innerHTML = "Por favor, verifique seu email antes de fazer login. <br><button id='resendButton'>Reenviar e-mail de verificação</button>";
               document.getElementById("errorModal").style.display = "block";
@@ -235,7 +260,7 @@
                   .catch(error => showError(error.message));
               });
             } else {
-              window.location.href = "index.html";
+              window.location.href = "perfil.html";
             }
           })
           .catch(error => showError(error.message));
