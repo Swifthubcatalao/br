@@ -6,11 +6,11 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Swift Hub Catalão - Início</title>
 
-  <!-- Ícones do Font Awesome carregados de forma otimizada -->
+  <!-- Ícones do Font Awesome otimizados -->
   <link rel="preload" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.0/css/all.min.css" as="style" onload="this.rel='stylesheet'">
   <noscript><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.0/css/all.min.css"></noscript>
 
-  <!-- Firebase Modular SDK -->
+  <!-- Firebase Modular SDK (para controle de autenticação no menu) -->
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.8/firebase-app.js";
     import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/9.6.8/firebase-auth.js";
@@ -31,7 +31,6 @@
       const menuPerfil = document.getElementById("menuPerfil");
       const loginMenuItem = document.getElementById("loginMenuItem");
       const logoutButton = document.getElementById("logoutButton");
-
       if (user) {
         menuPerfil.style.display = "inline";
         loginMenuItem.textContent = "Logado";
@@ -55,25 +54,44 @@
 
   <style>
     :root {
-      --color-primary: #3C3B6E;
-      --color-secondary: #B22234;
-      --color-light: #ffffff;
+      --color-primary: #0033A0;    /* Azul */
+      --color-secondary: #C8102E;     /* Vermelho */
+      --color-light: #ffffff;         /* Branco */
       --color-dark: #333;
     }
 
-    * { box-sizing: border-box; margin: 0; padding: 0; }
-    body { font-family: Arial, sans-serif; background: var(--color-light); line-height: 1.6; color: var(--color-dark); }
-
-    .container { max-width: 1200px; margin: auto; padding: 20px; }
-
+    /* Reset e estilos globais */
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+    body {
+      font-family: Arial, sans-serif;
+      background: var(--color-light);
+      line-height: 1.6;
+      color: var(--color-dark);
+    }
+    .container {
+      max-width: 1200px;
+      margin: auto;
+      padding: 20px;
+    }
+    /* Header */
     header {
-      background: linear-gradient(45deg, var(--color-primary), #1C1C5B);
+      background: linear-gradient(45deg, var(--color-primary), var(--color-secondary));
       color: var(--color-light);
       text-align: center;
       padding: 30px 0;
       position: relative;
     }
-
+    header h1 {
+      font-size: 2em;
+    }
+    header p {
+      font-size: 1.2em;
+      margin-top: 5px;
+    }
     #logoutButton {
       position: absolute;
       right: 20px;
@@ -86,21 +104,21 @@
       cursor: pointer;
       display: none;
     }
-
+    /* Navegação */
     nav {
       background: var(--color-light);
       box-shadow: 0 2px 5px rgba(0,0,0,0.1);
     }
-
-    nav ul {
+    nav .container {
       display: flex;
       justify-content: center;
-      list-style: none;
       padding: 10px;
     }
-
+    nav ul {
+      display: flex;
+      list-style: none;
+    }
     nav ul li { margin: 0 20px; }
-
     nav ul li a {
       text-decoration: none;
       font-weight: bold;
@@ -108,27 +126,37 @@
       font-size: 1.1em;
       transition: color 0.2s;
     }
-
     nav ul li a:hover { color: var(--color-secondary); }
-
-    section#inicio {
-      padding: 40px 0;
-      text-align: center;
-      background: #e9ecef;
+    /* Blog Container */
+    main.blog-container {
+      max-width: 800px;
+      margin: 40px auto;
+      padding: 20px;
     }
-
-    section#inicio h2 {
-      font-size: 2em;
+    article.post {
+      border-bottom: 1px solid #ddd;
+      padding-bottom: 20px;
       margin-bottom: 20px;
+    }
+    article.post:last-child {
+      border: none;
+    }
+    article.post h2 {
+      font-size: 1.8em;
+      margin-bottom: 10px;
       color: var(--color-primary);
     }
-
-    section#inicio p {
-      font-size: 1.1em;
-      margin: 15px auto;
-      max-width: 800px;
+    article.post time {
+      font-size: 0.9em;
+      color: #777;
+      display: block;
+      margin-bottom: 10px;
     }
-
+    article.post p {
+      font-size: 1em;
+      text-align: justify;
+    }
+    /* Footer */
     footer {
       background: var(--color-secondary);
       color: var(--color-light);
@@ -136,7 +164,8 @@
       padding: 20px 0;
       margin-top: 40px;
     }
-
+    footer p { font-size: 0.9em; }
+    /* Botão flutuante do WhatsApp */
     .whatsapp-float {
       position: fixed;
       bottom: 20px;
@@ -152,10 +181,16 @@
       z-index: 1000;
       box-shadow: 2px 2px 3px rgba(0,0,0,0.3);
     }
+    /* Responsividade */
+    @media (max-width: 768px) {
+      header h1 { font-size: 1.8em; }
+      nav ul li { margin: 0 10px; font-size: 0.9em; }
+      article.post h2 { font-size: 1.6em; }
+      article.post p { font-size: 0.95em; }
+    }
   </style>
 </head>
 <body>
-
   <header>
     <div class="container">
       <h1>Swift Hub Catalão</h1>
@@ -167,7 +202,7 @@
   <nav>
     <div class="container">
       <ul>
-        <li><a href="index.html">Início</a></li>
+        <li><a href="index.html">Home</a></li>
         <li><a href="servicos.html">Serviços</a></li>
         <li><a href="perfil.html" id="menuPerfil" style="display: none;">Meu Perfil</a></li>
         <li><a href="login.html" id="loginMenuItem">Login</a></li>
@@ -175,14 +210,48 @@
     </div>
   </nav>
   
-  <section id="inicio">
-    <div class="container">
-      <h2>Bem-vindo à Swift Hub Catalão</h2>
+  <main class="blog-container">
+    <!-- Post 1 -->
+    <article class="post">
+      <h2>A Transformação na Contratação de Serviços</h2>
+      <time datetime="2023-10-30">30 de Outubro de 2023</time>
       <p>
-        Somos a ponte que conecta você aos melhores profissionais para serviços domésticos e comerciais. Nosso compromisso é oferecer rapidez, segurança e excelência em cada atendimento.
+        Vivemos uma era em que a transformação digital está remodelando a maneira de contratar serviços. Nossa plataforma alia tecnologia e praticidade para conectar clientes a profissionais especializados, otimizando processos e garantindo segurança. Essa revolução impulsiona a confiança e transforma desafios em soluções ágeis.
       </p>
-    </div>
-  </section>
+    </article>
+    <!-- Post 2 -->
+    <article class="post">
+      <h2>A Importância da Inovação em Gestão</h2>
+      <time datetime="2023-09-15">15 de Setembro de 2023</time>
+      <p>
+        A inovação é o pilar fundamental para a evolução dos métodos de gestão. Ferramentas digitais avançadas eliminam burocracias e aceleram processos, proporcionando experiências mais eficientes. Nossa solução integrada simplifica a contratação de serviços e fortalece a transparência nos fluxos de trabalho, promovendo uma administração moderna.
+      </p>
+    </article>
+    <!-- Post 3 -->
+    <article class="post">
+      <h2>Conectando Pessoas a Soluções de Forma Eficiente</h2>
+      <time datetime="2023-08-30">30 de Agosto de 2023</time>
+      <p>
+        Nosso sistema foi criado para facilitar a conexão entre clientes e os melhores profissionais. A experiência intuitiva e a eficiência operacional garantem que cada serviço seja realizado com qualidade, transformando processos complexos em soluções simples e seguras. Isso resulta em atendimento ágil e personalizado, que supera expectativas.
+      </p>
+    </article>
+    <!-- Post 4 -->
+    <article class="post">
+      <h2>Por que Optar por uma Solução Digital?</h2>
+      <time datetime="2023-07-20">20 de Julho de 2023</time>
+      <p>
+        Investir em uma solução digital é apostar em praticidade e segurança. Nossa interface amigável permite gerenciar demandas com poucos cliques, eliminando etapas desnecessárias. A transparência no fluxo de informações e a integração de tecnologias modernas elevam a qualidade dos serviços, proporcionando uma experiência diferenciada e eficiente.
+      </p>
+    </article>
+    <!-- Post 5 -->
+    <article class="post">
+      <h2>O Futuro da Contratação de Serviços</h2>
+      <time datetime="2023-06-10">10 de Junho de 2023</time>
+      <p>
+        A era digital redefiniu as expectativas na contratação de serviços. Nossa plataforma integra tecnologia e atendimento personalizado para transformar o futuro em realidade. Com soluções ágeis e processos otimizados, abrimos caminho para um novo padrão de qualidade, onde a inovação e a eficiência caminham juntas, trazendo resultados surpreendentes.
+      </p>
+    </article>
+  </main>
   
   <footer>
     <div class="container">
@@ -193,6 +262,5 @@
   <a href="https://wa.me/64981226078" class="whatsapp-float" target="_blank">
     <i class="fab fa-whatsapp"></i>
   </a>
-
 </body>
 </html>
