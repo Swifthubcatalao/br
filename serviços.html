@@ -5,8 +5,11 @@
   <meta name="description" content="Swift Hub Catalão - Serviços">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Swift Hub Catalão - Serviços</title>
-  <!-- Font Awesome para o ícone do WhatsApp -->
+  <!-- Font Awesome para ícones -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.0/css/all.min.css">
+  <!-- Firebase SDK -->
+  <script src="https://www.gstatic.com/firebasejs/9.6.8/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.6.8/firebase-auth.js"></script>
   <style>
     /* Reset e configuração global */
     * {
@@ -52,7 +55,7 @@
     }
     nav {
       background: #f8f8f8;
-      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
     }
     nav ul {
       display: flex;
@@ -147,7 +150,7 @@
       position: fixed;
       bottom: 20px;
       right: 20px;
-      background-color: #25D366;
+      background: #25D366;
       color: #fff;
       border-radius: 50%;
       width: 60px;
@@ -159,25 +162,19 @@
       box-shadow: 2px 2px 3px rgba(0,0,0,0.3);
     }
     @media (max-width: 768px) {
-      .card {
-        width: 90%;
-      }
       nav ul {
         flex-direction: column;
       }
       nav ul li {
         margin: 10px 0;
       }
+      .card {
+        width: 90%;
+      }
     }
   </style>
 </head>
 <body>
-  <script>
-    // Redireciona para login se o usuário não estiver logado
-    if(localStorage.getItem("loggedIn") !== "true") {
-      window.location.href = "login.html";
-    }
-  </script>
   <header>
     <div class="container">
       <h1>Swift Hub Catalão</h1>
@@ -185,6 +182,7 @@
       <button id="logoutButton">Sair</button>
     </div>
   </header>
+  
   <nav>
     <div class="container">
       <ul>
@@ -193,6 +191,7 @@
       </ul>
     </div>
   </nav>
+  
   <section id="servico">
     <div class="container">
       <h2>Serviços Disponíveis</h2>
@@ -291,20 +290,55 @@
       </div>
     </div>
   </section>
+  
   <footer>
     <div class="container">
       <p>&copy; 2025 Swift Hub Catalão. Todos os direitos reservados.</p>
     </div>
   </footer>
+  
   <!-- Botão flutuante do WhatsApp -->
   <a href="https://wa.me/64981226078" class="whatsapp-float" target="_blank">
     <i class="fab fa-whatsapp"></i>
   </a>
+  
   <script>
-    // Logout: Redireciona para a página de login e redefine o login via localStorage.
-    document.getElementById("logoutButton").addEventListener("click", function(){
-      localStorage.setItem("loggedIn", "false");
-      window.location.href = "login.html";
+    document.addEventListener('DOMContentLoaded', function() {
+      // Configuração do Firebase
+      const firebaseConfig = {
+        apiKey: "AIzaSyDGBKxvfcY-PA_vC7SA8G0f-TjqjK3OD3o",
+        authDomain: "swifthubcatalao.firebaseapp.com",
+        projectId: "swifthubcatalao",
+        storageBucket: "swifthubcatalao.firebasestorage.app",
+        messagingSenderId: "756803145076",
+        appId: "1:756803145076:web:4593bd78a26a2270a1f021"
+      };
+
+      // Inicializa o Firebase se ainda não estiver iniciado
+      if (!firebase.apps.length) { 
+        firebase.initializeApp(firebaseConfig);
+      }
+      
+      const auth = firebase.auth();
+
+      // Verifica se o usuário está logado antes de permitir o acesso
+      auth.onAuthStateChanged((user) => {
+        if (!user && window.location.pathname !== "/login.html") {
+          window.location.href = "login.html";
+        }
+      });
+
+      // Configura o botão de logout
+      const logoutButton = document.getElementById("logoutButton");
+      if (logoutButton) {
+        logoutButton.addEventListener("click", function() {
+          auth.signOut().then(() => {
+            window.location.href = "login.html";
+          }).catch((error) => {
+            alert("Erro ao sair: " + error.message);
+          });
+        });
+      }
     });
   </script>
 </body>
