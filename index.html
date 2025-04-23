@@ -6,241 +6,128 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Swift Hub Catalão - Início</title>
 
-  <!-- Ícones do Font Awesome (otimizados) -->
-  <link rel="preload" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.0/css/all.min.css" 
+  <!-- Ícones do Font Awesome -->
+  <link rel="preload" 
+        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.0/css/all.min.css" 
         as="style" onload="this.rel='stylesheet'">
   <noscript>
     <link rel="stylesheet" 
           href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.0/css/all.min.css">
   </noscript>
 
-  <!-- Firebase Modular SDK (para controle de autenticação no menu) -->
-  <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.8/firebase-app.js";
-    import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/9.6.8/firebase-auth.js";
-
-    const firebaseConfig = {
-      apiKey: "SUA_API_KEY",
-      authDomain: "SEU_DOMINIO.firebaseapp.com",
-      projectId: "SEU_PROJECT_ID",
-      storageBucket: "SEU_STORAGE_BUCKET",
-      messagingSenderId: "SEU_ID",
-      appId: "SEU_APP_ID"
-    };
-
-    const app = initializeApp(firebaseConfig);
-    const auth = getAuth(app);
-
-    onAuthStateChanged(auth, user => {
-      const menuPerfil = document.getElementById("menuPerfil");
-      const loginMenuItem = document.getElementById("loginMenuItem");
-      const logoutButton = document.getElementById("logoutButton");
-      if (user) {
-        menuPerfil.style.display = "inline";
-        loginMenuItem.textContent = "Logado";
-        loginMenuItem.removeAttribute("href");
-        loginMenuItem.style.pointerEvents = "none";
-        logoutButton.style.display = "block";
-      } else {
-        menuPerfil.style.display = "none";
-        loginMenuItem.textContent = "Login";
-        loginMenuItem.setAttribute("href", "login.html");
-        loginMenuItem.style.pointerEvents = "auto";
-        logoutButton.style.display = "none";
-      }
-    });
-
-    document.getElementById("logoutButton").addEventListener("click", function() {
-      signOut(auth).then(() => {
-        window.location.href = "login.html";
-      }).catch(error => {
-        alert("Erro ao sair: " + error.message);
-      });
-    });
-  </script>
-
   <style>
     :root {
-      --color-primary: #0033A0;    /* Azul */
-      --color-secondary: #C8102E;    /* Vermelho */
-      --color-light: #ffffff;        /* Branco */
+      --color-primary: #0033A0;  /* Azul */
+      --color-secondary: #C8102E;  /* Vermelho */
+      --color-light: #ffffff;  /* Branco */
       --color-dark: #333;
     }
 
-    /* Reset e estilos globais */
     * {
       box-sizing: border-box;
       margin: 0;
       padding: 0;
     }
+
     body {
       font-family: Arial, sans-serif;
       background: var(--color-light);
       line-height: 1.6;
       color: var(--color-dark);
     }
-    .container {
-      max-width: 1200px;
-      margin: auto;
-      padding: 20px;
-    }
-    /* Header: fundo branco, logo e textos em azul */
+
+    /* Estilização do cabeçalho */
     header {
       background: var(--color-light);
+      padding: 15px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid #ddd;
+    }
+
+    /* Ícone de menu */
+    .menu-icon {
+      font-size: 28px;
       color: var(--color-primary);
-      text-align: center;
-      padding: 30px 0;
-      position: relative;
-    }
-    /* Logo: ajuste seu tamanho conforme desejado */
-    header .logo {
-      max-width: 150px;
-      height: auto;
-      margin-bottom: 10px;
-    }
-    header p {
-      font-size: 1.2em;
-      margin-top: 5px;
-    }
-    #logoutButton {
-      position: absolute;
-      right: 20px;
-      top: 20px;
-      background: var(--color-secondary);
-      color: var(--color-light);
-      border: none;
-      padding: 10px 15px;
-      border-radius: 5px;
       cursor: pointer;
-      display: none;
+      margin-left: 15px;
     }
-    /* Navegação */
-    nav {
-      background: var(--color-light);
-      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+
+    /* Logo centralizada */
+    .logo {
+      max-width: 120px;
+      height: auto;
     }
-    nav .container {
+
+    /* Estilos do popup do menu */
+    .menu-popup {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 250px;
+      height: 100vh;
+      background: var(--color-primary);
+      box-shadow: 2px 0px 5px rgba(0,0,0,0.3);
+      transform: translateX(-100%);
+      transition: transform 0.3s ease-in-out;
       display: flex;
-      justify-content: center;
-      padding: 10px;
-    }
-    nav ul {
-      display: flex;
-      list-style: none;
-    }
-    nav ul li {
-      margin: 0 20px;
-    }
-    nav ul li a {
-      text-decoration: none;
-      font-weight: bold;
-      color: var(--color-primary);
-      font-size: 1.1em;
-      transition: color 0.2s;
-    }
-    nav ul li a:hover {
-      color: var(--color-secondary);
-    }
-    /* Blog Container */
-    main.blog-container {
-      max-width: 800px;
-      margin: 40px auto;
+      flex-direction: column;
       padding: 20px;
     }
-    /* Layout dos Posts em lista: imagem à esquerda, texto à direita */
-    article.post {
-      display: flex;
-      align-items: flex-start;
-      gap: 20px;
-      border-bottom: 1px solid #ddd;
-      padding-bottom: 20px;
-      margin-bottom: 20px;
-    }
-    /* Caso seja o último post, remove a borda e margem inferior */
-    article.post:last-child {
-      border: none;
-      margin-bottom: 0;
-    }
-    /* Define tamanho fixo para as imagens dos posts */
-    article.post img {
-      max-width: 200px;
-      width: 100%;
-      height: auto;
-      border-radius: 10px;
-    }
-    /* Bloco que contém título e texto do post */
-    .post-info {
-      flex: 1;
-    }
-    .post-info h2 {
-      font-size: 1.8em;
-      margin-bottom: 10px;
-      color: var(--color-primary);
-    }
-    .post-info p {
-      font-size: 1em;
-      text-align: justify;
-    }
-    /* Footer */
-    footer {
-      background: var(--color-secondary);
+
+    /* Estilos dos links dentro do menu */
+    .menu-popup a {
       color: var(--color-light);
-      text-align: center;
-      padding: 20px 0;
-      margin-top: 40px;
+      font-size: 1.2em;
+      text-decoration: none;
+      padding: 12px;
+      display: block;
+      transition: background 0.2s;
     }
-    footer p {
-      font-size: 0.9em;
+
+    .menu-popup a:hover {
+      background: rgba(255,255,255,0.2);
     }
-    /* Botão flutuante do WhatsApp */
-    .whatsapp-float {
-      position: fixed;
-      bottom: 20px;
-      right: 20px;
-      background: #25D366;
+
+    /* Botão para fechar o menu */
+    .close-menu {
+      font-size: 26px;
       color: var(--color-light);
-      border-radius: 50%;
-      width: 60px;
-      height: 60px;
-      text-align: center;
-      line-height: 60px;
-      font-size: 30px;
-      z-index: 1000;
-      box-shadow: 2px 2px 3px rgba(0,0,0,0.3);
+      cursor: pointer;
+      align-self: flex-end;
     }
-    /* Responsividade: em telas pequenas, empilha os elementos */
-    @media (max-width: 768px) {
-      article.post {
-        flex-direction: column;
-      }
-      article.post img {
-        max-width: 100%;
-      }
+
+    /* Classe ativa para abrir o menu */
+    .menu-open {
+      transform: translateX(0);
     }
+
   </style>
+
+  <script>
+    function toggleMenu() {
+      document.getElementById("menuPopup").classList.toggle("menu-open");
+    }
+  </script>
 </head>
 <body>
+
+  <!-- Cabeçalho com Ícone de Menu e Logo -->
   <header>
-    <div class="container">
-      <!-- Logo: note que a imagem está sendo referenciada do repositório "br" -->
-      <img src="https://raw.githubusercontent.com/Swifthubcatalao/br/main/imagens/logo.png" 
-           alt="Logo Swift Hub Catalão" class="logo">
-      <p>Conectando você aos melhores profissionais</p>
-      <button id="logoutButton">Sair</button>
-    </div>
+    <i class="fas fa-bars menu-icon" onclick="toggleMenu()"></i>
+    <img src="https://raw.githubusercontent.com/Swifthubcatalao/br/main/imagens/logo.png" 
+         alt="Logo Swift Hub Catalão" class="logo">
   </header>
-  
-  <nav>
-    <div class="container">
-      <ul>
-        <li><a href="index.html">Home</a></li>
-        <li><a href="servicos.html">Serviços</a></li>
-        <li><a href="perfil.html" id="menuPerfil" style="display: none;">Meu Perfil</a></li>
-        <li><a href="login.html" id="loginMenuItem">Login</a></li>
-      </ul>
-    </div>
-  </nav>
-  
+
+  <!-- Menu Lateral (popup) -->
+  <div id="menuPopup" class="menu-popup">
+    <span class="close-menu" onclick="toggleMenu()">&times;</span>
+    <a href="index.html">Início</a>
+    <a href="servicos.html">Serviços</a>
+    <a href="login.html">Login</a>
+  </div>
+
   <main class="blog-container">
     <!-- Post 1 -->
     <article class="post">
@@ -275,6 +162,10 @@
         </p>
       </div>
     </article>
+    <!-- Botão Consultar Serviços -->
+    <div class="consultar-button-container">
+      <a href="servicos.html" class="consultar-button">Consultar Serviços</a>
+    </div>
   </main>
   
   <footer>
@@ -286,5 +177,6 @@
   <a href="https://wa.me/64981226078" class="whatsapp-float" target="_blank" aria-label="Fale conosco pelo WhatsApp">
     <i class="fab fa-whatsapp"></i>
   </a>
+
 </body>
 </html>
