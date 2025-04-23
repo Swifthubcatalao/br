@@ -1,719 +1,668 @@
 <!DOCTYPE html>
 <html lang="pt-br">
-<head>
-  <meta charset="UTF-8">
-  <meta name="description" content="Swift Hub Catalão - Perfil do Usuário">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Swift Hub Catalão - Meu Perfil</title>
-  
-  <!-- Ícones do Font Awesome -->
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.0/css/all.min.css">
-  
-  <!-- Google reCAPTCHA API -->
-  <script src="https://www.google.com/recaptcha/api.js" async defer></script>
-  
-  <!-- Firebase Modular SDK e Firestore -->
-  <script type="module">
-    // Importações do Firebase
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.5.0/firebase-app.js";
-    import { getAuth, onAuthStateChanged, signOut, signInWithPhoneNumber, RecaptchaVerifier } from "https://www.gstatic.com/firebasejs/10.5.0/firebase-auth.js";
-    import { getFirestore, doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.5.0/firebase-firestore.js";
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="description" content="Swift Hub Catalão - Perfil do Usuário" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Swift Hub Catalão - Meu Perfil</title>
+    
+    <!-- Ícones do Font Awesome -->
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.0/css/all.min.css"
+    />
 
-    // Configuração do Firebase – substitua pelos seus dados reais
-    const firebaseConfig = {
-      apiKey: "AIzaSyDGBKxvfcY-PA_vC7SA8G0f-TjqjK3OD3o",
-      authDomain: "swifthubcatalao.firebaseapp.com",
-      projectId: "swifthubcatalao",
-      storageBucket: "swifthubcatalao.firebasestorage.app",
-      messagingSenderId: "756803145076",
-      appId: "1:756803145076:web:4593bd78a26a2270a1f021"
-    };
+    <!-- Firebase Modular SDK e Firestore -->
+    <script type="module">
+      // Importações do Firebase
+      import { initializeApp } from "https://www.gstatic.com/firebasejs/10.5.0/firebase-app.js";
+      import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.5.0/firebase-auth.js";
+      import { getFirestore, doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.5.0/firebase-firestore.js";
 
-    const app = initializeApp(firebaseConfig);
-    const auth = getAuth(app);
-    // Se estiver testando localmente, use a linha abaixo para desativar a verificação do reCAPTCHA (NÃO use em produção)
-    auth.settings && (auth.settings.appVerificationDisabledForTesting = true);
-    const db = getFirestore(app);
+      // Configuração do Firebase – substitua pelos seus dados reais
+      const firebaseConfig = {
+        apiKey: "AIzaSyDGBKxvfcY-PA_vC7SA8G0f-TjqjK3OD3o",
+        authDomain: "swifthubcatalao.firebaseapp.com",
+        projectId: "swifthubcatalao",
+        storageBucket: "swifthubcatalao.firebasestorage.app",
+        messagingSenderId: "756803145076",
+        appId: "1:756803145076:web:4593bd78a26a2270a1f021"
+      };
 
-    let confirmationResult = null;  // Resultado da verificação SMS
-    let recaptchaVerifier = null;    // Objeto reCAPTCHA
+      const app = initializeApp(firebaseConfig);
+      const auth = getAuth(app);
+      // Se estiver testando localmente, use a linha abaixo para desativar a verificação (NÃO use em produção)
+      auth.settings && (auth.settings.appVerificationDisabledForTesting = true);
+      const db = getFirestore(app);
 
-    /* --- Inactivity Logout Logic --- */
-    const INACTIVITY_TIMEOUT = 30 * 60 * 1000; // 30 minutos
-    let logoutTimer = null;
-    function resetTimer() {
-      if (logoutTimer) clearTimeout(logoutTimer);
-      logoutTimer = setTimeout(() => {
-        signOut(auth).then(() => {
-          alert("Você foi desconectado por inatividade.");
-          window.location.replace("login.html");
-        }).catch(error => {
-          console.error("Erro ao desconectar:", error);
-          window.location.replace("login.html");
-        });
-      }, INACTIVITY_TIMEOUT);
-    }
-    function setupInactivityListeners() {
-      document.addEventListener("mousemove", resetTimer);
-      document.addEventListener("keydown", resetTimer);
-      document.addEventListener("click", resetTimer);
-      document.addEventListener("scroll", resetTimer);
-      resetTimer();
-    }
-    function removeInactivityListeners() {
-      if (logoutTimer) clearTimeout(logoutTimer);
-      document.removeEventListener("mousemove", resetTimer);
-      document.removeEventListener("keydown", resetTimer);
-      document.removeEventListener("click", resetTimer);
-      document.removeEventListener("scroll", resetTimer);
-    }
-    /* --- End Inactivity Logout Logic --- */
-
-    // Função para salvar ou atualizar automaticamente os dados do perfil (email, nome, telefone e endereço)
-    async function saveUserProfile(user) {
-      const userDocRef = doc(db, "users", user.uid);
-      try {
-        await setDoc(userDocRef, {
-          email: user.email || "",
-          name: user.displayName || "",
-          phone: user.phoneNumber || "",
-          address: "" // Pode ser atualizado depois
-        }, { merge: true });
-        console.log("Perfil salvo/atualizado no Firestore!");
-      } catch (e) {
-        console.error("Erro ao salvar perfil:", e);
-      }
-    }
-
-    // Chama as funções após a autenticação
-    onAuthStateChanged(auth, async (user) => {
-      const logoutBtn = document.getElementById("logoutButton");
-      if (user) {
-        console.log("Usuário logado:", user.uid);
-        if (logoutBtn) logoutBtn.style.display = "block";
-        await saveUserProfile(user);
-        displayUserProfile(user);
-        setupInactivityListeners();
-        initializeRecaptcha(user);
-      } else {
-        console.log("Nenhum usuário logado, redirecionando para login.");
-        if (logoutBtn) logoutBtn.style.display = "none";
-        removeInactivityListeners();
-        window.location.replace("login.html");
-      }
-    });
-
-    // Preenche o formulário com os dados do perfil armazenado no Firestore
-    async function displayUserProfile(user) {
-      const emailElement = document.getElementById("userEmail");
-      if (emailElement) {
-        emailElement.value = user.email || "Email não disponível";
-      } else {
-        console.error("Campo de email (userEmail) não encontrado.");
-      }
-      const nameInput = document.getElementById("userName");
-      const addressInput = document.getElementById("userAddress");
-      const phoneInput = document.getElementById("userPhone");
-      const phoneStatus = document.getElementById("phoneVerificationStatus");
-      const verifyCodeSection = document.getElementById("verifyCodeSection");
-      const sendCodeSection = document.getElementById("sendCodeSection");
-      const phoneStatusMessage = document.getElementById("phoneStatusMessage");
-
-      if (user.phoneNumber) {
-        if (phoneInput) {
-          phoneInput.value = user.phoneNumber;
-          phoneInput.disabled = true;
-        }
-        const sendBtn = document.getElementById("sendCodeButton");
-        if (sendBtn) sendBtn.style.display = "none";
-        if (phoneStatus) {
-          phoneStatus.innerText = "Telefone verificado: " + user.phoneNumber;
-          phoneStatus.style.color = "green";
-        }
-        if (sendCodeSection) sendCodeSection.style.display = "none";
-        if (verifyCodeSection) verifyCodeSection.style.display = "none";
-        if (document.getElementById("recaptcha-container")) {
-          document.getElementById("recaptcha-container").style.display = "none";
-        }
-      } else {
-        if (phoneStatus) {
-          phoneStatus.innerText = "Telefone não verificado.";
-          phoneStatus.style.color = "orange";
-        }
-        if (sendCodeSection) sendCodeSection.style.display = "block";
-        if (verifyCodeSection) verifyCodeSection.style.display = "none";
-        if (document.getElementById("recaptcha-container")) {
-          document.getElementById("recaptcha-container").style.display = "block";
-        }
-      }
-
-      try {
-        const userDocRef = doc(db, "users", user.uid);
-        const userDocSnap = await getDoc(userDocRef);
-        if (userDocSnap.exists()) {
-          const userData = userDocSnap.data();
-          if (nameInput) nameInput.value = userData.name || "";
-          if (addressInput) addressInput.value = userData.address || "";
-          if (userData.phone && !user.phoneNumber) {
-            if (phoneInput) {
-              phoneInput.value = userData.phone;
-              phoneInput.disabled = true;
-            }
-            const sendBtn = document.getElementById("sendCodeButton");
-            if (sendBtn) sendBtn.style.display = "none";
-            if (phoneStatus) {
-              phoneStatus.innerText = "Telefone (via dados salvos): " + userData.phone;
-              phoneStatus.style.color = "blue";
-            }
-            if (sendCodeSection) sendCodeSection.style.display = "none";
-            if (verifyCodeSection) verifyCodeSection.style.display = "none";
-            if (document.getElementById("recaptcha-container")) {
-              document.getElementById("recaptcha-container").style.display = "none";
-            }
-          }
-        } else {
-          console.log("Nenhum dado de perfil encontrado para este usuário.");
-        }
-      } catch (e) {
-        console.error("Erro ao buscar os dados do perfil:", e);
-      }
-    }
-
-    // ⇨ AQUI A ÚNICA PARTE MODIFICADA – AUTENTICAÇÃO POR NÚMERO
-
-    // Função para inicializar o reCAPTCHA para verificações via SMS
-    function initializeRecaptcha(user) {
-      const recaptchaEl = document.getElementById("recaptcha-container");
-      if (!user || user.phoneNumber) {
-        if (recaptchaEl) recaptchaEl.style.display = "none";
-        return;
-      }
-      if (!recaptchaVerifier) {
-        recaptchaVerifier = new RecaptchaVerifier('recaptcha-container', {
-          size: 'normal',
-          callback: (response) => {
-            console.log("reCAPTCHA resolvido!");
-            const sendBtn = document.getElementById("sendCodeButton");
-            if (sendBtn) sendBtn.disabled = false;
-          },
-          'expired-callback': () => {
-            console.log("reCAPTCHA expirado. Por favor, resolva novamente.");
-            const sendBtn = document.getElementById("sendCodeButton");
-            if (sendBtn) sendBtn.disabled = true;
-            recaptchaVerifier.render().then(widgetId => {
-              grecaptcha.reset(widgetId);
+      /* --- Inactivity Logout Logic --- */
+      const INACTIVITY_TIMEOUT = 30 * 60 * 1000; // 30 minutos
+      let logoutTimer = null;
+      function resetTimer() {
+        if (logoutTimer) clearTimeout(logoutTimer);
+        logoutTimer = setTimeout(() => {
+          signOut(auth)
+            .then(() => {
+              alert("Você foi desconectado por inatividade.");
+              window.location.replace("login.html");
+            })
+            .catch((error) => {
+              console.error("Erro ao desconectar:", error);
+              window.location.replace("login.html");
             });
-          }
-        }, auth);
-
-        recaptchaVerifier.render().then(widgetId => {
-          console.log("reCAPTCHA renderizado. Widget ID:", widgetId);
-          const sendBtn = document.getElementById("sendCodeButton");
-          if (sendBtn) sendBtn.disabled = true;
-        });
-      } else {
-        recaptchaVerifier.render().then(widgetId => {
-          if (recaptchaEl) recaptchaEl.style.display = "block";
-          grecaptcha.reset(widgetId);
-          const sendBtn = document.getElementById("sendCodeButton");
-          if (sendBtn) sendBtn.disabled = true;
-        });
+        }, INACTIVITY_TIMEOUT);
       }
-    }
-
-    // Função para enviar o código SMS (formata para incluir "+55" se necessário)
-    async function handleSendCode(event) {
-      event.preventDefault();
-      const phoneInput = document.getElementById("userPhone");
-      const phoneStatusMessage = document.getElementById("phoneStatusMessage");
-      const sendCodeButton = document.getElementById("sendCodeButton");
-      const verifyCodeSection = document.getElementById("verifyCodeSection");
-      const sendCodeSection = document.getElementById("sendCodeSection");
-
-      let phoneNumber = phoneInput.value.trim();
-      if (!phoneNumber.startsWith("+")) {
-        phoneNumber = "+55" + phoneNumber;
+      function setupInactivityListeners() {
+        document.addEventListener("mousemove", resetTimer);
+        document.addEventListener("keydown", resetTimer);
+        document.addEventListener("click", resetTimer);
+        document.addEventListener("scroll", resetTimer);
+        resetTimer();
       }
-      if (phoneNumber.length < 10) {
-        phoneStatusMessage.innerText = "Formato de telefone inválido.";
-        phoneStatusMessage.style.color = "red";
-        return;
+      function removeInactivityListeners() {
+        if (logoutTimer) clearTimeout(logoutTimer);
+        document.removeEventListener("mousemove", resetTimer);
+        document.removeEventListener("keydown", resetTimer);
+        document.removeEventListener("click", resetTimer);
+        document.removeEventListener("scroll", resetTimer);
+      }
+      /* --- End Inactivity Logout Logic --- */
+
+      // Função para salvar (ou atualizar) os dados do perfil no Firestore
+      async function saveUserProfile(user) {
+        const userDocRef = doc(db, "users", user.uid);
+        try {
+          await setDoc(
+            userDocRef,
+            {
+              email: user.email || "",
+              // Se existir displayName vindo do login, pode ser usado; caso contrário, fica em branco
+              name: user.displayName || "",
+              // Atualizaremos o telefone aqui via formulário
+              phone: "",
+              address: ""
+            },
+            { merge: true }
+          );
+          console.log("Perfil salvo/atualizado no Firestore!");
+        } catch (e) {
+          console.error("Erro ao salvar perfil:", e);
+        }
       }
 
-      sendCodeButton.disabled = true;
-      phoneStatusMessage.innerText = "Enviando código...";
-      phoneStatusMessage.style.color = "blue";
+      // Função que atualiza o container de exibição dos dados salvos (modo leitura)
+      function updateProfileDisplay(userData) {
+        const displayContainer = document.getElementById("profileDisplay");
+        displayContainer.innerHTML = `
+          <p><strong>Email:</strong> ${userData.email || "Não definido"}</p>
+          <p><strong>Número de Telefone:</strong> ${userData.phone || "Não definido"}</p>
+          <p><strong>Nome:</strong> ${userData.name || "Não preenchido"}</p>
+          <p><strong>Endereço:</strong> ${userData.address || "Não preenchido"}</p>
+          <button id="editProfileButton">Editar</button>
+        `;
+        displayContainer.style.display = "block";
 
-      try {
-        confirmationResult = await signInWithPhoneNumber(auth, phoneNumber, recaptchaVerifier);
-        phoneStatusMessage.innerText = "Código enviado! Verifique seu SMS.";
-        phoneStatusMessage.style.color = "green";
-        sendCodeButton.style.display = "none";
-        sendCodeSection.style.display = "none";
-        verifyCodeSection.style.display = "block";
-      } catch (error) {
-        console.error("Erro ao enviar código:", error);
-        phoneStatusMessage.innerText = "Erro ao enviar código: " + error.message;
-        phoneStatusMessage.style.color = "red";
-        sendCodeButton.disabled = false;
-        if (recaptchaVerifier) {
-          recaptchaVerifier.render().then(widgetId => {
-            grecaptcha.reset(widgetId);
+        // Oculta o container do formulário de edição
+        const formContainer = document.getElementById("profileFormContainer");
+        if (formContainer) {
+          formContainer.style.display = "none";
+        }
+
+        // Adiciona listener para o botão "Editar"
+        const editBtn = document.getElementById("editProfileButton");
+        if (editBtn) {
+          editBtn.addEventListener("click", () => {
+            // Mostra o formulário de edição e oculta a exibição
+            document.getElementById("profileFormContainer").style.display = "block";
+            displayContainer.style.display = "none";
           });
         }
       }
-    }
 
-    // Função para verificar o código SMS digitado
-    async function handleVerifyCode(event) {
-      event.preventDefault();
-      const verificationCodeInput = document.getElementById("verificationCode");
-      const phoneStatusMessage = document.getElementById("phoneStatusMessage");
-      const verifyCodeButton = document.getElementById("verifyCodeButton");
-      const verifyCodeSection = document.getElementById("verifyCodeSection");
-      const phoneInput = document.getElementById("userPhone");
+      // Função para preencher os dados do perfil no formulário (modo edição)
+      async function displayUserProfile(user) {
+        // Campo de e-mail (somente leitura)
+        const emailElement = document.getElementById("userEmail");
+        if (emailElement) {
+          emailElement.value = user.email || "Email não disponível";
+        } else {
+          console.error("Campo de email (userEmail) não encontrado.");
+        }
+        // Dados pessoais: Nome, Endereço e Número de Telefone (novo campo)
+        const nameInput = document.getElementById("userName");
+        const addressInput = document.getElementById("userAddress");
+        const phoneInput = document.getElementById("userPhoneInput");
 
-      const code = verificationCodeInput.value.trim();
-      if (!code) {
-        phoneStatusMessage.innerText = "Digite o código de verificação.";
-        phoneStatusMessage.style.color = "red";
-        return;
+        try {
+          const userDocRef = doc(db, "users", user.uid);
+          const userDocSnap = await getDoc(userDocRef);
+          if (userDocSnap.exists()) {
+            const userData = userDocSnap.data();
+            if (nameInput) nameInput.value = userData.name || "";
+            if (addressInput) addressInput.value = userData.address || "";
+            if (phoneInput) phoneInput.value = userData.phone || "";
+            
+            // Se houver dados preenchidos (pelo menos um campo preenchido), exibe o container de leitura
+            if (userData.name || userData.address || userData.phone) {
+              updateProfileDisplay({
+                email: user.email,
+                name: userData.name,
+                address: userData.address,
+                phone: userData.phone,
+              });
+            } else {
+              // Caso contrário, mostra o formulário de edição
+              const formContainer = document.getElementById("profileFormContainer");
+              if (formContainer) formContainer.style.display = "block";
+              const displayContainer = document.getElementById("profileDisplay");
+              if (displayContainer) displayContainer.style.display = "none";
+            }
+          } else {
+            console.log("Nenhum dado de perfil encontrado para este usuário.");
+          }
+        } catch (e) {
+          console.error("Erro ao buscar os dados do perfil:", e);
+        }
       }
 
-      verifyCodeButton.disabled = true;
-      phoneStatusMessage.innerText = "Verificando código...";
-      phoneStatusMessage.style.color = "blue";
+      // Função para salvar os dados pessoais atualizados via formulário
+      async function handleSaveProfile(event) {
+        event.preventDefault();
+        const user = auth.currentUser;
+        if (!user) {
+          alert("Você precisa estar logado para salvar o perfil.");
+          return;
+        }
+        const name = document.getElementById("userName").value.trim();
+        const address = document.getElementById("userAddress").value.trim();
+        const phone = document.getElementById("userPhoneInput").value.trim();
+        const saveButton = document.getElementById("saveProfileButton");
+        const saveStatusMessage = document.getElementById("saveStatusMessage");
 
-      try {
-        const result = await confirmationResult.confirm(code);
-        const user = result.user;
-        console.log("Telefone verificado com sucesso!", user.phoneNumber);
-        phoneStatusMessage.innerText = "Telefone verificado com sucesso!";
-        phoneStatusMessage.style.color = "green";
-        verifyCodeSection.style.display = "none";
-        phoneInput.disabled = true;
-      } catch (error) {
-        console.error("Erro ao verificar código:", error);
-        phoneStatusMessage.innerText = "Erro ao verificar código: " + error.message;
-        phoneStatusMessage.style.color = "red";
-        verifyCodeButton.disabled = false;
+        saveButton.disabled = true;
+        saveStatusMessage.innerText = "Salvando...";
+        saveStatusMessage.style.color = "blue";
+
+        try {
+          const userDocRef = doc(db, "users", user.uid);
+          await setDoc(userDocRef, { name, address, phone }, { merge: true });
+          saveStatusMessage.innerText = "Perfil salvo com sucesso!";
+          saveStatusMessage.style.color = "green";
+          console.log("Perfil salvo com sucesso!");
+          // Após salvar, atualiza a exibição dos dados
+          updateProfileDisplay({
+            email: user.email,
+            name: name,
+            address: address,
+            phone: phone,
+          });
+        } catch (error) {
+          console.error("Erro ao salvar perfil:", error);
+          saveStatusMessage.innerText = "Erro ao salvar perfil: " + error.message;
+          saveStatusMessage.style.color = "red";
+        } finally {
+          saveButton.disabled = false;
+        }
       }
-    }
 
-    // Fim da parte de autenticação por número
-    // ===================================================================
-
-    // Função para salvar os dados pessoais do perfil (nome e endereço)
-    async function handleSaveProfile(event) {
-      event.preventDefault();
-      const user = auth.currentUser;
-      if (!user) {
-        alert("Você precisa estar logado para salvar o perfil.");
-        return;
+      // Função para alternar o popup do menu
+      function toggleMenu() {
+        const menuPopup = document.getElementById("menuPopup");
+        if (menuPopup) {
+          menuPopup.classList.toggle("menu-open");
+        } else {
+          console.error("Popup do menu não encontrado.");
+        }
       }
-      const name = document.getElementById("userName").value.trim();
-      const address = document.getElementById("userAddress").value.trim();
-      const saveButton = document.getElementById("saveProfileButton");
-      const saveStatusMessage = document.getElementById("saveStatusMessage");
 
-      saveButton.disabled = true;
-      saveStatusMessage.innerText = "Salvando...";
-      saveStatusMessage.style.color = "blue";
-
-      try {
-        const userDocRef = doc(db, "users", user.uid);
-        await setDoc(userDocRef, { name, address }, { merge: true });
-        saveStatusMessage.innerText = "Perfil salvo com sucesso!";
-        saveStatusMessage.style.color = "green";
-        console.log("Perfil salvo com sucesso!");
-        // Após salvar, atualiza os dados exibidos no formulário 
-        displayUserProfile(user);
-      } catch (error) {
-        console.error("Erro ao salvar perfil:", error);
-        saveStatusMessage.innerText = "Erro ao salvar perfil: " + error.message;
-        saveStatusMessage.style.color = "red";
-      } finally {
-        saveButton.disabled = false;
+      // Função para executar o logout
+      function handleLogout() {
+        signOut(auth)
+          .then(() => {
+            console.log("Usuário desconectado.");
+          })
+          .catch((error) => {
+            console.error("Erro ao desconectar:", error);
+            alert("Erro ao fazer logout: " + error.message);
+          });
       }
-    }
 
-    // Função para alternar o popup do menu
-    function toggleMenu() {
-      const menuPopup = document.getElementById("menuPopup");
-      if (menuPopup) {
-        menuPopup.classList.toggle("menu-open");
-      } else {
-        console.error("Popup do menu não encontrado.");
-      }
-    }
-
-    // Função para realizar o logout
-    function handleLogout() {
-      signOut(auth).then(() => {
-        console.log("Usuário desconectado.");
-      }).catch((error) => {
-        console.error("Erro ao desconectar:", error);
-        alert("Erro ao fazer logout: " + error.message);
+      // Monitora a autenticação
+      onAuthStateChanged(auth, async (user) => {
+        const logoutBtn = document.getElementById("logoutButton");
+        if (user) {
+          console.log("Usuário logado:", user.uid);
+          if (logoutBtn) logoutBtn.style.display = "block";
+          await saveUserProfile(user);
+          displayUserProfile(user);
+          setupInactivityListeners();
+        } else {
+          console.log("Nenhum usuário logado, redirecionando para login.");
+          if (logoutBtn) logoutBtn.style.display = "none";
+          removeInactivityListeners();
+          window.location.replace("login.html");
+        }
       });
-    }
 
-    document.addEventListener("DOMContentLoaded", function() {
-      const menuIcon = document.querySelector(".menu-icon");
-      if (menuIcon) {
-        menuIcon.addEventListener("click", toggleMenu);
-      } else {
-        console.error("Ícone do menu não encontrado.");
-      }
-      const closeBtn = document.querySelector(".close-menu");
-      if (closeBtn) {
-        closeBtn.addEventListener("click", toggleMenu);
-      } else {
-        console.error("Botão de fechar o menu não encontrado.");
-      }
-      const logoutBtn = document.getElementById("logoutButton");
-      if (logoutBtn) {
-        logoutBtn.addEventListener("click", handleLogout);
-      } else {
-        console.error("Botão de logout não encontrado.");
-      }
-      const profileForm = document.getElementById("profileForm");
-      if (profileForm) {
-        profileForm.addEventListener("submit", handleSaveProfile);
-      }
-      const sendCodeForm = document.getElementById("sendCodeForm");
-      if (sendCodeForm) {
-        sendCodeForm.addEventListener("submit", handleSendCode);
-      }
-      const verifyCodeForm = document.getElementById("verifyCodeForm");
-      if (verifyCodeForm) {
-        verifyCodeForm.addEventListener("submit", handleVerifyCode);
-      }
-      const verifyCodeSection = document.getElementById("verifyCodeSection");
-      if (verifyCodeSection) {
-        verifyCodeSection.style.display = "none";
-      }
-      const phoneStatusMessage = document.getElementById("phoneStatusMessage");
-      if (phoneStatusMessage) phoneStatusMessage.innerText = "";
-      const saveStatusMessage = document.getElementById("saveStatusMessage");
-      if (saveStatusMessage) saveStatusMessage.innerText = "";
-    });
-  </script>
+      // Configuração dos event listeners
+      document.addEventListener("DOMContentLoaded", function () {
+        const menuIcon = document.querySelector(".menu-icon");
+        if (menuIcon) {
+          menuIcon.addEventListener("click", toggleMenu);
+        } else {
+          console.error("Ícone do menu não encontrado.");
+        }
+        const closeBtn = document.querySelector(".close-menu");
+        if (closeBtn) {
+          closeBtn.addEventListener("click", toggleMenu);
+        } else {
+          console.error("Botão de fechar o menu não encontrado.");
+        }
+        const logoutBtn = document.getElementById("logoutButton");
+        if (logoutBtn) {
+          logoutBtn.addEventListener("click", handleLogout);
+        } else {
+          console.error("Botão de logout não encontrado.");
+        }
+        const profileForm = document.getElementById("profileForm");
+        if (profileForm) {
+          profileForm.addEventListener("submit", handleSaveProfile);
+        }
+        const saveStatusMessage = document.getElementById("saveStatusMessage");
+        if (saveStatusMessage) saveStatusMessage.innerText = "";
+      });
+    </script>
 
-  <style>
-    :root {
-      --color-primary: #0033A0; /* Azul */
-      --color-secondary: #C8102E; /* Vermelho */
-      --color-light: #ffffff;     /* Branco */
-      --color-dark: #333;
-    }
-    /* Reset e estilos globais */
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-      font-family: Arial, sans-serif;
-    }
-    body {
-      background: var(--color-light);
-      line-height: 1.6;
-      color: var(--color-dark);
-    }
-    .container {
-      max-width: 800px;
-      margin: 100px auto 20px auto;
-      padding: 20px;
-      background: #fff;
-      border-radius: 8px;
-      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-    }
-    /* Cabeçalho Único (Menu, Logo e Logout) */
-    header {
-      background: var(--color-light);
-      padding: 15px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      border-bottom: 1px solid #ddd;
-      z-index: 10;
-    }
-    .menu-icon {
-      font-size: 28px;
-      color: var(--color-primary);
-      cursor: pointer;
-      position: absolute;
-      left: 15px;
-      top: 50%;
-      transform: translateY(-50%);
-    }
-    .logo {
-      max-width: 120px;
-      height: auto;
-      display: block;
-    }
-    #logoutButton {
-      position: absolute;
-      right: 15px;
-      top: 50%;
-      transform: translateY(-50%);
-      background-color: var(--color-secondary);
-      color: var(--color-light);
-      border: none;
-      padding: 10px 15px;
-      border-radius: 5px;
-      cursor: pointer;
-      display: none;
-      font-weight: bold;
-      transition: background-color 0.2s;
-    }
-    #logoutButton:hover {
-      background-color: #a01d2d;
-    }
-    /* Popup do Menu */
-    .menu-popup {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 250px;
-      height: 100vh;
-      background: var(--color-primary);
-      box-shadow: 2px 0 5px rgba(0,0,0,0.3);
-      transform: translateX(-100%);
-      transition: transform 0.3s ease-in-out;
-      display: flex;
-      flex-direction: column;
-      padding: 20px;
-      z-index: 1000;
-    }
-    .menu-popup a {
-      color: var(--color-light);
-      font-size: 1.2em;
-      text-decoration: none;
-      padding: 12px;
-      display: block;
-      transition: background 0.2s;
-    }
-    .menu-popup a:hover {
-      background: rgba(255,255,255,0.2);
-    }
-    .menu-popup a.profile {
-      font-weight: bold;
-    }
-    .close-menu {
-      font-size: 26px;
-      color: var(--color-light);
-      cursor: pointer;
-      margin-bottom: 20px;
-      align-self: flex-end;
-    }
-    .menu-open {
-      transform: translateX(0);
-    }
-    /* Profile Content Styling */
-    .container h2 {
-      text-align: center;
-      margin-bottom: 20px;
-      color: var(--color-primary);
-    }
-    .profile-section {
-      margin-bottom: 20px;
-      padding: 15px;
-      border: 1px solid #eee;
-      border-radius: 5px;
-      background-color: #f9f9f9;
-    }
-    .profile-section h3 {
-      color: var(--color-secondary);
-      margin-top: 0;
-      margin-bottom: 10px;
-      border-bottom: 1px solid #ddd;
-      padding-bottom: 5px;
-    }
-    .form-group {
-      margin-bottom: 15px;
-    }
-    .form-group label {
-      display: block;
-      margin-bottom: 5px;
-      font-weight: bold;
-      color: var(--color-primary);
-    }
-    .form-group input[type="text"],
-    .form-group input[type="email"],
-    .form-group input[type="tel"] {
-      width: 100%;
-      padding: 10px;
-      border: 1px solid #ccc;
-      border-radius: 4px;
-      font-size: 1em;
-    }
-    button {
-      background-color: var(--color-secondary);
-      color: var(--color-light);
-      border: none;
-      padding: 10px 15px;
-      border-radius: 5px;
-      cursor: pointer;
-      font-size: 1em;
-      font-weight: bold;
-      transition: background-color 0.2s;
-      margin-top: 10px;
-    }
-    button:hover:not(:disabled) {
-      background-color: #a01d2d;
-    }
-    button:disabled {
-      background-color: #cccccc;
-      cursor: not-allowed;
-    }
-    #recaptcha-container {
-      margin: 20px auto;
-      width: 304px;
-      display: none;
-    }
-    #phoneStatusMessage, #saveStatusMessage {
-      margin-top: 10px;
-      font-weight: bold;
-    }
-    /* Footer */
-    footer {
-      background: var(--color-secondary);
-      color: var(--color-light);
-      text-align: center;
-      padding: 20px 0;
-      margin-top: auto;
-      width: 100%;
-    }
-    footer p {
-      font-size: 0.9em;
-    }
-    .whatsapp-float {
-      position: fixed;
-      bottom: 20px;
-      right: 20px;
-      background: #25D366;
-      color: var(--color-light);
-      border-radius: 50%;
-      width: 60px;
-      height: 60px;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      font-size: 30px;
-      z-index: 1000;
-      box-shadow: 2px 2px 3px rgba(0,0,0,0.3);
-    }
-    .whatsapp-float i {
-      font-size: 30px;
-    }
-    @media (max-width: 768px) {
-      .menu-icon {
-        font-size: 24px;
+    <style>
+      :root {
+        --color-primary: #0033A0; /* Azul */
+        --color-secondary: #C8102E; /* Vermelho */
+        --color-light: #ffffff;     /* Branco */
+        --color-dark: #333;
       }
-      .logo {
-        max-width: 100px;
+      /* Reset e estilos globais */
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+        font-family: Arial, sans-serif;
+      }
+      body {
+        background: var(--color-light);
+        line-height: 1.6;
+        color: var(--color-dark);
       }
       .container {
-        margin-top: 70px;
-        padding: 15px;
+        max-width: 800px;
+        margin: 100px auto 20px auto;
+        padding: 20px;
+        background: #fff;
+        border-radius: 8px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
       }
-      #recaptcha-container {
+      /* Cabeçalho Único (Menu, Logo e Logout) */
+      header {
+        background: var(--color-light);
+        padding: 15px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        position: fixed;
+        top: 0;
+        left: 0;
         width: 100%;
+        border-bottom: 1px solid #ddd;
+        z-index: 10;
+      }
+      .menu-icon {
+        font-size: 28px;
+        color: var(--color-primary);
+        cursor: pointer;
+        position: absolute;
+        left: 15px;
+        top: 50%;
+        transform: translateY(-50%);
+      }
+      .logo {
+        max-width: 120px;
+        height: auto;
+        display: block;
+      }
+      #logoutButton {
+        position: absolute;
+        right: 15px;
+        top: 50%;
+        transform: translateY(-50%);
+        background-color: var(--color-secondary);
+        color: var(--color-light);
+        border: none;
+        padding: 10px 15px;
+        border-radius: 5px;
+        cursor: pointer;
+        display: none;
+        font-weight: bold;
+        transition: background-color 0.2s;
+      }
+      #logoutButton:hover {
+        background-color: #a01d2d;
+      }
+      /* Popup do Menu */
+      .menu-popup {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 250px;
+        height: 100vh;
+        background: var(--color-primary);
+        box-shadow: 2px 0 5px rgba(0, 0, 0, 0.3);
+        transform: translateX(-100%);
+        transition: transform 0.3s ease-in-out;
+        display: flex;
+        flex-direction: column;
+        padding: 20px;
+        z-index: 1000;
+      }
+      .menu-popup a {
+        color: var(--color-light);
+        font-size: 1.2em;
+        text-decoration: none;
+        padding: 12px;
+        display: block;
+        transition: background 0.2s;
+      }
+      .menu-popup a:hover {
+        background: rgba(255, 255, 255, 0.2);
+      }
+      .menu-popup a.profile {
+        font-weight: bold;
+      }
+      .close-menu {
+        font-size: 26px;
+        color: var(--color-light);
+        cursor: pointer;
+        margin-bottom: 20px;
+        align-self: flex-end;
+      }
+      .menu-open {
+        transform: translateX(0);
+      }
+      /* Profile Content Styling */
+      .container h2 {
+        text-align: center;
+        margin-bottom: 20px;
+        color: var(--color-primary);
+      }
+      .profile-section {
+        margin-bottom: 20px;
+        padding: 15px;
+        border: 1px solid #eee;
+        border-radius: 5px;
+        background-color: #f9f9f9;
+      }
+      .profile-section h3 {
+        color: var(--color-secondary);
+        margin-top: 0;
+        margin-bottom: 10px;
+        border-bottom: 1px solid #ddd;
+        padding-bottom: 5px;
+      }
+      .form-group {
+        margin-bottom: 15px;
+      }
+      .form-group label {
+        display: block;
+        margin-bottom: 5px;
+        font-weight: bold;
+        color: var(--color-primary);
+      }
+      .form-group input[type="text"],
+      .form-group input[type="email"],
+      .form-group input[type="tel"] {
+        width: 100%;
+        padding: 10px;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+        font-size: 1em;
+      }
+      button {
+        background-color: var(--color-secondary);
+        color: var(--color-light);
+        border: none;
+        padding: 10px 15px;
+        border-radius: 5px;
+        cursor: pointer;
+        font-size: 1em;
+        font-weight: bold;
+        transition: background-color 0.2s;
+        margin-top: 10px;
+      }
+      button:hover:not(:disabled) {
+        background-color: #a01d2d;
+      }
+      button:disabled {
+        background-color: #cccccc;
+        cursor: not-allowed;
+      }
+      /* Container para modo edição */
+      #profileFormContainer {
+        margin-bottom: 15px;
+      }
+      /* Container para exibição dos dados (modo leitura) */
+      #profileDisplay {
+        margin-top: 15px;
+        padding: 10px;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+        background-color: #eef;
+      }
+      /* Footer */
+      footer {
+        background: var(--color-secondary);
+        color: var(--color-light);
+        text-align: center;
+        padding: 20px 0;
+        margin-top: auto;
+        width: 100%;
+      }
+      footer p {
+        font-size: 0.9em;
+      }
+      .whatsapp-float {
+        position: fixed;
+        bottom: 20px;
+        right: 20px;
+        background: #25D366;
+        color: var(--color-light);
+        border-radius: 50%;
+        width: 60px;
+        height: 60px;
         display: flex;
         justify-content: center;
+        align-items: center;
+        font-size: 30px;
+        z-index: 1000;
+        box-shadow: 2px 2px 3px rgba(0, 0, 0, 0.3);
       }
-    }
-  </style>
-</head>
-<body>
-  <!-- Cabeçalho Único (Menu, Logo e Logout) -->
-  <header>
-    <div class="container-header">
-      <i class="fas fa-bars menu-icon"></i>
-      <img src="https://raw.githubusercontent.com/Swifthubcatalao/br/main/imagens/logo.png" alt="Logo Swift Hub Catalão" class="logo">
-      <button id="logoutButton">Sair</button>
-    </div>
-  </header>
-
-  <!-- Popup do Menu -->
-  <div id="menuPopup" class="menu-popup">
-    <span class="close-menu">&times;</span>
-    <a href="index.html">Início</a>
-    <a href="perfil.html" class="profile">Meu Perfil</a>
-    <a href="login.html">Login</a>
-  </div>
-
-  <!-- Conteúdo do Perfil -->
-  <main class="container">
-    <h2>Meu Perfil</h2>
-
-    <div class="profile-section">
-      <h3>Informações de Conta</h3>
-      <div class="form-group">
-        <label for="userEmail">Email:</label>
-        <input type="email" id="userEmail" value="carregando..." disabled>
+      .whatsapp-float i {
+        font-size: 30px;
+      }
+      @media (max-width: 768px) {
+        .menu-icon {
+          font-size: 24px;
+        }
+        .logo {
+          max-width: 100px;
+        }
+        .container {
+          margin-top: 70px;
+          padding: 15px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <!-- Cabeçalho Único (Menu, Logo e Logout) -->
+    <header>
+      <div class="container-header">
+        <i class="fas fa-bars menu-icon"></i>
+        <img
+          src="https://raw.githubusercontent.com/Swifthubcatalao/br/main/imagens/logo.png"
+          alt="Logo Swift Hub Catalão"
+          class="logo"
+        />
+        <button id="logoutButton">Sair</button>
       </div>
+    </header>
+
+    <!-- Popup do Menu -->
+    <div id="menuPopup" class="menu-popup">
+      <span class="close-menu">&times;</span>
+      <a href="index.html">Início</a>
+      <a href="perfil.html" class="profile">Meu Perfil</a>
+      <a href="login.html">Login</a>
     </div>
 
-    <div class="profile-section">
-      <h3>Telefone</h3>
-      <p id="phoneVerificationStatus">Carregando status do telefone...</p>
-      <p id="phoneStatusMessage" style="font-size: 0.9em;"></p>
+    <!-- Conteúdo do Perfil -->
+    <main class="container">
+      <h2>Meu Perfil</h2>
 
-      <form id="sendCodeForm">
-        <div id="sendCodeSection">
-          <div class="form-group">
-            <label for="userPhone">Número de Telefone (Digite sem o código):</label>
-            <input type="tel" id="userPhone" required placeholder="Ex: 62981234567">
-          </div>
-          <div id="recaptcha-container"></div>
-          <button type="submit" id="sendCodeButton">Enviar Código</button>
-        </div>
-      </form>
-
-      <form id="verifyCodeForm" style="display: none;">
-        <div id="verifyCodeSection">
-          <div class="form-group">
-            <label for="verificationCode">Código de Verificação:</label>
-            <input type="text" id="verificationCode" required placeholder="Digite o código recebido por SMS">
-          </div>
-          <button type="submit" id="verifyCodeButton">Verificar Código</button>
-        </div>
-      </form>
-    </div>
-
-    <div class="profile-section">
-      <h3>Dados Pessoais</h3>
-      <form id="profileForm">
+      <!-- Seção de Informações de Conta -->
+      <div class="profile-section">
+        <h3>Informações de Conta</h3>
         <div class="form-group">
-          <label for="userName">Nome Completo:</label>
-          <input type="text" id="userName" placeholder="Seu nome completo">
+          <label for="userEmail">Email:</label>
+          <input type="email" id="userEmail" value="carregando..." disabled />
         </div>
-        <div class="form-group">
-          <label for="userAddress">Endereço:</label>
-          <input type="text" id="userAddress" placeholder="Seu endereço completo">
+      </div>
+
+      <!-- Seção de Dados Pessoais -->
+      <div class="profile-section">
+        <h3>Dados Pessoais</h3>
+        <!-- Container do formulário de edição -->
+        <div id="profileFormContainer">
+          <form id="profileForm">
+            <div class="form-group">
+              <label for="userName">Nome Completo:</label>
+              <input type="text" id="userName" placeholder="Seu nome completo" />
+            </div>
+            <div class="form-group">
+              <label for="userAddress">Endereço:</label>
+              <input type="text" id="userAddress" placeholder="Seu endereço completo" />
+            </div>
+            <div class="form-group">
+              <label for="userPhoneInput">Número de Telefone:</label>
+              <input type="tel" id="userPhoneInput" placeholder="Seu número de telefone" />
+            </div>
+            <p id="saveStatusMessage" style="font-size: 0.9em;"></p>
+            <button type="submit" id="saveProfileButton">Salvar Perfil</button>
+          </form>
         </div>
-        <p id="saveStatusMessage" style="font-size: 0.9em;"></p>
-        <button type="submit" id="saveProfileButton">Salvar Perfil</button>
-      </form>
-    </div>
-  </main>
+        <!-- Container para exibição dos dados salvos (modo leitura) -->
+        <div id="profileDisplay" style="display: none;"></div>
+      </div>
+    </main>
 
-  <footer>
-    <div class="container-footer">
-      <p>&copy; 2025 Swift Hub Catalão. Todos os direitos reservados.</p>
-    </div>
-  </footer>
+    <footer>
+      <div class="container-footer">
+        <p>&copy; 2025 Swift Hub Catalão. Todos os direitos reservados.</p>
+      </div>
+    </footer>
 
-  <a href="https://wa.me/64981226078" class="whatsapp-float" target="_blank">
-    <i class="fab fa-whatsapp"></i>
-  </a>
+    <a href="https://wa.me/64981226078" class="whatsapp-float" target="_blank">
+      <i class="fab fa-whatsapp"></i>
+    </a>
 
-  <script type="module">
-    // Os event listeners e inicializações permanecem inalterados
-  </script>
-</body>
+    <script type="module">
+      // Os event listeners e inicializações permanecem inalterados em relação ao menu, logout, etc.
+      // Função para salvar os dados pessoais (nome, endereço e telefone)
+      async function handleSaveProfile(event) {
+        event.preventDefault();
+        const user = auth.currentUser;
+        if (!user) {
+          alert("Você precisa estar logado para salvar o perfil.");
+          return;
+        }
+        const name = document.getElementById("userName").value.trim();
+        const address = document.getElementById("userAddress").value.trim();
+        const phone = document.getElementById("userPhoneInput").value.trim();
+        const saveButton = document.getElementById("saveProfileButton");
+        const saveStatusMessage = document.getElementById("saveStatusMessage");
+
+        saveButton.disabled = true;
+        saveStatusMessage.innerText = "Salvando...";
+        saveStatusMessage.style.color = "blue";
+
+        try {
+          const userDocRef = doc(db, "users", user.uid);
+          await setDoc(userDocRef, { name, address, phone }, { merge: true });
+          saveStatusMessage.innerText = "Perfil salvo com sucesso!";
+          saveStatusMessage.style.color = "green";
+          console.log("Perfil salvo com sucesso!");
+          // Atualiza a exibição dos dados salvos (modo leitura)
+          updateProfileDisplay({
+            email: user.email,
+            name: name,
+            address: address,
+            phone: phone,
+          });
+        } catch (error) {
+          console.error("Erro ao salvar perfil:", error);
+          saveStatusMessage.innerText = "Erro ao salvar perfil: " + error.message;
+          saveStatusMessage.style.color = "red";
+        } finally {
+          saveButton.disabled = false;
+        }
+      }
+
+      // Função para alternar o popup do menu
+      function toggleMenu() {
+        const menuPopup = document.getElementById("menuPopup");
+        if (menuPopup) {
+          menuPopup.classList.toggle("menu-open");
+        } else {
+          console.error("Popup do menu não encontrado.");
+        }
+      }
+
+      // Função para realizar o logout
+      function handleLogout() {
+        signOut(auth)
+          .then(() => {
+            console.log("Usuário desconectado.");
+          })
+          .catch((error) => {
+            console.error("Erro ao desconectar:", error);
+            alert("Erro ao fazer logout: " + error.message);
+          });
+      }
+
+      // Configuração dos event listeners
+      document.addEventListener("DOMContentLoaded", function () {
+        const menuIcon = document.querySelector(".menu-icon");
+        if (menuIcon) {
+          menuIcon.addEventListener("click", toggleMenu);
+        } else {
+          console.error("Ícone do menu não encontrado.");
+        }
+        const closeBtn = document.querySelector(".close-menu");
+        if (closeBtn) {
+          closeBtn.addEventListener("click", toggleMenu);
+        } else {
+          console.error("Botão de fechar o menu não encontrado.");
+        }
+        const logoutBtn = document.getElementById("logoutButton");
+        if (logoutBtn) {
+          logoutBtn.addEventListener("click", handleLogout);
+        } else {
+          console.error("Botão de logout não encontrado.");
+        }
+        const profileForm = document.getElementById("profileForm");
+        if (profileForm) {
+          profileForm.addEventListener("submit", handleSaveProfile);
+        }
+        const saveStatusMessage = document.getElementById("saveStatusMessage");
+        if (saveStatusMessage) saveStatusMessage.innerText = "";
+      });
+    </script>
+  </body>
 </html>
