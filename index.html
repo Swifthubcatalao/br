@@ -5,7 +5,7 @@
   <meta name="description" content="Swift Hub Catalão - Início">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Swift Hub Catalão - Início</title>
-  <!-- Font Awesome para o ícone do WhatsApp -->
+  <!-- Font Awesome para ícones -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.0/css/all.min.css">
   <!-- Firebase SDK -->
   <script src="https://www.gstatic.com/firebasejs/9.6.8/firebase-app.js"></script>
@@ -31,7 +31,7 @@
     }
     nav {
       background: #f8f8f8;
-      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
     }
     nav ul {
       display: flex;
@@ -90,9 +90,8 @@
 </head>
 <body>
 
-  <!-- Verificação de login com Firebase Authentication -->
+  <!-- Configuração do Firebase e verificação de login -->
   <script>
-    // Configuração do Firebase
     const firebaseConfig = {
       apiKey: "AIzaSyDGBKxvfcY-PA_vC7SA8G0f-TjqjK3OD3o",
       authDomain: "swifthubcatalao.firebaseapp.com",
@@ -105,26 +104,26 @@
     firebase.initializeApp(firebaseConfig);
     const auth = firebase.auth();
 
-    // Verifica se o usuário está logado; se não, redireciona para login.html
-    firebase.auth().onAuthStateChanged((user) => {
-      if (!user) {
+    // Verifica se o usuário está logado antes de permitir o acesso
+    auth.onAuthStateChanged((user) => {
+      if (!user && window.location.pathname !== "/login.html") {
         window.location.href = "login.html";
       }
     });
 
     // Logout
-    function logout() {
+    document.getElementById("logoutButton").addEventListener("click", function() {
       auth.signOut().then(() => {
         window.location.href = "login.html";
-      });
-    }
+      }).catch(error => alert("Erro ao sair: " + error.message));
+    });
   </script>
 
   <header>
     <div class="container">
       <h1>Swift Hub Catalão</h1>
       <p>Conectando você aos melhores profissionais</p>
-      <button id="logoutButton" onclick="logout()">Sair</button>
+      <button id="logoutButton">Sair</button>
     </div>
   </header>
   
@@ -133,6 +132,7 @@
       <ul>
         <li><a href="index.html">Início</a></li>
         <li><a href="servicos.html">Serviços</a></li>
+        <li><a href="login.html">Login</a></li>
       </ul>
     </div>
   </nav>
