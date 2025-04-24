@@ -75,7 +75,7 @@
       padding: 10px 15px;
       border-radius: 5px;
       cursor: pointer;
-      display: none;
+      display: none; /* Inicialmente oculto; será exibido se o usuário estiver autenticado */
     }
     
     /* Popup Lateral do Menu */
@@ -180,7 +180,7 @@
       color: #555;
     }
     
-    /* Botão "Agendar" */
+    /* Botão "Agendar" que abre o popup */
     .agendar-button {
       background: var(--color-secondary);
       color: var(--color-light);
@@ -460,7 +460,7 @@
   <div id="popupOverlay">
     <div id="popupForm">
       <span id="closePopup" class="close-icon">&times;</span>
-      <!-- Exibe o nome do serviço no topo do popup -->
+      <!-- Título do Popup com o Nome do Serviço -->
       <h2 id="popupServiceTitle"></h2>
       <form id="appointmentForm">
         <!-- Campo oculto para o nome do serviço -->
@@ -482,43 +482,96 @@
     </div>
   </div>
   
-  <!-- Script: Integração Firebase, gerenciamento do menu e Popup -->
+  <!-- Scripts: Firebase, Logout, Menu, e Popup (Todos colocados ao final para garantir que o DOM exista) -->
   <script type="module">
-    // Para que funções e variáveis sejam acessíveis globalmente, anexamos-as ao objeto window.
-    window.currentProfile = window.currentProfile || {};
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.5.0/firebase-app.js";
+    import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.5.0/firebase-auth.js";
+    import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.5.0/firebase-firestore.js";
     
-    // A função onAuthStateChanged e a obtenção do perfil foram definidas no script do head; aqui garantimos que 'window.currentProfile' continue disponível.
+    const firebaseConfig = { 
+      apiKey: "AIzaSyDGBKxvfcY-PA_vC7SA8G0f-TjqjK3OD3o",
+      authDomain: "swifthubcatalao.firebaseapp.com",
+      projectId: "swifthubcatalao", 
+      storageBucket: "swifthubcatalao.firebasestorage.app",
+      messagingSenderId: "756803145076",
+      appId: "1:756803145076:web:4593bd78a26a2270a1f021"
+    };
     
-    // Popup de Agendamento
-    document.addEventListener("DOMContentLoaded", () => {
-      // Fecha o popup quando o ícone de fechamento for clicado
-      document.getElementById("closePopup").addEventListener("click", () => {
-        document.getElementById("popupOverlay").style.display = "none";
-      });
-  
-      // Manipula o envio do formulário de agendamento
-      document.getElementById("appointmentForm").addEventListener("submit", (e) => {
-        e.preventDefault();
-        const service = document.getElementById("serviceName").value;
-        const clientName = document.getElementById("clientName").value;
-        const clientPhone = document.getElementById("clientPhone").value;
-        const description = document.getElementById("description").value;
-        const message = `Olá, gostaria de agendar o serviço de ${service}. Meu nome é ${clientName} e meu telefone é ${clientPhone}. Descrição: ${description}`;
-        const encodedMessage = encodeURIComponent(message);
-        const waNumber = "64981226078";
-        window.open(`https://wa.me/${waNumber}?text=${encodedMessage}`, '_blank');
-        // Fecha o popup após envio
-        document.getElementById("popupOverlay").style.display = "none";
-      });
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
+    
+    // Atualiza a variável global de perfil
+    window.currentProfile = {};
+    
+    onAuthStateChanged(auth, user => {
+      if (!user) {
+        window.location.href = "login.html";
+      } else {
+        const logoutBtn = document.getElementById("logoutButton");
+        if (logoutBtn) {
+          logoutBtn.style.display = "block";
+        }
+        const userDocRef = doc(db, "users", user.uid);
+        getDoc(userDocRef)
+          .then(docSnap => {
+            if (docSnap.exists()) {
+              window.currentProfile = docSnap.data();
+            }
+          })
+          .catch(error => {
+            console.error("Erro ao buscar perfil:", error);
+          });
+      }
     });
     
-    // Função para abrir o popup e pré-preencher os dados (e exibir o nome do serviço)
+    // Logout
+    document.getElementById("logoutButton").addEventListener("click", () => {
+      signOut(auth).then(() => window.location.href = "login.html");
+    });
+    
+    // Menu lateral: função e event listeners
+    function toggleMenu() {
+      const menuPopup = document.getElementById("menuPopup");
+      if (menuPopup) {
+        menuPopup.classList.toggle("menu-open");
+      } else {
+        console.error("Popup do menu não encontrado.");
+      }
+    }
+    const menuIcon = document.querySelector(".menu-icon");
+    if (menuIcon) {
+      menuIcon.addEventListener("click", toggleMenu);
+    }
+    const closeBtn = document.querySelector(".close-menu");
+    if (closeBtn) {
+      closeBtn.addEventListener("click", toggleMenu);
+    }
+    
+    // Popup: fechar o modal
+    document.getElementById("closePopup").addEventListener("click", () => {
+      document.getElementById("popupOverlay").style.display = "none";
+    });
+    
+    // Envio do formulário de agendamento
+    document.getElementById("appointmentForm").addEventListener("submit", (e) => {
+      e.preventDefault();
+      const service = document.getElementById("serviceName").value;
+      const clientName = document.getElementById("clientName").value;
+      const clientPhone = document.getElementById("clientPhone").value;
+      const description = document.getElementById("description").value;
+      const message = `Olá, gostaria de agendar o serviço de ${service}. Meu nome é ${clientName} e meu telefone é ${clientPhone}. Descrição: ${description}`;
+      const encodedMessage = encodeURIComponent(message);
+      const waNumber = "64981226078";
+      window.open(`https://wa.me/${waNumber}?text=${encodedMessage}`, '_blank');
+      document.getElementById("popupOverlay").style.display = "none";
+    });
+    
+    // Função global para abrir o popup e pré-preencher os campos
     window.openPopup = function(service) {
-      // Define o serviço para os campos oculto e título do popup
       document.getElementById("serviceName").value = service;
       document.getElementById("popupServiceTitle").innerText = "Agendar: " + service;
       
-      // Se os dados do perfil já foram carregados, pré-preenche os campos de nome e telefone
       if (window.currentProfile && window.currentProfile.name) {
         document.getElementById("clientName").value = window.currentProfile.name;
         document.getElementById("clientPhone").value = window.currentProfile.phone || "";
@@ -526,10 +579,9 @@
         document.getElementById("clientName").value = "";
         document.getElementById("clientPhone").value = "";
       }
-      // Limpa o campo de descrição
       document.getElementById("description").value = "";
-      // Exibe o popup
       document.getElementById("popupOverlay").style.display = "block";
     }
   </script>
+</body>
 </html>
