@@ -155,7 +155,7 @@
             if (!user.emailVerified) {
               sendEmailVerification(user)
                 .then(() => {
-                  alert("Seu email não foi verificado. Um email de verificação foi enviado. Confira sua caixa de entrada.");
+                  showPopup("Seu email não foi verificado. Um email de verificação foi enviado. Confira sua caixa de entrada.");
                   const btn = document.getElementById("resendButton");
                   btn.style.display = "inline-block";
                   btn.innerText = "Enviado";
@@ -163,7 +163,7 @@
                     startCountdown(15);
                   }, 1000);
                 })
-                .catch(error => alert("Erro ao enviar email de verificação: " + error.message));
+                .catch(error => showPopup("Erro ao enviar email de verificação: " + error.message));
               // Don't redirect, keep user on login page to verify
               // signOut(auth); // Don't sign out immediately, keep user state to handle verification
               return;
@@ -172,7 +172,7 @@
             window.location.replace("index.html");
           });
         })
-        .catch(error => alert("Erro ao fazer login: " + error.message));
+        .catch(error => showPopup("Erro ao fazer login: " + error.message));
     }
 
     function handleRegister(e) {
@@ -183,26 +183,25 @@
         .then(userCredential => {
           const user = userCredential.user;
           sendEmailVerification(user)
-            .then(() => {
-              alert("Conta criada com sucesso! Um email de verificação foi enviado. Confirme seu email para fazer login.");
-              document.getElementById("registerMessage").innerText = "Conta criada com sucesso! Verifique seu email para confirmar e fazer login.";
-              // Optional: Redirect to login form after successful registration
-              // toggleForm();
-            })
-            .catch(error => alert("Erro ao enviar email de verificação: " + error.message));
-        })
-        .catch(error => alert("Erro ao criar conta: " + error.message));
+  .then(() => {
+    showPopup("Conta criada com sucesso! Verifique seu email para fazer login.", "#28a745", "✅");
+    document.getElementById("registerMessage").innerText = "Conta criada com sucesso! Verifique seu email para confirmar e fazer login.";
+  })
+  .catch(error => {
+    showPopup("Erro ao enviar email de verificação: " + error.message, "#C8102E", "❌");
+  });
+        .catch(error => showPopup("Erro ao criar conta: " + error.message));
     }
 
     function handleForgotPassword() {
       const email = document.getElementById("loginEmail").value;
       if (!email) {
-        alert("Digite seu email para redefinir a senha.");
+        showPopup("Digite seu email para redefinir a senha.");
         return;
       }
       sendPasswordResetEmail(auth, email)
-        .then(() => alert("Email de recuperação enviado!"))
-        .catch(error => alert("Erro ao enviar email: " + error.message));
+        .then(() => showPopup("Email de recuperação enviado!"))
+        .catch(error => showPopup("Erro ao enviar email: " + error.message));
     }
 
     function handleResendVerification() {
@@ -218,14 +217,14 @@
                            startCountdown(15);
                        }, 1000);
                    })
-                   .catch(error => alert("Erro ao reenviar email: " + error.message));
+                   .catch(error => showPopup("Erro ao reenviar email: " + error.message));
            } else {
-               alert("Seu email já está verificado. Faça login normalmente.");
+               showPopup("Seu email já está verificado. Faça login normalmente.");
                // Optional: Redirect to index if already verified
                // window.location.replace("index.html");
            }
        } else {
-           alert("Nenhum usuário logado. Por favor, faça login primeiro.");
+           showPopup("Nenhum usuário logado. Por favor, faça login primeiro.");
            // Optional: Ensure the login form is visible
            // document.getElementById("loginFormContainer").style.display = "block";
            // document.getElementById("registerFormContainer").style.display = "none";
