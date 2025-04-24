@@ -182,15 +182,15 @@
       createUserWithEmailAndPassword(auth, email, password)
         .then(userCredential => {
           const user = userCredential.user;
-          sendEmailVerification(user)
-            .then(() => {
-              alert("Conta criada com sucesso! Um email de verificação foi enviado. Confirme seu email para fazer login.");
-              document.getElementById("registerMessage").innerText = "Conta criada com sucesso! Verifique seu email para confirmar e fazer login.";
-              // Optional: Redirect to login form after successful registration
-              // toggleForm();
-            })
-            .catch(error => alert("Erro ao enviar email de verificação: " + error.message));
-        })
+         sendEmailVerification(user)
+  .then(() => {
+    showPopup("Conta criada com sucesso! Verifique seu email para fazer login.", "#28a745", "✅");
+    document.getElementById("registerMessage").innerText = "Conta criada com sucesso! Verifique seu email para confirmar e fazer login.";
+  })
+  .catch(error => {
+    showPopup("Erro ao enviar email de verificação: " + error.message, "#C8102E", "❌");
+  });
+
         .catch(error => alert("Erro ao criar conta: " + error.message));
     }
 
