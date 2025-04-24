@@ -176,23 +176,26 @@
     }
 
     function handleRegister(e) {
-      e.preventDefault();
-      const email = document.getElementById("registerEmail").value;
-      const password = document.getElementById("registerPassword").value;
-      createUserWithEmailAndPassword(auth, email, password)
-        .then(userCredential => {
-          const user = userCredential.user;
-         sendEmailVerification(user)
-  .then(() => {
-    showPopup("Conta criada com sucesso! Verifique seu email para fazer login.", "#28a745", "✅");
-    document.getElementById("registerMessage").innerText = "Conta criada com sucesso! Verifique seu email para confirmar e fazer login.";
-  })
-  .catch(error => {
-    showPopup("Erro ao enviar email de verificação: " + error.message, "#C8102E", "❌");
-  });
+  e.preventDefault();
+  const email = document.getElementById("registerEmail").value;
+  const password = document.getElementById("registerPassword").value;
+  createUserWithEmailAndPassword(auth, email, password)
+    .then(userCredential => {
+      const user = userCredential.user;
+      sendEmailVerification(user)
+        .then(() => {
+          showPopup("Conta criada com sucesso! Verifique seu email para fazer login.", "#28a745", "✅");
+          document.getElementById("registerMessage").innerText = "Conta criada com sucesso! Verifique seu email para confirmar e fazer login.";
+        })
+        .catch(error => {
+          showPopup("Erro ao enviar email de verificação: " + error.message, "#C8102E", "❌");
+        });
+    })
+    .catch(error => {
+      showPopup("Erro ao criar conta: " + error.message, "#C8102E", "❌");
+    });
+}
 
-        .catch(error => alert("Erro ao criar conta: " + error.message));
-    }
 
     function handleForgotPassword() {
       const email = document.getElementById("loginEmail").value;
