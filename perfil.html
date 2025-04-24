@@ -16,9 +16,18 @@
     <script type="module">
       // Importações do Firebase
       import { initializeApp } from "https://www.gstatic.com/firebasejs/10.5.0/firebase-app.js";
-      import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.5.0/firebase-auth.js";
-      import { getFirestore, doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.5.0/firebase-firestore.js";
-
+      import {
+        getAuth,
+        onAuthStateChanged,
+        signOut
+      } from "https://www.gstatic.com/firebasejs/10.5.0/firebase-auth.js";
+      import {
+        getFirestore,
+        doc,
+        getDoc,
+        setDoc
+      } from "https://www.gstatic.com/firebasejs/10.5.0/firebase-firestore.js";
+      
       // Configuração do Firebase – substitua pelos seus dados reais
       const firebaseConfig = {
         apiKey: "AIzaSyDGBKxvfcY-PA_vC7SA8G0f-TjqjK3OD3o",
@@ -31,7 +40,7 @@
 
       const app = initializeApp(firebaseConfig);
       const auth = getAuth(app);
-      // Se estiver testando localmente, use a linha abaixo para desativar a verificação (NÃO use em produção)
+      // Para testes locais (não use em produção)
       auth.settings && (auth.settings.appVerificationDisabledForTesting = true);
       const db = getFirestore(app);
 
@@ -69,70 +78,68 @@
       /* --- End Inactivity Logout Logic --- */
 
       // Função para salvar (ou atualizar) os dados do perfil no Firestore
+      // Agora, se o documento já existir, NÃO sobrescrevemos os campos que o usuário já preencheu.
       async function saveUserProfile(user) {
         const userDocRef = doc(db, "users", user.uid);
         try {
-          await setDoc(
-            userDocRef,
-            {
-              email: user.email || "",
-              // Se existir displayName vindo do login, pode ser usado; caso contrário, fica em branco
-              name: user.displayName || "",
-              // Atualizaremos o telefone aqui via formulário
-              phone: "",
-              address: ""
-            },
-            { merge: true }
-          );
-          console.log("Perfil salvo/atualizado no Firestore!");
+          const userDocSnap = await getDoc(userDocRef);
+          if (!userDocSnap.exists()) {
+            // Se não existir, cria o documento com o email do usuário
+            await setDoc(userDocRef, {
+              email: user.email || ""
+            });
+            console.log("Documento do usuário criado.");
+          } else {
+            // Se já existir, atualize somente o email (não sobrescrevendo nome, telefone ou endereço)
+            await setDoc(userDocRef, {
+              email: user.email || ""
+            }, { merge: true });
+            console.log("Documento do usuário atualizado.");
+          }
         } catch (e) {
           console.error("Erro ao salvar perfil:", e);
         }
       }
 
-      // Função que atualiza o container de exibição dos dados salvos (modo leitura)
+      // Função que atualiza o container de exibição (modo leitura) dos dados
       function updateProfileDisplay(userData) {
         const displayContainer = document.getElementById("profileDisplay");
         displayContainer.innerHTML = `
           <p><strong>Email:</strong> ${userData.email || "Não definido"}</p>
-          <p><strong>Número de Telefone:</strong> ${userData.phone || "Não definido"}</p>
+          <p><strong>Telefone:</strong> ${userData.phone || "Não definido"}</p>
           <p><strong>Nome:</strong> ${userData.name || "Não preenchido"}</p>
           <p><strong>Endereço:</strong> ${userData.address || "Não preenchido"}</p>
           <button id="editProfileButton">Editar</button>
         `;
         displayContainer.style.display = "block";
-
-        // Oculta o container do formulário de edição
+        // Oculta o formulário de edição
         const formContainer = document.getElementById("profileFormContainer");
         if (formContainer) {
           formContainer.style.display = "none";
         }
-
-        // Adiciona listener para o botão "Editar"
+        // Listener para o botão "Editar"
         const editBtn = document.getElementById("editProfileButton");
         if (editBtn) {
           editBtn.addEventListener("click", () => {
-            // Mostra o formulário de edição e oculta a exibição
             document.getElementById("profileFormContainer").style.display = "block";
             displayContainer.style.display = "none";
           });
         }
       }
-
-      // Função para preencher os dados do perfil no formulário (modo edição)
+      
+      // Função para preencher os campos do formulário com os dados salvos
       async function displayUserProfile(user) {
-        // Campo de e-mail (somente leitura)
+        // Campo de e-mail (read-only)
         const emailElement = document.getElementById("userEmail");
         if (emailElement) {
           emailElement.value = user.email || "Email não disponível";
         } else {
           console.error("Campo de email (userEmail) não encontrado.");
         }
-        // Dados pessoais: Nome, Endereço e Número de Telefone (novo campo)
+        // Campos para Nome, Endereço e Telefone
         const nameInput = document.getElementById("userName");
         const addressInput = document.getElementById("userAddress");
         const phoneInput = document.getElementById("userPhoneInput");
-
         try {
           const userDocRef = doc(db, "users", user.uid);
           const userDocSnap = await getDoc(userDocRef);
@@ -141,8 +148,7 @@
             if (nameInput) nameInput.value = userData.name || "";
             if (addressInput) addressInput.value = userData.address || "";
             if (phoneInput) phoneInput.value = userData.phone || "";
-            
-            // Se houver dados preenchidos (pelo menos um campo preenchido), exibe o container de leitura
+            // Se algum dado (nome, endereço ou telefone) estiver preenchido, exibe o modo leitura
             if (userData.name || userData.address || userData.phone) {
               updateProfileDisplay({
                 email: user.email,
@@ -151,11 +157,9 @@
                 phone: userData.phone,
               });
             } else {
-              // Caso contrário, mostra o formulário de edição
-              const formContainer = document.getElementById("profileFormContainer");
-              if (formContainer) formContainer.style.display = "block";
-              const displayContainer = document.getElementById("profileDisplay");
-              if (displayContainer) displayContainer.style.display = "none";
+              // Se não houver dados, exibe o formulário para preenchimento
+              document.getElementById("profileFormContainer").style.display = "block";
+              document.getElementById("profileDisplay").style.display = "none";
             }
           } else {
             console.log("Nenhum dado de perfil encontrado para este usuário.");
@@ -165,7 +169,7 @@
         }
       }
 
-      // Função para salvar os dados pessoais atualizados via formulário
+      // Função para salvar os dados atualizados via formulário
       async function handleSaveProfile(event) {
         event.preventDefault();
         const user = auth.currentUser;
@@ -189,7 +193,7 @@
           saveStatusMessage.innerText = "Perfil salvo com sucesso!";
           saveStatusMessage.style.color = "green";
           console.log("Perfil salvo com sucesso!");
-          // Após salvar, atualiza a exibição dos dados
+          // Atualiza a exibição dos dados salvos (modo leitura)
           updateProfileDisplay({
             email: user.email,
             name: name,
@@ -198,7 +202,8 @@
           });
         } catch (error) {
           console.error("Erro ao salvar perfil:", error);
-          saveStatusMessage.innerText = "Erro ao salvar perfil: " + error.message;
+          saveStatusMessage.innerText =
+            "Erro ao salvar perfil: " + error.message;
           saveStatusMessage.style.color = "red";
         } finally {
           saveButton.disabled = false;
@@ -215,7 +220,7 @@
         }
       }
 
-      // Função para executar o logout
+      // Função para realizar o logout
       function handleLogout() {
         signOut(auth)
           .then(() => {
@@ -233,7 +238,7 @@
         if (user) {
           console.log("Usuário logado:", user.uid);
           if (logoutBtn) logoutBtn.style.display = "block";
-          await saveUserProfile(user);
+          await saveUserProfile(user); // Cria o documento se não existir sem sobrescrever os dados
           displayUserProfile(user);
           setupInactivityListeners();
         } else {
@@ -443,7 +448,7 @@
         background-color: #cccccc;
         cursor: not-allowed;
       }
-      /* Container para modo edição */
+      /* Container para o formulário de edição */
       #profileFormContainer {
         margin-bottom: 15px;
       }
@@ -526,32 +531,39 @@
     <main class="container">
       <h2>Meu Perfil</h2>
 
-      <!-- Seção de Informações de Conta -->
+      <!-- Seção de "Meus Dados" contendo todas as informações -->
       <div class="profile-section">
-        <h3>Informações de Conta</h3>
-        <div class="form-group">
-          <label for="userEmail">Email:</label>
-          <input type="email" id="userEmail" value="carregando..." disabled />
-        </div>
-      </div>
-
-      <!-- Seção de Dados Pessoais -->
-      <div class="profile-section">
-        <h3>Dados Pessoais</h3>
+        <h3>Meus Dados</h3>
         <!-- Container do formulário de edição -->
         <div id="profileFormContainer">
           <form id="profileForm">
             <div class="form-group">
-              <label for="userName">Nome Completo:</label>
-              <input type="text" id="userName" placeholder="Seu nome completo" />
-            </div>
-            <div class="form-group">
-              <label for="userAddress">Endereço:</label>
-              <input type="text" id="userAddress" placeholder="Seu endereço completo" />
+              <label for="userEmail">Email:</label>
+              <input type="email" id="userEmail" value="carregando..." disabled />
             </div>
             <div class="form-group">
               <label for="userPhoneInput">Número de Telefone:</label>
-              <input type="tel" id="userPhoneInput" placeholder="Seu número de telefone" />
+              <input
+                type="tel"
+                id="userPhoneInput"
+                placeholder="Seu número de telefone"
+              />
+            </div>
+            <div class="form-group">
+              <label for="userName">Nome Completo:</label>
+              <input
+                type="text"
+                id="userName"
+                placeholder="Seu nome completo"
+              />
+            </div>
+            <div class="form-group">
+              <label for="userAddress">Endereço:</label>
+              <input
+                type="text"
+                id="userAddress"
+                placeholder="Seu endereço completo"
+              />
             </div>
             <p id="saveStatusMessage" style="font-size: 0.9em;"></p>
             <button type="submit" id="saveProfileButton">Salvar Perfil</button>
@@ -573,7 +585,6 @@
     </a>
 
     <script type="module">
-      // Os event listeners e inicializações permanecem inalterados em relação ao menu, logout, etc.
       // Função para salvar os dados pessoais (nome, endereço e telefone)
       async function handleSaveProfile(event) {
         event.preventDefault();
@@ -607,10 +618,77 @@
           });
         } catch (error) {
           console.error("Erro ao salvar perfil:", error);
-          saveStatusMessage.innerText = "Erro ao salvar perfil: " + error.message;
+          saveStatusMessage.innerText =
+            "Erro ao salvar perfil: " + error.message;
           saveStatusMessage.style.color = "red";
         } finally {
           saveButton.disabled = false;
+        }
+      }
+
+      // Função para atualizar o container de exibição (modo leitura)
+      function updateProfileDisplay(userData) {
+        const displayContainer = document.getElementById("profileDisplay");
+        displayContainer.innerHTML = `
+          <p><strong>Email:</strong> ${userData.email || "Não definido"}</p>
+          <p><strong>Telefone:</strong> ${userData.phone || "Não definido"}</p>
+          <p><strong>Nome:</strong> ${userData.name || "Não preenchido"}</p>
+          <p><strong>Endereço:</strong> ${userData.address || "Não preenchido"}</p>
+          <button id="editProfileButton">Editar</button>
+        `;
+        displayContainer.style.display = "block";
+        // Oculta o formulário de edição
+        const formContainer = document.getElementById("profileFormContainer");
+        if (formContainer) {
+          formContainer.style.display = "none";
+        }
+        // Listener para o botão "Editar"
+        const editBtn = document.getElementById("editProfileButton");
+        if (editBtn) {
+          editBtn.addEventListener("click", () => {
+            document.getElementById("profileFormContainer").style.display = "block";
+            displayContainer.style.display = "none";
+          });
+        }
+      }
+
+      // Função para preencher os campos do formulário com os dados salvos
+      async function displayUserProfile(user) {
+        const emailElement = document.getElementById("userEmail");
+        if (emailElement) {
+          emailElement.value = user.email || "Email não disponível";
+        } else {
+          console.error("Campo de email (userEmail) não encontrado.");
+        }
+        const nameInput = document.getElementById("userName");
+        const addressInput = document.getElementById("userAddress");
+        const phoneInput = document.getElementById("userPhoneInput");
+        try {
+          const userDocRef = doc(db, "users", user.uid);
+          const userDocSnap = await getDoc(userDocRef);
+          if (userDocSnap.exists()) {
+            const userData = userDocSnap.data();
+            if (nameInput) nameInput.value = userData.name || "";
+            if (addressInput) addressInput.value = userData.address || "";
+            if (phoneInput) phoneInput.value = userData.phone || "";
+            // Se existir pelo menos um dado preenchido, exibe o modo leitura
+            if (userData.name || userData.address || userData.phone) {
+              updateProfileDisplay({
+                email: user.email,
+                name: userData.name,
+                address: userData.address,
+                phone: userData.phone,
+              });
+            } else {
+              document.getElementById("profileFormContainer").style.display =
+                "block";
+              document.getElementById("profileDisplay").style.display = "none";
+            }
+          } else {
+            console.log("Nenhum dado de perfil encontrado para este usuário.");
+          }
+        } catch (e) {
+          console.error("Erro ao buscar os dados do perfil:", e);
         }
       }
 
@@ -635,6 +713,23 @@
             alert("Erro ao fazer logout: " + error.message);
           });
       }
+
+      // Monitora a autenticação
+      onAuthStateChanged(auth, async (user) => {
+        const logoutBtn = document.getElementById("logoutButton");
+        if (user) {
+          console.log("Usuário logado:", user.uid);
+          if (logoutBtn) logoutBtn.style.display = "block";
+          await saveUserProfile(user); // Cria o documento se não existir, sem sobrescrever dados já salvos
+          displayUserProfile(user);
+          setupInactivityListeners();
+        } else {
+          console.log("Nenhum usuário logado, redirecionando para login.");
+          if (logoutBtn) logoutBtn.style.display = "none";
+          removeInactivityListeners();
+          window.location.replace("login.html");
+        }
+      });
 
       // Configuração dos event listeners
       document.addEventListener("DOMContentLoaded", function () {
