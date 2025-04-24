@@ -171,8 +171,19 @@
       });
     })
     .catch(error => {
-      showPopup("Erro ao fazer login: " + error.message, "#C8102E", "❌");
-    });
+  let mensagem = "Erro ao fazer login.";
+  if (error.code === "auth/invalid-login-credentials" || error.code === "auth/wrong-password") {
+    mensagem = "Email ou senha incorretos.";
+  } else if (error.code === "auth/user-not-found") {
+    mensagem = "Usuário não encontrado.";
+  } else if (error.code === "auth/too-many-requests") {
+    mensagem = "Muitas tentativas. Tente novamente mais tarde.";
+  } else {
+    mensagem = "Erro ao fazer login: " + error.message;
+  }
+  showPopup(mensagem, "#C8102E", "❌");
+});
+
 }
 
 
