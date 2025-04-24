@@ -20,21 +20,27 @@
       signOut
     } from "https://www.gstatic.com/firebasejs/10.5.0/firebase-auth.js";
 
-  function showPopup(message, color = '#0033A0', icon = '🔔') {
-    const popup = document.getElementById('popupMessage');
-    const iconSpan = document.getElementById('popupIcon');
-    const textSpan = document.getElementById('popupText');
-    iconSpan.textContent = icon;
-    textSpan.textContent = message;
-    popup.style.backgroundColor = color;
-    popup.style.display = 'flex';
-    setTimeout(() => popup.style.opacity = '1', 10);
+ function showPopup(message, color = '#0033A0', icon = '🔔') {
+  const popup = document.getElementById('popupMessage');
+  const iconSpan = document.getElementById('popupIcon');
+  const textSpan = document.getElementById('popupText');
+  iconSpan.textContent = icon;
+  textSpan.textContent = message;
+  popup.style.backgroundColor = color;
+  popup.style.display = 'flex';
+  setTimeout(() => popup.style.opacity = '1', 10);
 
-    setTimeout(() => {
-      popup.style.opacity = '0';
-      setTimeout(() => popup.style.display = 'none', 400);
-    }, 5000);
+  // 🔊 Toca som se for erro (vermelho)
+  if (color === '#C8102E') {
+    const errorSound = document.getElementById('errorSound');
+    if (errorSound) errorSound.play().catch(() => {});
   }
+
+  setTimeout(() => {
+    popup.style.opacity = '0';
+    setTimeout(() => popup.style.display = 'none', 400);
+  }, 5000);
+}
 
 
     // Configure seu Firebase (substitua pelos seus dados)
@@ -644,6 +650,8 @@ function handleResendVerification() {
   <span id="popupIcon">🔔</span>
   <span id="popupText">Mensagem</span>
 </div>
+<!-- Áudio para erro -->
+<audio id="errorSound" src="https://actions.google.com/sounds/v1/alarms/beep_short.ogg" preload="auto"></audio>
 
 </body>
 </html>
