@@ -9,87 +9,6 @@
   <!-- Ícones do Font Awesome -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.0/css/all.min.css">
   
-  <!-- Firebase Modular SDK e Firestore -->
-  <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.5.0/firebase-app.js";
-    import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.5.0/firebase-auth.js";
-    import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.5.0/firebase-firestore.js";
-    
-    const firebaseConfig = { 
-      apiKey: "AIzaSyDGBKxvfcY-PA_vC7SA8G0f-TjqjK3OD3o",
-      authDomain: "swifthubcatalao.firebaseapp.com",
-      projectId: "swifthubcatalao", 
-      storageBucket: "swifthubcatalao.firebasestorage.app",
-      messagingSenderId: "756803145076",
-      appId: "1:756803145076:web:4593bd78a26a2270a1f021"
-    };
-    
-    const app = initializeApp(firebaseConfig);
-    const auth = getAuth(app);
-    const db = getFirestore(app);
-    
-    // Variável global para armazenar os dados do perfil (nome e telefone)
-    let currentProfile = {};
-    
-    onAuthStateChanged(auth, user => {
-      if (!user) {
-        window.location.href = "login.html";
-      } else {
-        // Exibe o botão de logout
-        const logoutBtn = document.getElementById("logoutButton");
-        if (logoutBtn) {
-          logoutBtn.style.display = "block";
-        }
-        // Busca os dados do perfil do usuário no Firestore
-        const userDocRef = doc(db, "users", user.uid);
-        getDoc(userDocRef)
-          .then(docSnap => {
-            if (docSnap.exists()) {
-              currentProfile = docSnap.data();
-            }
-          })
-          .catch(error => {
-            console.error("Erro ao buscar perfil:", error);
-          });
-      }
-    });
-    
-    document.addEventListener("DOMContentLoaded", function () {
-      const logoutBtn = document.getElementById("logoutButton");
-      if (logoutBtn) {
-        logoutBtn.addEventListener("click", () => {
-          signOut(auth).then(() => window.location.href = "login.html");
-        });
-      }
-    });
-    
-    // Função para alternar o popup do menu lateral
-    function toggleMenu() {
-      const menuPopup = document.getElementById("menuPopup");
-      if (menuPopup) {
-        menuPopup.classList.toggle("menu-open");
-      } else {
-        console.error("Popup do menu não encontrado.");
-      }
-    }
-    
-    document.addEventListener("DOMContentLoaded", function(){
-      const menuIcon = document.querySelector(".menu-icon");
-      if (menuIcon) {
-         menuIcon.addEventListener("click", toggleMenu);
-      } else {
-         console.error("Ícone do menu não encontrado.");
-      }
-  
-      const closeBtn = document.querySelector(".close-menu");
-      if (closeBtn) {
-         closeBtn.addEventListener("click", toggleMenu);
-      } else {
-         console.error("Botão de fechar o menu não encontrado.");
-      }
-    });
-  </script>
-  
   <style>
     :root {
       --color-primary: #0033A0;
@@ -261,11 +180,11 @@
       color: #555;
     }
     
-    /* Botão "Agendar" que abre o popup */
+    /* Botão "Agendar" */
     .agendar-button {
       background: var(--color-secondary);
       color: var(--color-light);
-      padding: 10px 15px;
+      padding: 10px;
       border: none;
       border-radius: 5px;
       cursor: pointer;
@@ -273,6 +192,7 @@
       transition: background 0.2s;
       width: 100%;
       text-align: center;
+      margin-top: auto;
     }
     
     .agendar-button:hover {
@@ -328,7 +248,7 @@
       left: 0;
       width: 100%;
       height: 100%;
-      background: rgba(0, 0, 0, 0.5);
+      background: rgba(0,0,0,0.5);
       z-index: 2000;
     }
     
@@ -350,7 +270,7 @@
       cursor: pointer;
     }
     
-    /* Título do Popup com o nome do serviço */
+    /* Título do Popup com o Nome do Serviço */
     #popupServiceTitle {
       font-size: 1.8em;
       margin-bottom: 15px;
@@ -540,7 +460,7 @@
   <div id="popupOverlay">
     <div id="popupForm">
       <span id="closePopup" class="close-icon">&times;</span>
-      <!-- Título do Popup: exibe o nome do serviço selecionado -->
+      <!-- Exibe o nome do serviço no topo do popup -->
       <h2 id="popupServiceTitle"></h2>
       <form id="appointmentForm">
         <!-- Campo oculto para o nome do serviço -->
@@ -562,8 +482,14 @@
     </div>
   </div>
   
-  <!-- Script para o Popup de Agendamento -->
+  <!-- Script: Integração Firebase, gerenciamento do menu e Popup -->
   <script type="module">
+    // Para que funções e variáveis sejam acessíveis globalmente, anexamos-as ao objeto window.
+    window.currentProfile = window.currentProfile || {};
+    
+    // A função onAuthStateChanged e a obtenção do perfil foram definidas no script do head; aqui garantimos que 'window.currentProfile' continue disponível.
+    
+    // Popup de Agendamento
     document.addEventListener("DOMContentLoaded", () => {
       // Fecha o popup quando o ícone de fechamento for clicado
       document.getElementById("closePopup").addEventListener("click", () => {
@@ -586,24 +512,24 @@
       });
     });
     
-    // Função global para abrir o popup, exibir o serviço e pré-preencher os dados do cliente
+    // Função para abrir o popup e pré-preencher os dados (e exibir o nome do serviço)
     window.openPopup = function(service) {
-      // Define o nome do serviço no campo oculto e no título do popup
+      // Define o serviço para os campos oculto e título do popup
       document.getElementById("serviceName").value = service;
       document.getElementById("popupServiceTitle").innerText = "Agendar: " + service;
       
-      // Se os dados do perfil já estiverem carregados, pré-preenche os campos de nome e telefone
-      if (currentProfile && currentProfile.name) {
-        document.getElementById("clientName").value = currentProfile.name;
-        document.getElementById("clientPhone").value = currentProfile.phone || "";
+      // Se os dados do perfil já foram carregados, pré-preenche os campos de nome e telefone
+      if (window.currentProfile && window.currentProfile.name) {
+        document.getElementById("clientName").value = window.currentProfile.name;
+        document.getElementById("clientPhone").value = window.currentProfile.phone || "";
       } else {
         document.getElementById("clientName").value = "";
         document.getElementById("clientPhone").value = "";
       }
-      // Limpa o campo de descrição para que o usuário preencha
+      // Limpa o campo de descrição
       document.getElementById("description").value = "";
+      // Exibe o popup
       document.getElementById("popupOverlay").style.display = "block";
     }
   </script>
-</body>
 </html>
