@@ -198,43 +198,46 @@
 }
 
 
-    function handleForgotPassword() {
-      const email = document.getElementById("loginEmail").value;
-      if (!email) {
-        alert("Digite seu email para redefinir a senha.");
-        return;
-      }
-      sendPasswordResetEmail(auth, email)
-        .then(() => alert("Email de recuperação enviado!"))
-        .catch(error => alert("Erro ao enviar email: " + error.message));
-    }
+   function handleForgotPassword() {
+  const email = document.getElementById("loginEmail").value;
+  if (!email) {
+    showPopup("Digite seu email para redefinir a senha.", "#FFA500", "✉️");
+    return;
+  }
+  sendPasswordResetEmail(auth, email)
+    .then(() => {
+      showPopup("Email de recuperação enviado com sucesso!", "#28a745", "📨");
+    })
+    .catch(error => {
+      showPopup("Erro ao enviar email: " + error.message, "#C8102E", "❌");
+    });
+}
 
-    function handleResendVerification() {
-       const user = auth.currentUser; // Get the currently logged-in user
+function handleResendVerification() {
+  const user = auth.currentUser;
 
-       if (user) {
-           if (!user.emailVerified) {
-               sendEmailVerification(user)
-                   .then(() => {
-                       const btn = document.getElementById("resendButton");
-                       btn.innerText = "Enviado";
-                       setTimeout(() => {
-                           startCountdown(15);
-                       }, 1000);
-                   })
-                   .catch(error => alert("Erro ao reenviar email: " + error.message));
-           } else {
-               alert("Seu email já está verificado. Faça login normalmente.");
-               // Optional: Redirect to index if already verified
-               // window.location.replace("index.html");
-           }
-       } else {
-           alert("Nenhum usuário logado. Por favor, faça login primeiro.");
-           // Optional: Ensure the login form is visible
-           // document.getElementById("loginFormContainer").style.display = "block";
-           // document.getElementById("registerFormContainer").style.display = "none";
-       }
+  if (user) {
+    if (!user.emailVerified) {
+      sendEmailVerification(user)
+        .then(() => {
+          showPopup("Verificação reenviada! Verifique sua caixa de entrada.", "#28a745", "📩");
+          const btn = document.getElementById("resendButton");
+          btn.innerText = "Enviado";
+          setTimeout(() => {
+            startCountdown(15);
+          }, 1000);
+        })
+        .catch(error => {
+          showPopup("Erro ao reenviar email: " + error.message, "#C8102E", "❌");
+        });
+    } else {
+      showPopup("Seu email já está verificado. Faça login normalmente.", "#0033A0", "✅");
     }
+  } else {
+    showPopup("Nenhum usuário logado. Faça login primeiro.", "#C8102E", "⚠️");
+  }
+}
+
 
 
     function validatePassword() {
