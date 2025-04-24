@@ -143,37 +143,38 @@
       }, 1000);
     }
 
-    function handleLogin(e) {
-      e.preventDefault();
-      const email = document.getElementById("loginEmail").value;
-      const password = document.getElementById("loginPassword").value;
-      signInWithEmailAndPassword(auth, email, password)
-        .then(userCredential => {
-          const user = userCredential.user;
-          // Atualiza os dados do usuário para obter o status atualizado
-          user.reload().then(() => {
-            if (!user.emailVerified) {
-              sendEmailVerification(user)
-                .then(() => {
-                  alert("Seu email não foi verificado. Um email de verificação foi enviado. Confira sua caixa de entrada.");
-                  const btn = document.getElementById("resendButton");
-                  btn.style.display = "inline-block";
-                  btn.innerText = "Enviado";
-                  setTimeout(() => {
-                    startCountdown(15);
-                  }, 1000);
-                })
-                .catch(error => alert("Erro ao enviar email de verificação: " + error.message));
-              // Don't redirect, keep user on login page to verify
-              // signOut(auth); // Don't sign out immediately, keep user state to handle verification
-              return;
-            }
-            // If email is verified, redirect to index
-            window.location.replace("index.html");
-          });
-        })
-        .catch(error => alert("Erro ao fazer login: " + error.message));
-    }
+   function handleLogin(e) {
+  e.preventDefault();
+  const email = document.getElementById("loginEmail").value;
+  const password = document.getElementById("loginPassword").value;
+  signInWithEmailAndPassword(auth, email, password)
+    .then(userCredential => {
+      const user = userCredential.user;
+      user.reload().then(() => {
+        if (!user.emailVerified) {
+          sendEmailVerification(user)
+            .then(() => {
+              showPopup("Seu email não foi verificado. Verifique sua caixa de entrada.", "#FFA500", "📩");
+              const btn = document.getElementById("resendButton");
+              btn.style.display = "inline-block";
+              btn.innerText = "Enviado";
+              setTimeout(() => {
+                startCountdown(15);
+              }, 1000);
+            })
+            .catch(error => {
+              showPopup("Erro ao enviar verificação: " + error.message, "#C8102E", "❌");
+            });
+          return;
+        }
+        window.location.replace("index.html");
+      });
+    })
+    .catch(error => {
+      showPopup("Erro ao fazer login: " + error.message, "#C8102E", "❌");
+    });
+}
+
 
     function handleRegister(e) {
   e.preventDefault();
