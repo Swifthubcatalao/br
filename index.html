@@ -314,85 +314,6 @@
       .card {
         width: 90%;
       }
-      
-      .popup-overlay {
-    display: none;
-    position: fixed;
-    top: 0; left: 0;
-    width: 100%; height: 100%;
-    background: rgba(0,0,0,0.6);
-    z-index: 2000;
-    justify-content: center;
-    align-items: center;
-    animation: fadeIn 0.3s ease-in-out;
-  }
-
-  .popup-content {
-    background: white;
-    padding: 30px;
-    border-radius: 12px;
-    width: 90%;
-    max-width: 420px;
-    position: relative;
-    box-shadow: 0 8px 30px rgba(0,0,0,0.2);
-    animation: slideUp 0.4s ease-out;
-    transform: translateY(0);
-  }
-
-  .popup-content h3 {
-    margin-bottom: 15px;
-    color: #0033A0;
-  }
-
-  .popup-content input,
-  .popup-content textarea {
-    width: 100%;
-    padding: 12px;
-    margin-top: 10px;
-    border: 1px solid #ccc;
-    border-radius: 6px;
-    font-size: 14px;
-  }
-
-  .popup-content button {
-    margin-top: 15px;
-    width: 100%;
-    padding: 12px;
-    background: #25D366;
-    color: white;
-    border: none;
-    font-weight: bold;
-    border-radius: 6px;
-    font-size: 16px;
-    cursor: pointer;
-  }
-
-  .popup-content button:hover {
-    background: #1ebd5a;
-  }
-
-  .close-popup {
-    position: absolute;
-    top: 10px;
-    right: 15px;
-    font-size: 24px;
-    color: #888;
-    cursor: pointer;
-  }
-
-  .close-popup:hover {
-    color: #333;
-  }
-
-  @keyframes fadeIn {
-    from { opacity: 0; }
-    to { opacity: 1; }
-  }
-
-  @keyframes slideUp {
-    from { transform: translateY(50px); opacity: 0; }
-    to { transform: translateY(0); opacity: 1; }
-  }
     }
   </style>
 </head>
@@ -507,7 +428,7 @@
           <img src="https://raw.githubusercontent.com/Swifthubcatalao/br/main/imagens/placa-solar.png" alt="Placa Solar">
           <h3>Placa Solar</h3>
           <p>Instalação e manutenção de sistemas de energia solar para economizar e contribuir com o meio ambiente.</p>
-          <a href="#" class="agendar-popup" data-servico="Placa Solar">Agendar</a>
+          <a href="https://wa.me/64981226078?text=Oi,%20preciso%20de%20servico%20em%20placa%20solar" target="_blank">Agendar</a>
         </div>
         <div class="card">
   <img src="https://raw.githubusercontent.com/Swifthubcatalao/br/main/imagens/lavagem-carro.png" alt="Lavagem de Veículo">
@@ -529,47 +450,6 @@
   <a href="https://wa.me/64981226078" class="whatsapp-float" target="_blank">
     <i class="fab fa-whatsapp"></i>
   </a>
-  <div id="formPopup" class="popup-overlay">
-  <div class="popup-content">
-    <span id="fecharPopup" class="close-popup">&times;</span>
-    <h3 id="tituloServico">Agendar Serviço</h3>
-    <input type="text" id="nomeCliente" placeholder="Seu nome">
-    <textarea id="descricaoServico" placeholder="Descreva o serviço que você precisa"></textarea>
-    <button onclick="enviarParaWhatsapp()">Enviar pelo WhatsApp</button>
-  </div>
-</div>
-  <script>
-  document.addEventListener("DOMContentLoaded", function () {
-    document.querySelectorAll('.agendar-popup').forEach(botao => {
-      botao.addEventListener('click', function (e) {
-        e.preventDefault();
-        const servico = this.dataset.servico;
-        document.getElementById('tituloServico').innerText = "Agendar " + servico;
-        const popup = document.getElementById('formPopup');
-        popup.style.display = 'flex';
-        popup.dataset.servico = servico;
-      });
-    });
-
-    document.getElementById('fecharPopup').addEventListener('click', function () {
-      document.getElementById('formPopup').style.display = 'none';
-    });
-  });
-
-  function enviarParaWhatsapp() {
-    const nome = document.getElementById('nomeCliente').value.trim();
-    const descricao = document.getElementById('descricaoServico').value.trim();
-    const servico = document.getElementById('formPopup').dataset.servico;
-    if (!nome || !descricao) {
-      alert("Preencha todos os campos!");
-      return;
-    }
-    const mensagem = `Oi, meu nome é ${nome} e gostaria de agendar o serviço de ${servico}. Detalhes: ${descricao}`;
-    const url = `https://wa.me/64981226078?text=${encodeURIComponent(mensagem)}`;
-    window.open(url, '_blank');
-    document.getElementById('formPopup').style.display = 'none';
-  }
-</script>
   
 </body>
 </html>
