@@ -9,10 +9,11 @@
   <!-- Ícones do Font Awesome -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.0/css/all.min.css">
   
-  <!-- Firebase Modular SDK -->
+  <!-- Firebase Modular SDK e Firestore -->
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.5.0/firebase-app.js";
     import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.5.0/firebase-auth.js";
+    import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.5.0/firebase-firestore.js";
     
     const firebaseConfig = { 
       apiKey: "AIzaSyDGBKxvfcY-PA_vC7SA8G0f-TjqjK3OD3o",
@@ -25,17 +26,31 @@
     
     const app = initializeApp(firebaseConfig);
     const auth = getAuth(app);
+    const db = getFirestore(app);
+    
+    // Variável global para armazenar os dados do perfil (nome e telefone)
+    let currentProfile = {};
     
     onAuthStateChanged(auth, user => {
       if (!user) {
-        // Se o usuário não estiver autenticado, redireciona para a página de login.
         window.location.href = "login.html";
       } else {
-        // Se estiver autenticado, exibe o botão de logout.
+        // Exibe o botão de logout
         const logoutBtn = document.getElementById("logoutButton");
         if (logoutBtn) {
           logoutBtn.style.display = "block";
         }
+        // Busca os dados do perfil do usuário no Firestore
+        const userDocRef = doc(db, "users", user.uid);
+        getDoc(userDocRef)
+          .then(docSnap => {
+            if (docSnap.exists()) {
+              currentProfile = docSnap.data();
+            }
+          })
+          .catch(error => {
+            console.error("Erro ao buscar perfil:", error);
+          });
       }
     });
     
@@ -48,7 +63,7 @@
       }
     });
     
-    // Função para alternar o popup do menu.
+    // Função para alternar o popup do menu lateral
     function toggleMenu() {
       const menuPopup = document.getElementById("menuPopup");
       if (menuPopup) {
@@ -77,9 +92,9 @@
   
   <style>
     :root {
-      --color-primary: #0033A0;    /* Azul */
-      --color-secondary: #C8102E;    /* Vermelho */
-      --color-light: #ffffff;        /* Branco */
+      --color-primary: #0033A0;
+      --color-secondary: #C8102E;
+      --color-light: #ffffff;
       --color-dark: #333;
     }
     
@@ -103,9 +118,7 @@
       padding: 20px;
     }
     
-    /* =============================
-       Cabeçalho com Ícone de Menu, Logo e Logout
-       ============================= */
+    /* Cabeçalho com Menu, Logo e Logout */
     header {
       background: var(--color-light);
       padding: 15px;
@@ -116,7 +129,6 @@
       border-bottom: 1px solid #ddd;
     }
     
-    /* Ícone de menu no canto esquerdo superior */
     .menu-icon {
       font-size: 28px;
       color: var(--color-primary);
@@ -127,14 +139,12 @@
       transform: translateY(-50%);
     }
     
-    /* Logo centralizada */
     .logo {
       max-width: 120px;
       height: auto;
       display: block;
     }
     
-    /* Botão de logout no canto superior direito em vermelho */
     #logoutButton {
       position: absolute;
       right: 15px;
@@ -146,7 +156,7 @@
       padding: 10px 15px;
       border-radius: 5px;
       cursor: pointer;
-      display: none;  /* ficará oculto até que o usuário esteja autenticado */
+      display: none;
     }
     
     /* Popup Lateral do Menu */
@@ -179,7 +189,6 @@
       background: rgba(255,255,255,0.2);
     }
     
-    /* Adicionamos "Meu Perfil" com classe 'profile' */
     .menu-popup a.profile {
       font-weight: bold;
     }
@@ -196,9 +205,7 @@
       transform: translateX(0);
     }
     
-    /* =============================
-       Seção de Serviços (Cards)
-       ============================= */
+    /* Seção de Serviços (Cards) */
     section#servico {
       padding: 40px 0;
       text-align: center;
@@ -254,28 +261,25 @@
       color: #555;
     }
     
-    /* Botão "Agendar" alinhado ao fundo do card */
-    .card a {
-      display: inline-block;
+    /* Botão "Agendar" que abre o popup */
+    .agendar-button {
       background: var(--color-secondary);
       color: var(--color-light);
       padding: 10px 15px;
-      text-decoration: none;
+      border: none;
       border-radius: 5px;
-      transition: background 0.2s;
-      align-self: stretch;
-      text-align: center;
+      cursor: pointer;
       font-weight: bold;
-      margin-top: auto;
+      transition: background 0.2s;
+      width: 100%;
+      text-align: center;
     }
     
-    .card a:hover {
+    .agendar-button:hover {
       background: #a01d2d;
     }
     
-    /* =============================
-       Footer
-       ============================= */
+    /* Footer */
     footer {
       background: var(--color-secondary);
       color: var(--color-light);
@@ -315,10 +319,75 @@
         width: 90%;
       }
     }
+    
+    /* Popup Modal para Agendamento */
+    #popupOverlay {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.5);
+      z-index: 2000;
+    }
+    
+    #popupForm {
+      background: #fff;
+      width: 90%;
+      max-width: 500px;
+      margin: 100px auto;
+      padding: 20px;
+      border-radius: 8px;
+      position: relative;
+    }
+    
+    .close-icon {
+      position: absolute;
+      top: 10px;
+      right: 15px;
+      font-size: 24px;
+      cursor: pointer;
+    }
+    
+    /* Título do Popup com o nome do serviço */
+    #popupServiceTitle {
+      font-size: 1.8em;
+      margin-bottom: 15px;
+      color: var(--color-primary);
+      text-align: center;
+    }
+    
+    #appointmentForm .form-group {
+      margin-bottom: 15px;
+    }
+    
+    #appointmentForm label {
+      display: block;
+      margin-bottom: 5px;
+    }
+    
+    #appointmentForm input, 
+    #appointmentForm textarea {
+      width: 100%;
+      padding: 8px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+    }
+    
+    #appointmentForm button {
+      background-color: var(--color-secondary);
+      color: var(--color-light);
+      padding: 10px 15px;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      font-weight: bold;
+    }
   </style>
 </head>
 <body>
-  <!-- Cabeçalho com ícone de menu, logo centralizada e botão de logout -->
+  <!-- Cabeçalho: Menu, Logo e Logout -->
   <header>
     <div class="container">
       <i class="fas fa-bars menu-icon"></i>
@@ -327,7 +396,7 @@
     </div>
   </header>
   
-  <!-- Popup do Menu com a nova opção "Meu Perfil" -->
+  <!-- Popup Lateral do Menu -->
   <div id="menuPopup" class="menu-popup">
     <span class="close-menu">&times;</span>
     <a href="index.html">Início</a>
@@ -340,102 +409,118 @@
     <div class="container">
       <h2>Serviços Disponíveis</h2>
       <div class="cards">
+        <!-- Card 1: Limpeza de Estofados -->
         <div class="card">
           <img src="https://raw.githubusercontent.com/Swifthubcatalao/br/main/imagens/limpeza-de-estofados.jpg" alt="Limpeza de Estofados">
           <h3>Limpeza de Estofados</h3>
-          <p>Remova manchas, odores e sujeira de sofás, poltronas e móveis, restaurando sua aparência e higiene.</p>
-          <a href="https://wa.me/64981226078?text=Oi,%20preciso%20de%20limpeza%20de%20estofados" target="_blank">Agendar</a>
+          <p>Remova manchas, odores e sujeira de sofás, poltronas e móveis.</p>
+          <button class="agendar-button" onclick="openPopup('Limpeza de Estofados')">Agendar</button>
         </div>
+        <!-- Card 2: Encanador -->
         <div class="card">
           <img src="https://raw.githubusercontent.com/Swifthubcatalao/br/main/imagens/encanador.jpg" alt="Encanador">
           <h3>Encanador</h3>
           <p>Resolva problemas hidráulicos com reparos e manutenções realizados por profissionais capacitados.</p>
-          <a href="https://wa.me/64981226078?text=Oi,%20preciso%20de%20um%20encanador" target="_blank">Agendar</a>
+          <button class="agendar-button" onclick="openPopup('Encanador')">Agendar</button>
         </div>
+        <!-- Card 3: Dedetização -->
         <div class="card">
           <img src="https://raw.githubusercontent.com/Swifthubcatalao/br/main/imagens/dedetizacao.jpg" alt="Dedetização">
           <h3>Dedetização</h3>
           <p>Elimine pragas e garanta ambientes mais seguros e limpos com serviços especializados.</p>
-          <a href="https://wa.me/64981226078?text=Oi,%20preciso%20de%20dedetizacao" target="_blank">Agendar</a>
+          <button class="agendar-button" onclick="openPopup('Dedetização')">Agendar</button>
         </div>
+        <!-- Card 4: Jardineiro -->
         <div class="card">
           <img src="https://raw.githubusercontent.com/Swifthubcatalao/br/main/imagens/jardineiro.jpg" alt="Jardineiro">
           <h3>Jardineiro</h3>
           <p>Cuide do seu jardim com serviços de poda, manutenção e paisagismo para mantê-lo sempre bonito.</p>
-          <a href="https://wa.me/64981226078?text=Oi,%20preciso%20de%20um%20jardineiro" target="_blank">Agendar</a>
+          <button class="agendar-button" onclick="openPopup('Jardineiro')">Agendar</button>
         </div>
+        <!-- Card 5: Marceneiro -->
         <div class="card">
           <img src="https://raw.githubusercontent.com/Swifthubcatalao/br/main/imagens/marceneiro.jpg" alt="Marceneiro">
           <h3>Marceneiro</h3>
           <p>Móveis sob medida e reparos em madeira com acabamento perfeito para transformar seus espaços.</p>
-          <a href="https://wa.me/64981226078?text=Oi,%20preciso%20de%20um%20marceneiro" target="_blank">Agendar</a>
+          <button class="agendar-button" onclick="openPopup('Marceneiro')">Agendar</button>
         </div>
+        <!-- Card 6: Eletricista -->
         <div class="card">
           <img src="https://raw.githubusercontent.com/Swifthubcatalao/br/main/imagens/eletricista.jpg" alt="Eletricista">
           <h3>Eletricista</h3>
           <p>Instalações, manutenções e reparos elétricos para garantir a segurança e o funcionamento do seu imóvel.</p>
-          <a href="https://wa.me/64981226078?text=Oi,%20preciso%20de%20um%20eletricista" target="_blank">Agendar</a>
+          <button class="agendar-button" onclick="openPopup('Eletricista')">Agendar</button>
         </div>
+        <!-- Card 7: Pintor -->
         <div class="card">
           <img src="https://raw.githubusercontent.com/Swifthubcatalao/br/main/imagens/pintor.png" alt="Pintor">
           <h3>Pintor</h3>
           <p>Pintura residencial ou comercial com acabamento de alta qualidade para renovar qualquer ambiente.</p>
-          <a href="https://wa.me/64981226078?text=Oi,%20preciso%20de%20um%20pintor" target="_blank">Agendar</a>
+          <button class="agendar-button" onclick="openPopup('Pintor')">Agendar</button>
         </div>
+        <!-- Card 8: Montagem de Móveis -->
         <div class="card">
           <img src="https://raw.githubusercontent.com/Swifthubcatalao/br/main/imagens/montagem-de-moveis.jpg" alt="Montagem de Móveis">
           <h3>Montagem de Móveis</h3>
           <p>Profissionais especializados para montar seus móveis com rapidez, agilidade e precisão.</p>
-          <a href="https://wa.me/64981226078?text=Oi,%20preciso%20de%20montagem%20de%20moveis" target="_blank">Agendar</a>
+          <button class="agendar-button" onclick="openPopup('Montagem de Móveis')">Agendar</button>
         </div>
+        <!-- Card 9: Limpeza de Caixa d'Água -->
         <div class="card">
           <img src="https://raw.githubusercontent.com/Swifthubcatalao/br/main/imagens/limpeza-caixa-agua.png" alt="Limpeza de Caixa d'Água">
           <h3>Limpeza de Caixa d'Água</h3>
           <p>Higienize sua caixa d'água e garanta água pura e segura para consumo.</p>
-          <a href="https://wa.me/64981226078?text=Oi,%20preciso%20de%20limpeza%20de%20caixa%20da%20agua" target="_blank">Agendar</a>
+          <button class="agendar-button" onclick="openPopup('Limpeza de Caixa d\'Água')">Agendar</button>
         </div>
+        <!-- Card 10: Vigilância Temporária -->
         <div class="card">
           <img src="https://raw.githubusercontent.com/Swifthubcatalao/br/main/imagens/vigilancia-temporaria.jpg" alt="Vigilância Temporária">
           <h3>Vigilância Temporária</h3>
           <p>Serviço de monitoramento para períodos curtos, garantindo a segurança do seu evento ou imóvel.</p>
-          <a href="https://wa.me/64981226078?text=Oi,%20preciso%20de%20vigilancia%20temporaria" target="_blank">Agendar</a>
+          <button class="agendar-button" onclick="openPopup('Vigilância Temporária')">Agendar</button>
         </div>
+        <!-- Card 11: Instalação de Câmeras -->
         <div class="card">
           <img src="https://raw.githubusercontent.com/Swifthubcatalao/br/main/imagens/instalacao-de-cameras.jpg" alt="Instalação de Câmeras">
           <h3>Instalação de Câmeras</h3>
           <p>Implemente sistemas modernos de vigilância para monitorar e proteger seu imóvel.</p>
-          <a href="https://wa.me/64981226078?text=Oi,%20preciso%20de%20instalacao%20de%20cameras" target="_blank">Agendar</a>
+          <button class="agendar-button" onclick="openPopup('Instalação de Câmeras')">Agendar</button>
         </div>
+        <!-- Card 12: Frete de Mudanças -->
         <div class="card">
           <img src="https://raw.githubusercontent.com/Swifthubcatalao/br/main/imagens/frete-mudanca.jpg" alt="Frete de Mudanças">
           <h3>Frete de Mudanças</h3>
           <p>Equipe especializada para mudanças, garantindo o transporte organizado e seguro dos seus bens.</p>
-          <a href="https://wa.me/64981226078?text=Oi,%20preciso%20de%20frete%20de%20mudancas" target="_blank">Agendar</a>
+          <button class="agendar-button" onclick="openPopup('Frete de Mudanças')">Agendar</button>
         </div>
+        <!-- Card 13: Serralheria -->
         <div class="card">
           <img src="https://raw.githubusercontent.com/Swifthubcatalao/br/main/imagens/serralheria.jpg" alt="Serralheria">
           <h3>Serralheria</h3>
           <p>Serviços em metal com reparos e confecções personalizadas para atender suas necessidades.</p>
-          <a href="https://wa.me/64981226078?text=Oi,%20preciso%20de%20serralheria" target="_blank">Agendar</a>
+          <button class="agendar-button" onclick="openPopup('Serralheria')">Agendar</button>
         </div>
+        <!-- Card 14: Higienização de Ar Condicionado -->
         <div class="card">
           <img src="https://raw.githubusercontent.com/Swifthubcatalao/br/main/imagens/higienizacao-ar-condicionado.png" alt="Higienização de Ar Condicionado">
           <h3>Higienização de Ar Condicionado</h3>
           <p>Mantenha seu ar condicionado limpo e livre de bactérias para um ar mais saudável e eficiente.</p>
-          <a href="https://wa.me/64981226078?text=Oi,%20preciso%20de%20higienizacao%20de%20ar%20condicionado" target="_blank">Agendar</a>
+          <button class="agendar-button" onclick="openPopup('Higienização de Ar Condicionado')">Agendar</button>
         </div>
+        <!-- Card 15: Placa Solar -->
         <div class="card">
           <img src="https://raw.githubusercontent.com/Swifthubcatalao/br/main/imagens/placa-solar.png" alt="Placa Solar">
           <h3>Placa Solar</h3>
           <p>Instalação e manutenção de sistemas de energia solar para economizar e contribuir com o meio ambiente.</p>
-          <a href="https://wa.me/64981226078?text=Oi,%20preciso%20de%20servico%20em%20placa%20solar" target="_blank">Agendar</a>
+          <button class="agendar-button" onclick="openPopup('Placa Solar')">Agendar</button>
         </div>
+        <!-- Card 16: Lavagem de Veículo -->
         <div class="card">
-  <img src="https://raw.githubusercontent.com/Swifthubcatalao/br/main/imagens/lavagem-carro.png" alt="Lavagem de Veículo">
-  <h3>Lavagem de Veículo</h3>
-  <p>Lavagem completa para seu carro ou moto, com atenção aos detalhes, qualidade e aquele brilho de novo!</p>
-  <a href="https://wa.me/64981226078?text=Oi,%20quero%20agendar%20uma%20lavagem%20de%20veículo" target="_blank">Agendar</a>
-</div>
+          <img src="https://raw.githubusercontent.com/Swifthubcatalao/br/main/imagens/lavagem-carro.png" alt="Lavagem de Veículo">
+          <h3>Lavagem de Veículo</h3>
+          <p>Lavagem completa para seu carro ou moto, com atenção aos detalhes, qualidade e aquele brilho de novo!</p>
+          <button class="agendar-button" onclick="openPopup('Lavagem de Veículo')">Agendar</button>
+        </div>
       </div>
     </div>
   </section>
@@ -451,5 +536,74 @@
     <i class="fab fa-whatsapp"></i>
   </a>
   
+  <!-- Popup Modal para Agendamento -->
+  <div id="popupOverlay">
+    <div id="popupForm">
+      <span id="closePopup" class="close-icon">&times;</span>
+      <!-- Título do Popup: exibe o nome do serviço selecionado -->
+      <h2 id="popupServiceTitle"></h2>
+      <form id="appointmentForm">
+        <!-- Campo oculto para o nome do serviço -->
+        <input type="hidden" id="serviceName" name="serviceName">
+        <div class="form-group">
+          <label for="clientName">Seu Nome:</label>
+          <input type="text" id="clientName" name="clientName" placeholder="Digite seu nome" required>
+        </div>
+        <div class="form-group">
+          <label for="clientPhone">Seu Telefone:</label>
+          <input type="tel" id="clientPhone" name="clientPhone" placeholder="Digite seu telefone" required>
+        </div>
+        <div class="form-group">
+          <label for="description">Descrição do Serviço:</label>
+          <textarea id="description" name="description" placeholder="Descreva o que deseja" required></textarea>
+        </div>
+        <button type="submit">Enviar</button>
+      </form>
+    </div>
+  </div>
+  
+  <!-- Script para o Popup de Agendamento -->
+  <script type="module">
+    document.addEventListener("DOMContentLoaded", () => {
+      // Fecha o popup quando o ícone de fechamento for clicado
+      document.getElementById("closePopup").addEventListener("click", () => {
+        document.getElementById("popupOverlay").style.display = "none";
+      });
+  
+      // Manipula o envio do formulário de agendamento
+      document.getElementById("appointmentForm").addEventListener("submit", (e) => {
+        e.preventDefault();
+        const service = document.getElementById("serviceName").value;
+        const clientName = document.getElementById("clientName").value;
+        const clientPhone = document.getElementById("clientPhone").value;
+        const description = document.getElementById("description").value;
+        const message = `Olá, gostaria de agendar o serviço de ${service}. Meu nome é ${clientName} e meu telefone é ${clientPhone}. Descrição: ${description}`;
+        const encodedMessage = encodeURIComponent(message);
+        const waNumber = "64981226078";
+        window.open(`https://wa.me/${waNumber}?text=${encodedMessage}`, '_blank');
+        // Fecha o popup após envio
+        document.getElementById("popupOverlay").style.display = "none";
+      });
+    });
+    
+    // Função global para abrir o popup, exibir o serviço e pré-preencher os dados do cliente
+    window.openPopup = function(service) {
+      // Define o nome do serviço no campo oculto e no título do popup
+      document.getElementById("serviceName").value = service;
+      document.getElementById("popupServiceTitle").innerText = "Agendar: " + service;
+      
+      // Se os dados do perfil já estiverem carregados, pré-preenche os campos de nome e telefone
+      if (currentProfile && currentProfile.name) {
+        document.getElementById("clientName").value = currentProfile.name;
+        document.getElementById("clientPhone").value = currentProfile.phone || "";
+      } else {
+        document.getElementById("clientName").value = "";
+        document.getElementById("clientPhone").value = "";
+      }
+      // Limpa o campo de descrição para que o usuário preencha
+      document.getElementById("description").value = "";
+      document.getElementById("popupOverlay").style.display = "block";
+    }
+  </script>
 </body>
 </html>
